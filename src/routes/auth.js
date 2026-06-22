@@ -4,7 +4,8 @@ import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
 import config from '../config.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requirePermission } from '../middleware/auth.js';
+import { ROLE_LABELS, ROLE_VALUES, getRolePermissions, normalizeRole } from '../utils/roles.js';
 
 const router = express.Router();
 
@@ -25,13 +26,17 @@ function normalizePathways(pathways, fallback = 'english') {
 }
 
 function toPublicUser(user) {
+  const role = normalizeRole(user.role);
+
   return {
     id: user._id,
     name: user.name,
     email: user.email,
     languageSelected: user.languageSelected,
     enrolledPathways: normalizePathways(user.enrolledPathways, user.languageSelected),
-    role: user.role ?? 'user',
+    role,
+    roleLabel: ROLE_LABELS[role],
+    permissions: getRolePermissions(role),
     avatarUrl: user.avatarUrl,
     learnerProfile: user.learnerProfile ?? {},
   };
@@ -167,6 +172,51 @@ router.get('/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
     res.json(toPublicUser(user));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// List users for role management. Web Developer is the main admin role.
+router.get('/users', authMiddleware, requirePermission('manage_roles'), async (req, res) => {
+  try {
+    const users = await User.find({})
+      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      roles: ROLE_VALUES.map(role => ({
+        value: role,
+        label: ROLE_LABELS[role],
+        permissions: getRolePermissions(role),
+      })),
+      users: users.map(toPublicUser),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Only Web Developer can promote/demote team members.
+router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'), async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!ROLE_VALUES.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.role = normalizeRole(role);
+    await user.save();
+
+    res.json({
+      message: 'Role updated',
+      user: toPublicUser(user),
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

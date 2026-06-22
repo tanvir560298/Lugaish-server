@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '../config.js';
+import { User } from '../models/User.js';
+import { hasPermission } from '../utils/roles.js';
 
 export const authMiddleware = (req, res, next) => {
   try {
@@ -13,5 +15,19 @@ export const authMiddleware = (req, res, next) => {
     next();
   } catch (error) {
     return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+export const requirePermission = permission => async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId).select('role');
+    if (!user || !hasPermission(user.role, permission)) {
+      return res.status(403).json({ error: 'You do not have permission for this action' });
+    }
+
+    req.userRole = user.role;
+    return next();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { ROLE_VALUES, ROLES, normalizeRole } from '../utils/roles.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -9,7 +10,12 @@ const userSchema = new mongoose.Schema(
     googleSub: { type: String, unique: true, sparse: true },
     firebaseUid: { type: String, unique: true, sparse: true },
     avatarUrl: { type: String },
-    role: { type: String, enum: ['user', 'moderator', 'admin'], default: 'user' },
+    role: {
+      type: String,
+      enum: ROLE_VALUES,
+      default: ROLES.learner,
+      set: normalizeRole,
+    },
     learnerProfile: {
       profession: { type: String, default: '' },
       expectation: { type: String, default: '' },
@@ -32,5 +38,10 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.pre('validate', function normalizeLegacyRole(next) {
+  this.role = normalizeRole(this.role);
+  next();
+});
 
 export const User = mongoose.model('User', userSchema);
