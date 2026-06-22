@@ -1,73 +1,161 @@
 import express from 'express';
-import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
 import config from '../config.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+if (!getApps().length) {
+  initializeApp({
+    projectId: config.FIREBASE_PROJECT_ID || undefined,
+  });
+}
+
+function normalizePathways(pathways, fallback = 'english') {
+  const valid = new Set(['english', 'arabic']);
+  const normalized = Array.isArray(pathways)
+    ? pathways.filter(pathway => valid.has(pathway))
+    : [];
+
+  if (valid.has(fallback)) normalized.unshift(fallback);
+  return [...new Set(normalized)];
+}
+
+function toPublicUser(user) {
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    languageSelected: user.languageSelected,
+    enrolledPathways: normalizePathways(user.enrolledPathways, user.languageSelected),
+    role: user.role ?? 'user',
+    avatarUrl: user.avatarUrl,
+    learnerProfile: user.learnerProfile ?? {},
+  };
+}
+
+function cleanLearnerProfile(profile = {}) {
+  const allowedFields = ['profession', 'expectation', 'courseDuration', 'referralSource'];
+
+  return allowedFields.reduce((acc, key) => {
+    if (typeof profile[key] === 'string' && profile[key].trim()) {
+      acc[key] = profile[key].trim().slice(0, 300);
+    }
+
+    return acc;
+  }, {});
+}
+
+async function verifyFirebaseToken(idToken) {
+  if (!config.FIREBASE_PROJECT_ID) {
+    throw new Error('Firebase login is not configured');
+  }
+
+  const payload = await getAuth().verifyIdToken(idToken);
+
+  if (!payload?.uid || !payload?.email) {
+    throw new Error('Invalid Firebase account');
+  }
+
+  return payload;
+}
+
 // Signup
-router.post('/signup', async (req, res) => {
+router.post('/signup', (req, res) => {
+  return res.status(410).json({ error: 'Password signup is disabled. Use Google sign in.' });
+});
+
+// Login
+router.post('/login', (req, res) => {
+  return res.status(410).json({ error: 'Password login is disabled. Use Google sign in.' });
+});
+
+// Firebase Google-only signup/signin
+router.post('/firebase', async (req, res) => {
   try {
-    const { name, email, password, languageSelected } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const { idToken, languageSelected, displayName, learnerProfile } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ error: 'Missing Firebase token' });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email already exists' });
-    }
+    const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
+    const firebaseUser = await verifyFirebaseToken(idToken);
+    const cleanedProfile = cleanLearnerProfile(learnerProfile);
+    const preferredName = typeof displayName === 'string' && displayName.trim()
+      ? displayName.trim().slice(0, 80)
+      : '';
 
-    const hashedPassword = await bcryptjs.hash(password, 10);
-    const user = new User({
-      name,
-      email,
-      password: hashedPassword,
-      languageSelected: languageSelected || 'english',
+    let user = await User.findOne({
+      $or: [
+        { firebaseUid: firebaseUser.uid },
+        { email: firebaseUser.email },
+      ],
     });
+
+    if (!user) {
+      user = new User({
+        name: preferredName || firebaseUser.name || firebaseUser.email.split('@')[0],
+        email: firebaseUser.email,
+        authProvider: 'firebase',
+        firebaseUid: firebaseUser.uid,
+        avatarUrl: firebaseUser.picture,
+        languageSelected: selectedLanguage,
+        enrolledPathways: [selectedLanguage],
+        learnerProfile: cleanedProfile,
+      });
+    } else {
+      user.authProvider = 'firebase';
+      user.firebaseUid = user.firebaseUid || firebaseUser.uid;
+      user.avatarUrl = firebaseUser.picture || user.avatarUrl;
+      user.name = preferredName || user.name;
+      user.learnerProfile = {
+        ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
+        ...cleanedProfile,
+      };
+      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+    }
 
     await user.save();
 
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(201).json({
-      message: 'Signup successful',
+    res.json({
+      message: 'Google login successful',
       token,
-      user: { id: user._id, name, email, languageSelected: user.languageSelected },
+      user: toPublicUser(user),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(401).json({ error: error.message });
   }
 });
 
-// Login
-router.post('/login', async (req, res) => {
+// Enroll in an additional language pathway
+router.post('/enroll', authMiddleware, async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Missing email or password' });
+    const { language } = req.body;
+    if (!['english', 'arabic'].includes(language)) {
+      return res.status(400).json({ error: 'Invalid language' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findById(req.userId);
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    const isPasswordValid = await bcryptjs.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+    if (!user.enrolledPathways.includes(language)) {
+      user.enrolledPathways.push(language);
     }
+    user.languageSelected = language;
 
-    const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
+    await user.save();
 
     res.json({
-      message: 'Login successful',
-      token,
-      user: { id: user._id, name: user.name, email, languageSelected: user.languageSelected },
+      message: 'Enrollment updated',
+      user: toPublicUser(user),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -78,7 +166,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
-    res.json(user);
+    res.json(toPublicUser(user));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

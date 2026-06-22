@@ -16,9 +16,17 @@ const app = express();
 app.use(cors({ origin: config.CORS_ORIGIN }));
 app.use(express.json());
 
+function requireDatabase(req, res, next) {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ error: 'Database not connected' });
+  }
+
+  return next();
+}
+
 // MongoDB connection
 mongoose
-  .connect(config.MONGODB_URI)
+  .connect(config.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => {
     console.log('MongoDB connected');
   })
@@ -27,11 +35,11 @@ mongoose
   });
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/lessons', lessonRoutes);
-app.use('/api/progress', progressRoutes);
-app.use('/api/quiz', quizRoutes);
+app.use('/api/auth', requireDatabase, authRoutes);
+app.use('/api/courses', requireDatabase, courseRoutes);
+app.use('/api/lessons', requireDatabase, lessonRoutes);
+app.use('/api/progress', requireDatabase, progressRoutes);
+app.use('/api/quiz', requireDatabase, quizRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

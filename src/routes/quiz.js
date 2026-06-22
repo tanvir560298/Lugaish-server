@@ -1,14 +1,25 @@
 import express from 'express';
 import { Quiz } from '../models/Quiz.js';
 import { Lesson } from '../models/Lesson.js';
+import { User } from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
+
+function isEnrolled(user, language) {
+  const pathways = user.enrolledPathways?.length ? user.enrolledPathways : [user.languageSelected];
+  return pathways.includes(language);
+}
 
 // Submit quiz
 router.post('/submit', authMiddleware, async (req, res) => {
   try {
     const { day, language, responses } = req.body;
+    const user = await User.findById(req.userId);
+
+    if (!isEnrolled(user, language)) {
+      return res.status(403).json({ error: 'Not enrolled in this language' });
+    }
 
     // Get lesson to verify answers
     const lesson = await Lesson.findOne({ language, day });

@@ -5,14 +5,19 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+function isEnrolled(user, language) {
+  const pathways = user.enrolledPathways?.length ? user.enrolledPathways : [user.languageSelected];
+  return pathways.includes(language);
+}
+
 // Get user progress
 router.get('/:language', authMiddleware, async (req, res) => {
   try {
     const { language } = req.params;
     const user = await User.findById(req.userId);
 
-    if (user.languageSelected !== language) {
-      return res.status(403).json({ error: 'Language mismatch' });
+    if (!isEnrolled(user, language)) {
+      return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
     let progress = await Progress.findOne({ userId: req.userId, language });
@@ -40,8 +45,8 @@ router.post('/update', authMiddleware, async (req, res) => {
     const { language, day, score } = req.body;
     const user = await User.findById(req.userId);
 
-    if (user.languageSelected !== language) {
-      return res.status(403).json({ error: 'Language mismatch' });
+    if (!isEnrolled(user, language)) {
+      return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
     let progress = await Progress.findOne({ userId: req.userId, language });
