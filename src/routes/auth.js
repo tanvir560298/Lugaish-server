@@ -5,7 +5,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
-import { ROLE_LABELS, ROLE_VALUES, getRolePermissions, normalizeRole } from '../utils/roles.js';
+import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
 
 const router = express.Router();
 
@@ -14,6 +14,13 @@ if (!getApps().length) {
     projectId: config.FIREBASE_PROJECT_ID || undefined,
   });
 }
+
+const webDeveloperEmails = new Set(
+  config.WEB_DEVELOPER_EMAILS
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean)
+);
 
 function normalizePathways(pathways, fallback = 'english') {
   const valid = new Set(['english', 'arabic']);
@@ -88,6 +95,8 @@ router.post('/firebase', async (req, res) => {
 
     const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
     const firebaseUser = await verifyFirebaseToken(idToken);
+    const firebaseEmail = firebaseUser.email.toLowerCase();
+    const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
     const cleanedProfile = cleanLearnerProfile(learnerProfile);
     const preferredName = typeof displayName === 'string' && displayName.trim()
       ? displayName.trim().slice(0, 80)
@@ -107,6 +116,7 @@ router.post('/firebase', async (req, res) => {
         authProvider: 'firebase',
         firebaseUid: firebaseUser.uid,
         avatarUrl: firebaseUser.picture,
+        role: shouldBootstrapWebDeveloper ? ROLES.webDeveloper : ROLES.learner,
         languageSelected: selectedLanguage,
         enrolledPathways: [selectedLanguage],
         learnerProfile: cleanedProfile,
@@ -116,6 +126,9 @@ router.post('/firebase', async (req, res) => {
       user.firebaseUid = user.firebaseUid || firebaseUser.uid;
       user.avatarUrl = firebaseUser.picture || user.avatarUrl;
       user.name = preferredName || user.name;
+      if (shouldBootstrapWebDeveloper && normalizeRole(user.role) !== ROLES.webDeveloper) {
+        user.role = ROLES.webDeveloper;
+      }
       user.learnerProfile = {
         ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
         ...cleanedProfile,
