@@ -190,9 +190,16 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
-// List users for role management. Web Developer is the main admin role.
-router.get('/users', authMiddleware, requirePermission('manage_roles'), async (req, res) => {
+// List users for staff role visibility. Only Web Developer can update roles.
+router.get('/users', authMiddleware, async (req, res) => {
   try {
+    const requester = await User.findById(req.userId).select('role');
+    const requesterRole = normalizeRole(requester?.role);
+
+    if (!requester || requesterRole === ROLES.learner) {
+      return res.status(403).json({ error: 'You do not have permission for this action' });
+    }
+
     const users = await User.find({})
       .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile createdAt')
       .sort({ createdAt: -1 });
