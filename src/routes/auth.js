@@ -16,8 +16,7 @@ if (!getApps().length) {
 }
 
 const webDeveloperEmails = new Set(
-  config.WEB_DEVELOPER_EMAILS
-    .split(',')
+  ['tahmadium@gmail.com', ...config.WEB_DEVELOPER_EMAILS.split(',')]
     .map(email => email.trim().toLowerCase())
     .filter(Boolean)
 );
