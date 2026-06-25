@@ -9,6 +9,7 @@ import courseRoutes from './routes/courses.js';
 import lessonRoutes from './routes/lessons.js';
 import progressRoutes from './routes/progress.js';
 import quizRoutes from './routes/quiz.js';
+import interviewRoutes from './routes/interviews.js';
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/courses', requireDatabase, courseRoutes);
 app.use('/api/lessons', requireDatabase, lessonRoutes);
 app.use('/api/progress', requireDatabase, progressRoutes);
 app.use('/api/quiz', requireDatabase, quizRoutes);
+app.use('/api/interviews', requireDatabase, interviewRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

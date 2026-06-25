@@ -9,5 +9,13 @@ export default {
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
   WEB_DEVELOPER_EMAILS: process.env.WEB_DEVELOPER_EMAILS || 'tahmadium@gmail.com',
   COURSE_SEAT_LIMIT: Number(process.env.COURSE_SEAT_LIMIT || 100),
+  INTERVIEW_ROOM_URLS: process.env.INTERVIEW_ROOM_URLS || [
+    process.env.INTERVIEW_ROOM_1_URL || 'https://meet.google.com/',
+    process.env.INTERVIEW_ROOM_2_URL || 'https://meet.google.com/',
+    process.env.INTERVIEW_ROOM_3_URL || 'https://meet.google.com/',
+    process.env.INTERVIEW_ROOM_4_URL || 'https://meet.google.com/',
+  ].join(','),
+  INTERVIEW_ROOM_CAPACITIES: process.env.INTERVIEW_ROOM_CAPACITIES || '25,25,25,25',
+  INTERVIEW_SUPPORT_EMAIL: process.env.INTERVIEW_SUPPORT_EMAIL || 'lugaish2026@gmail.com',
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:4174',
 };
