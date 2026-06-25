@@ -28,6 +28,20 @@ const userSchema = new mongoose.Schema(
       enum: ['english', 'arabic'],
       default: ['english'],
     },
+    seatApplications: [
+      {
+        language: { type: String, enum: ['english', 'arabic'], required: true },
+        goal: { type: String, default: '' },
+        availability: { type: String, default: '' },
+        contactPreference: { type: String, default: '' },
+        status: {
+          type: String,
+          enum: ['pending', 'approved', 'declined'],
+          default: 'pending',
+        },
+        submittedAt: { type: Date, default: Date.now },
+      },
+    ],
     currentDay: { type: Number, default: 1 },
     streak: { type: Number, default: 0 },
     totalXP: { type: Number, default: 0 },

@@ -21,14 +21,46 @@ const webDeveloperEmails = new Set(
     .filter(Boolean)
 );
 
-function normalizePathways(pathways, fallback = 'english') {
+function normalizePathways(pathways, fallback = 'english', { includeFallback = true } = {}) {
   const valid = new Set(['english', 'arabic']);
   const normalized = Array.isArray(pathways)
     ? pathways.filter(pathway => valid.has(pathway))
     : [];
 
-  if (valid.has(fallback)) normalized.unshift(fallback);
+  if (includeFallback && valid.has(fallback)) normalized.unshift(fallback);
   return [...new Set(normalized)];
+}
+
+async function getEnrollmentCount(language) {
+  return User.countDocuments({ enrolledPathways: language });
+}
+
+async function getUserFromOptionalToken(req) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : '';
+
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    return User.findById(decoded.userId);
+  } catch {
+    return null;
+  }
+}
+
+function getCapacityPayload(language, user = null) {
+  const pathways = user ? normalizePathways(user.enrolledPathways, user.languageSelected, { includeFallback: false }) : [];
+  const applications = user?.seatApplications ?? [];
+  const latestApplication = applications
+    .filter(application => application.language === language)
+    .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0];
+
+  return {
+    isEnrolled: pathways.includes(language),
+    hasApplied: Boolean(latestApplication),
+    applicationStatus: latestApplication?.status ?? null,
+  };
 }
 
 function toPublicUser(user) {
@@ -39,12 +71,13 @@ function toPublicUser(user) {
     name: user.name,
     email: user.email,
     languageSelected: user.languageSelected,
-    enrolledPathways: normalizePathways(user.enrolledPathways, user.languageSelected),
+    enrolledPathways: normalizePathways(user.enrolledPathways, user.languageSelected, { includeFallback: false }),
     role,
     roleLabel: ROLE_LABELS[role],
     permissions: getRolePermissions(role),
     avatarUrl: user.avatarUrl,
     learnerProfile: user.learnerProfile ?? {},
+    seatApplications: user.seatApplications ?? [],
   };
 }
 
@@ -93,6 +126,8 @@ router.post('/firebase', async (req, res) => {
     }
 
     const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
+    const selectedLanguageEnrollmentCount = await getEnrollmentCount(selectedLanguage);
+    const selectedLanguageHasSeat = selectedLanguageEnrollmentCount < config.COURSE_SEAT_LIMIT;
     const firebaseUser = await verifyFirebaseToken(idToken);
     const firebaseEmail = firebaseUser.email.toLowerCase();
     const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
@@ -117,7 +152,7 @@ router.post('/firebase', async (req, res) => {
         avatarUrl: firebaseUser.picture,
         role: shouldBootstrapWebDeveloper ? ROLES.webDeveloper : ROLES.learner,
         languageSelected: selectedLanguage,
-        enrolledPathways: [selectedLanguage],
+        enrolledPathways: selectedLanguageHasSeat ? [selectedLanguage] : [],
         learnerProfile: cleanedProfile,
       });
     } else {
@@ -149,6 +184,34 @@ router.post('/firebase', async (req, res) => {
   }
 });
 
+// Check course seat availability before a learner enters a pathway
+router.get('/enrollment-status/:language', async (req, res) => {
+  try {
+    const { language } = req.params;
+    if (!['english', 'arabic'].includes(language)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+
+    const [enrolledCount, user] = await Promise.all([
+      getEnrollmentCount(language),
+      getUserFromOptionalToken(req),
+    ]);
+    const limit = Math.max(config.COURSE_SEAT_LIMIT, 0);
+    const seatsAvailable = limit === 0 ? 0 : Math.max(limit - enrolledCount, 0);
+
+    res.json({
+      language,
+      limit,
+      enrolledCount,
+      seatsAvailable,
+      isFull: seatsAvailable <= 0,
+      ...getCapacityPayload(language, user),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Enroll in an additional language pathway
 router.post('/enroll', authMiddleware, async (req, res) => {
   try {
@@ -163,6 +226,19 @@ router.post('/enroll', authMiddleware, async (req, res) => {
     }
 
     user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+    const enrolledCount = await getEnrollmentCount(language);
+    const alreadyEnrolled = user.enrolledPathways.includes(language);
+
+    if (!alreadyEnrolled && enrolledCount >= config.COURSE_SEAT_LIMIT) {
+      return res.status(409).json({
+        error: 'This cohort is currently full. Apply for a priority seat and our team will get back to you.',
+        code: 'COURSE_FULL',
+        language,
+        limit: config.COURSE_SEAT_LIMIT,
+        enrolledCount,
+      });
+    }
+
     if (!user.enrolledPathways.includes(language)) {
       user.enrolledPathways.push(language);
     }
@@ -172,6 +248,52 @@ router.post('/enroll', authMiddleware, async (req, res) => {
 
     res.json({
       message: 'Enrollment updated',
+      user: toPublicUser(user),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Apply for a seat when the current cohort is full
+router.post('/seat-applications', authMiddleware, async (req, res) => {
+  try {
+    const { language, goal = '', availability = '', contactPreference = '' } = req.body;
+    if (!['english', 'arabic'].includes(language)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const existingPending = user.seatApplications?.find(application => (
+      application.language === language && application.status === 'pending'
+    ));
+
+    if (existingPending) {
+      return res.json({
+        message: 'Your application is already with our team. We will get back to you soon.',
+        application: existingPending,
+        user: toPublicUser(user),
+      });
+    }
+
+    user.seatApplications.push({
+      language,
+      goal: String(goal).trim().slice(0, 500),
+      availability: String(availability).trim().slice(0, 200),
+      contactPreference: String(contactPreference).trim().slice(0, 120),
+      status: 'pending',
+      submittedAt: new Date(),
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      message: 'Message sent to our team. They will get back to you soon.',
+      application: user.seatApplications[user.seatApplications.length - 1],
       user: toPublicUser(user),
     });
   } catch (error) {
@@ -200,10 +322,11 @@ router.get('/users', authMiddleware, async (req, res) => {
     }
 
     const users = await User.find({})
-      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile createdAt')
+      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications createdAt')
       .sort({ createdAt: -1 });
 
     res.json({
+      courseSeatLimit: config.COURSE_SEAT_LIMIT,
       roles: ROLE_VALUES.map(role => ({
         value: role,
         label: ROLE_LABELS[role],

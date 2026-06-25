@@ -8,7 +8,7 @@ import { authMiddleware } from '../middleware/auth.js';
 const router = express.Router();
 
 function isEnrolled(user, language) {
-  const pathways = user.enrolledPathways?.length ? user.enrolledPathways : [user.languageSelected];
+  const pathways = Array.isArray(user.enrolledPathways) ? user.enrolledPathways : [];
   return pathways.includes(language);
 }
 
