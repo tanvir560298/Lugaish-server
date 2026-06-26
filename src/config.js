@@ -9,6 +9,10 @@ export default {
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
   WEB_DEVELOPER_EMAILS: process.env.WEB_DEVELOPER_EMAILS || 'tahmadium@gmail.com',
   COURSE_SEAT_LIMIT: Number(process.env.COURSE_SEAT_LIMIT || 100),
+  COURSE_SEAT_LIMITS: {
+    english: Number(process.env.COURSE_SEAT_LIMIT_ENGLISH || 110),
+    arabic: Number(process.env.COURSE_SEAT_LIMIT_ARABIC || 55),
+  },
   INTERVIEW_ROOM_URLS: process.env.INTERVIEW_ROOM_URLS || [
     process.env.INTERVIEW_ROOM_1_URL || 'https://meet.google.com/',
     process.env.INTERVIEW_ROOM_2_URL || 'https://meet.google.com/',

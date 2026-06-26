@@ -35,6 +35,10 @@ async function getEnrollmentCount(language) {
   return User.countDocuments({ enrolledPathways: language });
 }
 
+function getCourseSeatLimit(language) {
+  return Math.max(config.COURSE_SEAT_LIMITS?.[language] ?? config.COURSE_SEAT_LIMIT, 0);
+}
+
 async function getUserFromOptionalToken(req) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : '';
@@ -127,7 +131,8 @@ router.post('/firebase', async (req, res) => {
 
     const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
     const selectedLanguageEnrollmentCount = await getEnrollmentCount(selectedLanguage);
-    const selectedLanguageHasSeat = selectedLanguageEnrollmentCount < config.COURSE_SEAT_LIMIT;
+    const selectedLanguageLimit = getCourseSeatLimit(selectedLanguage);
+    const selectedLanguageHasSeat = selectedLanguageEnrollmentCount < selectedLanguageLimit;
     const firebaseUser = await verifyFirebaseToken(idToken);
     const firebaseEmail = firebaseUser.email.toLowerCase();
     const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
@@ -196,7 +201,7 @@ router.get('/enrollment-status/:language', async (req, res) => {
       getEnrollmentCount(language),
       getUserFromOptionalToken(req),
     ]);
-    const limit = Math.max(config.COURSE_SEAT_LIMIT, 0);
+    const limit = getCourseSeatLimit(language);
     const seatsAvailable = limit === 0 ? 0 : Math.max(limit - enrolledCount, 0);
 
     res.json({
@@ -229,12 +234,14 @@ router.post('/enroll', authMiddleware, async (req, res) => {
     const enrolledCount = await getEnrollmentCount(language);
     const alreadyEnrolled = user.enrolledPathways.includes(language);
 
-    if (!alreadyEnrolled && enrolledCount >= config.COURSE_SEAT_LIMIT) {
+    const limit = getCourseSeatLimit(language);
+
+    if (!alreadyEnrolled && enrolledCount >= limit) {
       return res.status(409).json({
         error: 'This cohort is currently full. Apply for a priority seat and our team will get back to you.',
         code: 'COURSE_FULL',
         language,
-        limit: config.COURSE_SEAT_LIMIT,
+        limit,
         enrolledCount,
       });
     }
@@ -327,6 +334,7 @@ router.get('/users', authMiddleware, async (req, res) => {
 
     res.json({
       courseSeatLimit: config.COURSE_SEAT_LIMIT,
+      courseSeatLimits: config.COURSE_SEAT_LIMITS,
       roles: ROLE_VALUES.map(role => ({
         value: role,
         label: ROLE_LABELS[role],
