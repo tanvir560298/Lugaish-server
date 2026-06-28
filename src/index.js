@@ -35,15 +35,19 @@ function requireDatabase(req, res, next) {
   return next();
 }
 
-// MongoDB connection
-mongoose
-  .connect(config.MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
-  .then(() => {
+const DATABASE_RETRY_DELAY_MS = 5000;
+
+async function connectDatabase() {
+  try {
+    await mongoose.connect(config.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
     console.log('MongoDB connected');
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err.message);
-  });
+  } catch (error) {
+    console.error(`MongoDB connection error: ${error.message}. Retrying...`);
+    setTimeout(connectDatabase, DATABASE_RETRY_DELAY_MS);
+  }
+}
+
+connectDatabase();
 
 // Routes
 app.use('/api/auth', requireDatabase, authRoutes);
