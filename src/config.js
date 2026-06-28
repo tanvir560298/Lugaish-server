@@ -21,5 +21,15 @@ export default {
   ].join(','),
   INTERVIEW_ROOM_CAPACITIES: process.env.INTERVIEW_ROOM_CAPACITIES || '25,25,25,25',
   INTERVIEW_SUPPORT_EMAIL: process.env.INTERVIEW_SUPPORT_EMAIL || 'lugaish2026@gmail.com',
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:4174',
+  CORS_ORIGINS: [
+    'https://lugaish.vercel.app',
+    'http://localhost:4174',
+    'http://127.0.0.1:4174',
+    'http://localhost:4175',
+    'http://127.0.0.1:4175',
+    ...(process.env.CORS_ORIGIN || '')
+      .split(',')
+      .map(origin => origin.trim())
+      .filter(Boolean),
+  ],
 };

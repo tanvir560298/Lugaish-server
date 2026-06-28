@@ -14,7 +14,17 @@ import interviewRoutes from './routes/interviews.js';
 const app = express();
 
 // Middleware
-app.use(cors({ origin: config.CORS_ORIGIN }));
+const allowedOrigins = new Set(config.CORS_ORIGINS);
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 
 function requireDatabase(req, res, next) {
@@ -45,7 +55,11 @@ app.use('/api/interviews', requireDatabase, interviewRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'Backend running', apiBase: '/api' });
+  res.json({
+    status: 'Backend running',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    apiBase: '/api',
+  });
 });
 
 // Start server
