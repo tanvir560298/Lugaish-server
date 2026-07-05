@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
+import { Progress } from '../models/Progress.js';
+import { Quiz } from '../models/Quiz.js';
+import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
@@ -369,6 +372,42 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Only Web Developer can permanently remove a member and their learning data.
+router.delete('/users/:id', authMiddleware, requirePermission('manage_users'), async (req, res) => {
+  try {
+    if (req.params.id === req.userId) {
+      return res.status(400).json({ error: 'You cannot remove your own account' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.firebaseUid) {
+      try {
+        await getAuth().deleteUser(user.firebaseUid);
+      } catch (error) {
+        if (error?.code !== 'auth/user-not-found') throw error;
+      }
+    }
+
+    await Promise.all([
+      Progress.deleteMany({ userId: user._id }),
+      Quiz.deleteMany({ userId: user._id }),
+      InterviewQueueEntry.deleteMany({ userId: user._id }),
+      User.deleteOne({ _id: user._id }),
+    ]);
+
+    return res.json({
+      message: 'Member removed successfully',
+      removedUserId: user._id,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 
