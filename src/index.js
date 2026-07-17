@@ -10,6 +10,7 @@ import lessonRoutes from './routes/lessons.js';
 import progressRoutes from './routes/progress.js';
 import quizRoutes from './routes/quiz.js';
 import interviewRoutes from './routes/interviews.js';
+import emailRoutes from './routes/email.js';
 
 const app = express();
 
@@ -26,6 +27,13 @@ app.use(cors({
   },
 }));
 app.use(express.json());
+
+app.use((error, req, res, next) => {
+  if (error?.message === 'Origin not allowed by CORS') {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
+  return next(error);
+});
 
 function requireDatabase(req, res, next) {
   if (mongoose.connection.readyState !== 1) {
@@ -56,6 +64,7 @@ app.use('/api/lessons', requireDatabase, lessonRoutes);
 app.use('/api/progress', requireDatabase, progressRoutes);
 app.use('/api/quiz', requireDatabase, quizRoutes);
 app.use('/api/interviews', requireDatabase, interviewRoutes);
+app.use('/api/email', requireDatabase, emailRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

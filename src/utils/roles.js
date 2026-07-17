@@ -24,6 +24,7 @@ export const ROLE_PERMISSIONS = {
     'publish_post',
     'manage_lessons',
     'manage_site',
+    'manage_email',
   ],
   [ROLES.instructor]: [
     'create_post',

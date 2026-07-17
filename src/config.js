@@ -21,6 +21,12 @@ export default {
   ].join(','),
   INTERVIEW_ROOM_CAPACITIES: process.env.INTERVIEW_ROOM_CAPACITIES || '25,25,25,25',
   INTERVIEW_SUPPORT_EMAIL: process.env.INTERVIEW_SUPPORT_EMAIL || 'lugaish2026@gmail.com',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:4174',
+  GMAIL_CLIENT_ID: process.env.GMAIL_CLIENT_ID || '',
+  GMAIL_CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET || '',
+  GMAIL_REDIRECT_URI: process.env.GMAIL_REDIRECT_URI || 'http://localhost:5001/api/email/oauth/callback',
+  GMAIL_SENDER_EMAIL: (process.env.GMAIL_SENDER_EMAIL || 'tahmadium@gmail.com').toLowerCase(),
+  GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || '',
   CORS_ORIGINS: [
     'https://lugaish.vercel.app',
     'http://localhost:4174',
