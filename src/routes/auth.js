@@ -9,6 +9,7 @@ import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
+import { sendActiveSignupCampaign } from '../services/signupCampaign.js';
 
 const router = express.Router();
 
@@ -151,7 +152,8 @@ router.post('/firebase', async (req, res) => {
       ],
     });
 
-    if (!user) {
+    const isNewUser = !user;
+    if (isNewUser) {
       user = new User({
         name: preferredName || firebaseUser.name || firebaseUser.email.split('@')[0],
         email: firebaseUser.email,
@@ -179,6 +181,14 @@ router.post('/firebase', async (req, res) => {
     }
 
     await user.save();
+
+    if (isNewUser) {
+      try {
+        await sendActiveSignupCampaign(user);
+      } catch (error) {
+        console.error(`New-user campaign error: ${error.message}`);
+      }
+    }
 
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
 

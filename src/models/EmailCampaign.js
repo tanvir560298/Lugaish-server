@@ -10,6 +10,7 @@ const emailCampaignSchema = new mongoose.Schema({
   failedCount: { type: Number, default: 0 },
   status: { type: String, enum: ['sending', 'completed', 'partial', 'failed'], default: 'sending' },
   failures: [{ email: String, error: String }],
+  autoSendUntil: { type: Date, default: null },
 }, { timestamps: true });
 
 export const EmailCampaign = mongoose.model('EmailCampaign', emailCampaignSchema);

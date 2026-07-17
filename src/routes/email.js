@@ -185,4 +185,18 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
   }
 });
 
+router.post('/campaigns/latest/activate-signup', ...manageEmail, async (req, res) => {
+  try {
+    const deadline = new Date('2026-07-18T15:00:00.000Z');
+    if (deadline <= new Date()) return res.status(400).json({ error: 'The automatic signup campaign deadline has passed' });
+    const campaign = await EmailCampaign.findOne({ status: { $in: ['completed', 'partial'] } }).sort({ createdAt: -1 });
+    if (!campaign) return res.status(404).json({ error: 'Send the campaign once before enabling automatic delivery' });
+    campaign.autoSendUntil = deadline;
+    await campaign.save();
+    return res.json({ message: 'New users will receive this campaign automatically until 18 July 2026, 9:00 PM (Bangladesh time)' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
