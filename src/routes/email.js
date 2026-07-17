@@ -2,7 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { google } from 'googleapis';
 import config from '../config.js';
-import { authMiddleware, requirePermission } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
 import { User } from '../models/User.js';
 import { MailConnection } from '../models/MailConnection.js';
 import { EmailCampaign } from '../models/EmailCampaign.js';
@@ -10,7 +10,26 @@ import { decryptSecret, encryptSecret } from '../utils/mailCrypto.js';
 import { hasPermission } from '../utils/roles.js';
 
 const router = express.Router();
-const manageEmail = [authMiddleware, requirePermission('manage_email')];
+const emailManagerEmails = new Set(config.EMAIL_MANAGER_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean));
+
+function canManageEmail(user) {
+  return Boolean(user
+    && hasPermission(user.role, 'manage_email')
+    && emailManagerEmails.has(String(user.email || '').toLowerCase()));
+}
+
+async function requireEmailManager(req, res, next) {
+  try {
+    const user = await User.findById(req.userId).select('role email');
+    if (!canManageEmail(user)) return res.status(403).json({ error: 'Only the approved Web Developer can manage email' });
+    req.emailManager = user;
+    return next();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+const manageEmail = [authMiddleware, requireEmailManager];
 const MAX_RECIPIENTS_PER_CAMPAIGN = 100;
 const campaignLocks = new Set();
 
@@ -81,8 +100,8 @@ router.get('/oauth/callback', async (req, res) => {
   try {
     const payload = jwt.verify(String(req.query.state || ''), config.JWT_SECRET);
     if (payload.purpose !== 'gmail_connect') throw new Error('Invalid OAuth state');
-    const user = await User.findById(payload.userId).select('role');
-    if (!user || !hasPermission(user.role, 'manage_email')) throw new Error('You no longer have permission to connect Gmail');
+    const user = await User.findById(payload.userId).select('role email');
+    if (!canManageEmail(user)) throw new Error('You no longer have permission to connect Gmail');
     const { tokens } = await getOAuthClient().getToken(String(req.query.code || ''));
     if (!tokens.refresh_token) throw new Error('Google did not return a refresh token. Reconnect and approve access again.');
     await MailConnection.findOneAndUpdate({ key: 'primary' }, {

@@ -26,6 +26,7 @@ export default {
   GMAIL_CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET || '',
   GMAIL_REDIRECT_URI: process.env.GMAIL_REDIRECT_URI || 'http://localhost:5001/api/email/oauth/callback',
   GMAIL_SENDER_EMAIL: (process.env.GMAIL_SENDER_EMAIL || 'tahmadium@gmail.com').toLowerCase(),
+  EMAIL_MANAGER_EMAILS: process.env.EMAIL_MANAGER_EMAILS || 'tahmadium@gmail.com',
   GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || '',
   CORS_ORIGINS: [
     'https://lugaish.vercel.app',
