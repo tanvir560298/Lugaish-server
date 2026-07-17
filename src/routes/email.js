@@ -64,6 +64,9 @@ function createRawMessage({ to, name, subject, message }) {
 async function getAuthorizedGmail() {
   const connection = await MailConnection.findOne({ key: 'primary' });
   if (!connection) throw new Error('Gmail sender is not connected');
+  if (connection.senderEmail !== config.GMAIL_SENDER_EMAIL) {
+    throw new Error(`Reconnect the approved sender: ${config.GMAIL_SENDER_EMAIL}`);
+  }
   const auth = getOAuthClient();
   auth.setCredentials({ refresh_token: decryptSecret(connection.encryptedRefreshToken) });
   return google.gmail({ version: 'v1', auth });
@@ -74,10 +77,11 @@ router.get('/status', ...manageEmail, async (req, res) => {
     const connection = await MailConnection.findOne({ key: 'primary' }).select('senderEmail connectedAt');
     const recentCampaigns = await EmailCampaign.find({})
       .select('subject recipientCount sentCount failedCount status createdAt').sort({ createdAt: -1 }).limit(10);
+    const connected = connection?.senderEmail === config.GMAIL_SENDER_EMAIL;
     res.json({
       configured: Boolean(config.GMAIL_CLIENT_ID && config.GMAIL_CLIENT_SECRET && config.GMAIL_TOKEN_ENCRYPTION_KEY),
-      connected: Boolean(connection), senderEmail: connection?.senderEmail || config.GMAIL_SENDER_EMAIL,
-      connectedAt: connection?.connectedAt, maxRecipientsPerCampaign: MAX_RECIPIENTS_PER_CAMPAIGN, recentCampaigns,
+      connected, senderEmail: config.GMAIL_SENDER_EMAIL,
+      connectedAt: connected ? connection.connectedAt : null, maxRecipientsPerCampaign: MAX_RECIPIENTS_PER_CAMPAIGN, recentCampaigns,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -88,7 +92,8 @@ router.get('/oauth/url', ...manageEmail, (req, res) => {
   try {
     const state = jwt.sign({ userId: req.userId, purpose: 'gmail_connect' }, config.JWT_SECRET, { expiresIn: '10m' });
     const url = getOAuthClient().generateAuthUrl({
-      access_type: 'offline', prompt: 'consent', scope: ['https://www.googleapis.com/auth/gmail.send'], state,
+      access_type: 'offline', prompt: 'consent',
+      scope: ['openid', 'email', 'https://www.googleapis.com/auth/gmail.send'], state,
     });
     res.json({ url });
   } catch (error) {
@@ -104,6 +109,15 @@ router.get('/oauth/callback', async (req, res) => {
     if (!canManageEmail(user)) throw new Error('You no longer have permission to connect Gmail');
     const { tokens } = await getOAuthClient().getToken(String(req.query.code || ''));
     if (!tokens.refresh_token) throw new Error('Google did not return a refresh token. Reconnect and approve access again.');
+    if (!tokens.id_token) throw new Error('Google did not return account identity. Reconnect and approve access again.');
+    const ticket = await getOAuthClient().verifyIdToken({
+      idToken: tokens.id_token,
+      audience: config.GMAIL_CLIENT_ID,
+    });
+    const connectedEmail = String(ticket.getPayload()?.email || '').trim().toLowerCase();
+    if (connectedEmail !== config.GMAIL_SENDER_EMAIL) {
+      throw new Error(`Choose ${config.GMAIL_SENDER_EMAIL} when connecting Gmail`);
+    }
     await MailConnection.findOneAndUpdate({ key: 'primary' }, {
       key: 'primary', senderEmail: config.GMAIL_SENDER_EMAIL,
       encryptedRefreshToken: encryptSecret(tokens.refresh_token), connectedBy: user._id, connectedAt: new Date(),
