@@ -7,7 +7,7 @@ import { User } from '../models/User.js';
 import { MailConnection } from '../models/MailConnection.js';
 import { EmailCampaign } from '../models/EmailCampaign.js';
 import { decryptSecret, encryptSecret } from '../utils/mailCrypto.js';
-import { hasPermission } from '../utils/roles.js';
+import { ROLES, hasPermission, normalizeRole } from '../utils/roles.js';
 
 const router = express.Router();
 const emailManagerEmails = new Set(config.EMAIL_MANAGER_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean));
@@ -15,7 +15,7 @@ const emailManagerEmails = new Set(config.EMAIL_MANAGER_EMAILS.split(',').map(em
 function canManageEmail(user) {
   return Boolean(user
     && hasPermission(user.role, 'manage_email')
-    && emailManagerEmails.has(String(user.email || '').toLowerCase()));
+    && (normalizeRole(user.role) === ROLES.tester || emailManagerEmails.has(String(user.email || '').toLowerCase())));
 }
 
 async function requireEmailManager(req, res, next) {
@@ -23,6 +23,7 @@ async function requireEmailManager(req, res, next) {
     const user = await User.findById(req.userId).select('role email');
     if (!canManageEmail(user)) return res.status(403).json({ error: 'Only the approved Web Developer can manage email' });
     req.emailManager = user;
+    req.isTester = normalizeRole(user.role) === ROLES.tester;
     return next();
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -74,6 +75,7 @@ async function getAuthorizedGmail() {
 
 router.get('/status', ...manageEmail, async (req, res) => {
   try {
+    if (req.isTester) return res.json({ configured: true, connected: true, senderEmail: 'tester-sandbox@lugaish.local', maxRecipientsPerCampaign: MAX_RECIPIENTS_PER_CAMPAIGN, recentCampaigns: [], sandbox: true });
     const connection = await MailConnection.findOne({ key: 'primary' }).select('senderEmail connectedAt');
     const recentCampaigns = await EmailCampaign.find({})
       .select('subject recipientCount sentCount failedCount status createdAt').sort({ createdAt: -1 }).limit(10);
@@ -90,6 +92,7 @@ router.get('/status', ...manageEmail, async (req, res) => {
 
 router.get('/oauth/url', ...manageEmail, (req, res) => {
   try {
+    if (req.isTester) return res.json({ url: `${config.FRONTEND_URL.replace(/\/$/, '')}/dashboard?mail=tester-preview`, sandbox: true });
     const state = jwt.sign({ userId: req.userId, purpose: 'gmail_connect' }, config.JWT_SECRET, { expiresIn: '10m' });
     const url = getOAuthClient().generateAuthUrl({
       access_type: 'offline', prompt: 'consent',
@@ -107,6 +110,7 @@ router.get('/oauth/callback', async (req, res) => {
     if (payload.purpose !== 'gmail_connect') throw new Error('Invalid OAuth state');
     const user = await User.findById(payload.userId).select('role email');
     if (!canManageEmail(user)) throw new Error('You no longer have permission to connect Gmail');
+    if (normalizeRole(user.role) === ROLES.tester) return res.redirect(`${config.FRONTEND_URL.replace(/\/$/, '')}/dashboard?mail=tester-preview`);
     const { tokens } = await getOAuthClient().getToken(String(req.query.code || ''));
     if (!tokens.refresh_token) throw new Error('Google did not return a refresh token. Reconnect and approve access again.');
     if (!tokens.id_token) throw new Error('Google did not return account identity. Reconnect and approve access again.');
@@ -136,6 +140,7 @@ router.post('/send-test', ...manageEmail, async (req, res) => {
     if (!/^\S+@\S+\.\S+$/.test(recipient) || !subject || !message) {
       return res.status(400).json({ error: 'A valid recipient, subject, and message are required' });
     }
+    if (req.isTester) return res.json({ message: `Tester preview complete. No email was sent to ${recipient}.`, sandbox: true });
     const gmail = await getAuthorizedGmail();
     await gmail.users.messages.send({ userId: 'me', requestBody: { raw: createRawMessage({ to: recipient, name: 'Test recipient', subject, message }) } });
     return res.json({ message: `Test email sent to ${recipient}` });
@@ -150,6 +155,7 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
     const message = String(req.body.message || '').trim().slice(0, 10000);
     if (!subject || !message) return res.status(400).json({ error: 'Subject and message are required' });
     if (String(req.body.confirmation || '') !== 'SEND TO ALL USERS') return res.status(400).json({ error: 'Campaign confirmation text does not match' });
+    if (req.isTester) return res.json({ message: 'Tester campaign preview complete. No recipients were contacted.', campaign: { subject, recipientCount: 0, sentCount: 0, failedCount: 0, status: 'sandbox' }, sandbox: true });
     const lockKey = String(req.userId);
     if (campaignLocks.has(lockKey)) return res.status(409).json({ error: 'Another campaign is already sending. Wait for it to finish.' });
     campaignLocks.add(lockKey);
@@ -187,6 +193,7 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
 
 router.post('/campaigns/latest/activate-signup', ...manageEmail, async (req, res) => {
   try {
+    if (req.isTester) return res.json({ message: 'Tester preview complete. Automatic delivery was not activated.', sandbox: true });
     const deadline = new Date('2026-07-18T15:00:00.000Z');
     if (deadline <= new Date()) return res.status(400).json({ error: 'The automatic signup campaign deadline has passed' });
     const campaign = await EmailCampaign.findOne({ status: { $in: ['completed', 'partial'] } }).sort({ createdAt: -1 });

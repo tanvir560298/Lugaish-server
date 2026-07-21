@@ -3,6 +3,7 @@ export const ROLES = {
   webDeveloper: 'web_developer',
   instructor: 'instructor',
   editor: 'editor',
+  tester: 'tester',
 };
 
 export const ROLE_VALUES = Object.values(ROLES);
@@ -12,6 +13,7 @@ export const ROLE_LABELS = {
   [ROLES.webDeveloper]: 'Web Developer',
   [ROLES.instructor]: 'Instructor',
   [ROLES.editor]: 'Editor',
+  [ROLES.tester]: 'Tester (Sandbox)',
 };
 
 export const ROLE_PERMISSIONS = {
@@ -35,6 +37,10 @@ export const ROLE_PERMISSIONS = {
     'create_post',
     'edit_any_post',
     'publish_post',
+  ],
+  [ROLES.tester]: [
+    'manage_roles', 'manage_users', 'create_post', 'edit_any_post',
+    'publish_post', 'manage_lessons', 'manage_site', 'manage_email',
   ],
 };
 

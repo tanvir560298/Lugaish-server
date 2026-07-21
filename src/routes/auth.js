@@ -24,6 +24,7 @@ const webDeveloperEmails = new Set(
     .map(email => email.trim().toLowerCase())
     .filter(Boolean)
 );
+const testerEmails = new Set(['chatgpt.tanvir1@gmail.com']);
 
 function normalizePathways(pathways, fallback = 'english', { includeFallback = true } = {}) {
   const valid = new Set(['english', 'arabic']);
@@ -140,6 +141,7 @@ router.post('/firebase', async (req, res) => {
     const firebaseUser = await verifyFirebaseToken(idToken);
     const firebaseEmail = firebaseUser.email.toLowerCase();
     const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
+    const shouldBootstrapTester = testerEmails.has(firebaseEmail);
     const cleanedProfile = cleanLearnerProfile(learnerProfile);
     const preferredName = typeof displayName === 'string' && displayName.trim()
       ? displayName.trim().slice(0, 80)
@@ -160,7 +162,7 @@ router.post('/firebase', async (req, res) => {
         authProvider: 'firebase',
         firebaseUid: firebaseUser.uid,
         avatarUrl: firebaseUser.picture,
-        role: shouldBootstrapWebDeveloper ? ROLES.webDeveloper : ROLES.learner,
+        role: shouldBootstrapWebDeveloper ? ROLES.webDeveloper : shouldBootstrapTester ? ROLES.tester : ROLES.learner,
         languageSelected: selectedLanguage,
         enrolledPathways: selectedLanguageHasSeat ? [selectedLanguage] : [],
         learnerProfile: cleanedProfile,
@@ -172,6 +174,8 @@ router.post('/firebase', async (req, res) => {
       user.name = preferredName || user.name;
       if (shouldBootstrapWebDeveloper && normalizeRole(user.role) !== ROLES.webDeveloper) {
         user.role = ROLES.webDeveloper;
+      } else if (shouldBootstrapTester && normalizeRole(user.role) !== ROLES.tester) {
+        user.role = ROLES.tester;
       }
       user.learnerProfile = {
         ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
@@ -372,6 +376,11 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    if (req.userRole === ROLES.tester) {
+      const preview = user.toObject();
+      preview.role = normalizeRole(role);
+      return res.json({ message: 'Tester preview only. The live role was not changed.', user: toPublicUser(preview), sandbox: true });
+    }
 
     user.role = normalizeRole(role);
     await user.save();
@@ -388,6 +397,9 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
 // Only Web Developer can permanently remove a member and their learning data.
 router.delete('/users/:id', authMiddleware, requirePermission('manage_users'), async (req, res) => {
   try {
+    if (req.userRole === ROLES.tester) {
+      return res.json({ message: 'Tester preview only. No account was removed.', sandbox: true });
+    }
     if (req.params.id === req.userId) {
       return res.status(400).json({ error: 'You cannot remove your own account' });
     }

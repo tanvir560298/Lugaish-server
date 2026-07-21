@@ -1,6 +1,7 @@
 import express from 'express';
 import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
 import { Lesson } from '../models/Lesson.js';
+import { TesterLesson } from '../models/TesterLesson.js';
 import { User } from '../models/User.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
@@ -82,14 +83,15 @@ function getDayModulePayload(lesson) {
 
 async function getInterviewDayAccess(userId, scope) {
   const { language, day } = normalizeInterviewScope(scope);
-  const [user, lesson] = await Promise.all([
-    User.findById(userId).select('name email languageSelected enrolledPathways completedLessons role'),
-    Lesson.findOne({ language, day }).select(
-      'day language title description moduleType modulePublished moduleIntroTitle moduleIntroText'
-    ),
-  ]);
+  const user = await User.findById(userId).select('name email languageSelected enrolledPathways completedLessons role');
 
   if (!user) throw new InterviewAccessError(401, 'User not found');
+
+  const tester = normalizeRole(user.role) === ROLES.tester;
+  const sandbox = tester ? await TesterLesson.findOne({ testerId: userId, language, day }).lean() : null;
+  const lesson = sandbox?.content ?? await Lesson.findOne({ language, day }).select(
+    'day language title description moduleType modulePublished moduleIntroTitle moduleIntroText'
+  );
 
   const webDeveloper = isWebDeveloper(user);
   if (!webDeveloper && !isEnrolled(user, language)) {
@@ -129,6 +131,7 @@ async function getInterviewDayAccess(userId, scope) {
     courseSchedule: getCourseSchedule(),
     daySchedule,
     canJoinInterview: !webDeveloper,
+    tester,
   };
 }
 
@@ -219,6 +222,15 @@ router.get('/weekly', authMiddleware, async (req, res) => {
 router.post('/join', authMiddleware, async (req, res) => {
   try {
     const access = await getInterviewDayAccess(req.userId, req.body);
+    if (access.tester) {
+      return res.json({
+        message: 'Tester preview only. You were not added to the live interview queue.',
+        supportEmail: config.INTERVIEW_SUPPORT_EMAIL,
+        dayModule: access.dayModule,
+        entry: { id: `tester-${req.userId}`, sessionKey: getIsoWeekKey(), userId: req.userId, name: access.user.name, email: access.user.email, language: access.language, roomIndex: 0, roomName: 'Tester preview room', meetUrl: '#', globalSerial: 1, roomSerial: 1, status: 'waiting', joinedAt: new Date() },
+        sandbox: true,
+      });
+    }
     if (!access.canJoinInterview) {
       return res.status(403).json({ error: 'Web Developers can preview this interview day but cannot join the learner queue' });
     }
@@ -301,6 +313,9 @@ router.patch('/entries/:id/status', authMiddleware, requirePermission('manage_le
     const { status } = req.body;
     if (!['waiting', 'done', 'skipped'].includes(status)) {
       return res.status(400).json({ error: 'Invalid interview status' });
+    }
+    if (req.userRole === ROLES.tester) {
+      return res.json({ message: 'Tester preview only. The live queue was not changed.', entry: { id: req.params.id, status }, sandbox: true });
     }
 
     const entry = await InterviewQueueEntry.findById(req.params.id);

@@ -1,7 +1,9 @@
 import express from 'express';
 import { Lesson } from '../models/Lesson.js';
+import mongoose from 'mongoose';
+import { TesterLesson } from '../models/TesterLesson.js';
 import { User } from '../models/User.js';
-import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { normalizeRole, ROLES } from '../utils/roles.js';
 import {
   getLanguageProgressForWrite,
@@ -29,7 +31,26 @@ function isEnrolled(user, language) {
 }
 
 function isWebDeveloper(user) {
-  return normalizeRole(user?.role) === ROLES.webDeveloper;
+  return [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user?.role));
+}
+
+function isTester(user) {
+  return normalizeRole(user?.role) === ROLES.tester;
+}
+
+async function getTesterLesson(testerId, language, day) {
+  const sandbox = await TesterLesson.findOne({ testerId, language, day }).lean();
+  if (sandbox?.content) return sandbox.content;
+  const live = await Lesson.findOne({ language, day }).lean();
+  return live ?? { language, day, title: `Day ${day} lesson`, description: '', videos: [], moduleType: 'video', modulePublished: false, speakingQuestions: [] };
+}
+
+async function saveTesterLesson(testerId, language, day, content) {
+  await TesterLesson.findOneAndUpdate(
+    { testerId, language, day }, { $set: { content } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  return content;
 }
 
 function sendLessonError(error, res) {
@@ -107,7 +128,7 @@ function getModulePayload(lesson, { includeQuestions = false } = {}) {
 }
 
 function getPublicLessonPayload(lesson) {
-  const lessonData = lesson.toObject();
+  const lessonData = lesson.toObject ? lesson.toObject() : structuredClone(lesson);
   delete lessonData.speakingQuestions;
   // Quiz answers and explanations must never be sent to a learner before they
   // submit the quiz. The quiz endpoint remains the sole scoring authority.
@@ -213,10 +234,16 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const [lessons, progressState] = await Promise.all([
+    let [lessons, progressState] = await Promise.all([
       Lesson.find({ language }).sort({ day: 1 }),
       getLanguageProgressState(user, language),
     ]);
+    if (isTester(user)) {
+      const sandboxLessons = await TesterLesson.find({ testerId: req.userId, language }).lean();
+      const byDay = new Map(lessons.map(lesson => [Number(lesson.day), lesson]));
+      sandboxLessons.forEach(item => byDay.set(Number(item.day), item.content));
+      lessons = [...byDay.values()].sort((a, b) => Number(a.day) - Number(b.day));
+    }
     const { currentDay, completedDays, ignoredPreLaunchDays } = progressState;
     const courseSchedule = getCourseSchedule();
     const modules = lessons
@@ -249,12 +276,14 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
 router.put(
   '/:language/:day/module',
   authMiddleware,
-  requireRole(ROLES.webDeveloper),
+  requirePermission('manage_lessons'),
   async (req, res) => {
     try {
       const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
       const config = normalizeDayModuleConfig(req.body);
-      const existingLesson = await Lesson.findOne({ language, day });
+      const user = await User.findById(req.userId).select('role');
+      const tester = isTester(user);
+      const existingLesson = tester ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
       const questions = req.body?.questions === undefined
         ? (existingLesson?.speakingQuestions ?? [])
         : normalizeSpeakingQuestions(req.body.questions, language);
@@ -276,6 +305,18 @@ router.put(
         && !isExistingPublishedVideoDay
       ) {
         return res.status(400).json({ error: 'Add at least one YouTube video before publishing a new video day' });
+      }
+
+      if (tester) {
+        const content = {
+          ...existingLesson, language, day, title: config.title, description: config.description,
+          moduleType: config.moduleType, modulePublished: config.published,
+          moduleIntroTitle: config.introTitle, moduleIntroText: config.introText,
+          speakingPracticeEnabled: config.moduleType === 'ai_practice' && config.published,
+          speakingQuestions: questions,
+        };
+        await saveTesterLesson(req.userId, language, day, content);
+        return res.json({ message: 'Saved only in your tester sandbox. Live content was not changed.', module: getModulePayload(content, { includeQuestions: true }), sandbox: true });
       }
 
       const lesson = await Lesson.findOneAndUpdate(
@@ -320,9 +361,9 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const lesson = await Lesson.findOne({ language, day }).select(
-      'day language title description moduleType modulePublished moduleIntroTitle moduleIntroText speakingQuestions'
-    );
+    const lesson = isTester(user)
+      ? await getTesterLesson(req.userId, language, day)
+      : await Lesson.findOne({ language, day }).select('day language title description moduleType modulePublished moduleIntroTitle moduleIntroText speakingQuestions');
     if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
     const progressState = await getLanguageProgressState(user, language);
@@ -387,11 +428,13 @@ router.get('/:language/speaking-practice-availability', authMiddleware, async (r
 router.put(
   '/:language/:day/speaking-practice',
   authMiddleware,
-  requireRole(ROLES.webDeveloper),
+  requirePermission('manage_lessons'),
   async (req, res) => {
     try {
       const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
-      const lesson = await Lesson.findOne({ language, day });
+      const user = await User.findById(req.userId).select('role');
+      const tester = isTester(user);
+      const lesson = tester ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
       if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
       const enabled = req.body?.enabled === undefined
@@ -406,12 +449,14 @@ router.put(
       lesson.modulePublished = enabled;
       lesson.speakingPracticeEnabled = enabled;
       lesson.speakingQuestions = questions;
-      await lesson.save();
+      if (tester) await saveTesterLesson(req.userId, language, day, lesson);
+      else await lesson.save();
 
       return res.json({
-        message: enabled ? 'AI practice is now available to learners' : 'AI practice draft saved privately',
+        message: tester ? 'AI practice saved only in your tester sandbox' : enabled ? 'AI practice is now available to learners' : 'AI practice draft saved privately',
         ...getModulePayload(lesson, { includeQuestions: true }),
         enabled,
+        ...(tester ? { sandbox: true } : {}),
       });
     } catch (error) {
       return sendLessonError(error, res);
@@ -424,16 +469,23 @@ router.put(
 router.post(
   '/:language/:day/videos',
   authMiddleware,
-  requireRole(ROLES.webDeveloper),
+  requirePermission('manage_lessons'),
   async (req, res) => {
     try {
       const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
       const video = normalizeLessonVideo(req.body);
-      const existingLesson = await Lesson.findOne({ language, day });
+      const user = await User.findById(req.userId).select('role');
+      const tester = isTester(user);
+      const existingLesson = tester ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
       if (existingLesson && getDayModuleType(existingLesson) !== 'video') {
         return res.status(409).json({ error: 'Change this day back to a video module before adding videos' });
       }
 
+      if (tester) {
+        const content = { ...existingLesson, language, day, videos: [...(existingLesson.videos ?? []), { ...video, _id: new mongoose.Types.ObjectId().toString() }] };
+        await saveTesterLesson(req.userId, language, day, content);
+        return res.status(201).json({ message: 'Video added only to your tester sandbox', lesson: getPublicLessonPayload(content), sandbox: true });
+      }
       const lesson = await Lesson.findOneAndUpdate(
         { language, day },
         {
@@ -462,11 +514,13 @@ router.post(
 router.delete(
   '/:language/:day/videos/:videoId',
   authMiddleware,
-  requireRole(ROLES.webDeveloper),
+  requirePermission('manage_lessons'),
   async (req, res) => {
     try {
       const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
-      const lesson = await Lesson.findOne({ language, day });
+      const user = await User.findById(req.userId).select('role');
+      const tester = isTester(user);
+      const lesson = tester ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
       if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
       if (getDayModuleType(lesson) !== 'video') {
         return res.status(409).json({ error: 'Videos can only be managed on a video module day' });
@@ -476,8 +530,9 @@ router.delete(
       lesson.videos = lesson.videos.filter(video => String(video._id) !== req.params.videoId);
       if (lesson.videos.length === before) return res.status(404).json({ error: 'Video not found' });
 
-      await lesson.save();
-      return res.json({ message: 'Video removed from the lesson', lesson: getPublicLessonPayload(lesson) });
+      if (tester) await saveTesterLesson(req.userId, language, day, lesson);
+      else await lesson.save();
+      return res.json({ message: tester ? 'Video removed from your tester sandbox' : 'Video removed from the lesson', lesson: getPublicLessonPayload(lesson), ...(tester ? { sandbox: true } : {}) });
     } catch (error) {
       return sendLessonError(error, res);
     }
@@ -582,7 +637,7 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const lesson = await Lesson.findOne({ language, day });
+    const lesson = isTester(user) ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
     if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
     const daySchedule = getDaySchedule(day);
