@@ -26,6 +26,15 @@ const speakingQuestionSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const lessonVideoSchema = new mongoose.Schema(
+  {
+    youtubeId: { type: String, required: true, trim: true, match: /^[A-Za-z0-9_-]{11}$/ },
+    title: { type: String, required: true, trim: true, maxlength: 120 },
+    durationMinutes: { type: Number, required: true, min: 1, max: 600 },
+  },
+  { timestamps: true }
+);
+
 const lessonSchema = new mongoose.Schema(
   {
     day: { type: Number, required: true },
@@ -34,6 +43,23 @@ const lessonSchema = new mongoose.Schema(
     description: { type: String },
     videoUrl: { type: String },
     duration: { type: Number }, // in minutes
+    videos: {
+      type: [lessonVideoSchema],
+      default: [],
+    },
+    // Legacy lessons without these fields remain normal published video days.
+    // The Web Developer can change a day to an AI practice or interview module.
+    moduleType: {
+      type: String,
+      enum: ['video', 'ai_practice', 'interview'],
+      default: 'video',
+    },
+    modulePublished: {
+      type: Boolean,
+      default: true,
+    },
+    moduleIntroTitle: { type: String, trim: true, maxlength: 160, default: '' },
+    moduleIntroText: { type: String, trim: true, maxlength: 2000, default: '' },
     vocabulary: [
       {
         word: String,

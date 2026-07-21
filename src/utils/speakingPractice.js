@@ -1,4 +1,6 @@
 const SUPPORTED_LANGUAGES = new Set(['english', 'arabic']);
+export const DAY_MODULE_TYPES = ['video', 'ai_practice', 'interview'];
+const DAY_MODULE_TYPE_SET = new Set(DAY_MODULE_TYPES);
 
 export const MAX_SPEAKING_QUESTIONS = 30;
 
@@ -151,4 +153,86 @@ export function normalizeSpeakingPracticeEnabled(value) {
   }
 
   return value;
+}
+
+function normalizeOptionalText(value, fieldName, maxLength) {
+  if (value === undefined || value === null) return '';
+  return normalizeText(value, fieldName, maxLength, { allowEmpty: true });
+}
+
+export function getDayModuleType(lesson) {
+  return DAY_MODULE_TYPE_SET.has(lesson?.moduleType) ? lesson.moduleType : 'video';
+}
+
+export function isDayModulePublished(lesson) {
+  // Existing documents predate this field and must remain available.
+  return lesson?.modulePublished !== false;
+}
+
+export function normalizeDayModuleConfig(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new SpeakingPracticeValidationError('Day module settings must be an object');
+  }
+
+  const moduleType = normalizeText(value.moduleType, 'moduleType', 40).toLowerCase();
+  if (!DAY_MODULE_TYPE_SET.has(moduleType)) {
+    throw new SpeakingPracticeValidationError('moduleType must be video, ai_practice, or interview');
+  }
+
+  if (value.published !== undefined && typeof value.published !== 'boolean') {
+    throw new SpeakingPracticeValidationError('published must be true or false');
+  }
+
+  return {
+    moduleType,
+    published: value.published ?? false,
+    title: normalizeText(value.title, 'title', 160),
+    description: normalizeOptionalText(value.description, 'description', 2000),
+    introTitle: normalizeOptionalText(value.introTitle, 'introTitle', 160),
+    introText: normalizeOptionalText(value.introText, 'introText', 2000),
+  };
+}
+
+function extractYouTubeId(value) {
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(value);
+  } catch {
+    throw new SpeakingPracticeValidationError('youtubeUrl must be a valid URL');
+  }
+
+  const host = parsedUrl.hostname.toLowerCase().replace(/^www\./, '');
+  let videoId = '';
+  if (host === 'youtu.be') {
+    videoId = parsedUrl.pathname.split('/').filter(Boolean)[0] ?? '';
+  } else if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+    const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+    if (parsedUrl.pathname === '/watch') videoId = parsedUrl.searchParams.get('v') ?? '';
+    else if (['embed', 'shorts', 'live'].includes(pathParts[0])) videoId = pathParts[1] ?? '';
+  }
+
+  if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+    throw new SpeakingPracticeValidationError('youtubeUrl must be a valid YouTube video link');
+  }
+
+  return videoId;
+}
+
+export function normalizeLessonVideo(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new SpeakingPracticeValidationError('Video settings must be an object');
+  }
+
+  const durationValue = typeof value.durationMinutes === 'string'
+    ? Number(value.durationMinutes.trim())
+    : value.durationMinutes;
+  if (!Number.isFinite(durationValue) || durationValue < 1 || durationValue > 600) {
+    throw new SpeakingPracticeValidationError('durationMinutes must be between 1 and 600');
+  }
+
+  return {
+    title: normalizeText(value.title, 'video title', 120),
+    youtubeId: extractYouTubeId(normalizeText(value.youtubeUrl, 'youtubeUrl', 2048)),
+    durationMinutes: Math.round(durationValue),
+  };
 }
