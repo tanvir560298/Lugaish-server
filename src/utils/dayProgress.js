@@ -80,6 +80,19 @@ export async function getLanguageProgressState(user, language) {
   };
 }
 
+// Some learner actions (such as completing an individual playlist video) need
+// a language-specific progress document before the whole day is complete. Keep
+// the same cautious legacy migration used by markLanguageDayCompleted.
+export async function getLanguageProgressForWrite(user, language) {
+  const state = await getLanguageProgressState(user, language);
+  if (state.progress) return state;
+
+  return {
+    ...state,
+    progress: createProgressDocument(user, language, state.completedDays),
+  };
+}
+
 export async function markLanguageDayCompleted({ user, language, day, score = 0 }) {
   const normalizedDay = toPositiveDay(day);
   if (!normalizedDay) throw new Error('Day must be a positive integer');

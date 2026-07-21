@@ -3,7 +3,12 @@ import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { normalizeRole, ROLES } from '../utils/roles.js';
-import { getLanguageProgressState, markLanguageDayCompleted } from '../utils/dayProgress.js';
+import {
+  getLanguageProgressForWrite,
+  getLanguageProgressState,
+  markLanguageDayCompleted,
+} from '../utils/dayProgress.js';
+import { getLessonVideoProgress, recordLessonVideoCompletion } from '../utils/videoProgress.js';
 import {
   getDayModuleType,
   isDayModulePublished,
@@ -70,6 +75,41 @@ function getPublicLessonPayload(lesson) {
   };
 }
 
+function getLessonPayloadWithVideoProgress(lesson, progress, { preview = false } = {}) {
+  const lessonData = getPublicLessonPayload(lesson);
+  if (getDayModuleType(lesson) !== 'video') return lessonData;
+
+  const videoProgress = getLessonVideoProgress(lesson, progress);
+  const completedVideoIds = new Set(videoProgress.completedVideoIds);
+  lessonData.videos = (lessonData.videos ?? []).map(video => {
+    const videoId = String(video?._id ?? '');
+    const completed = completedVideoIds.has(videoId);
+    const isLocked = !preview && !completed && videoId !== videoProgress.nextVideoId;
+    const videoPayload = {
+      ...video,
+      completed,
+      isNext: videoId === videoProgress.nextVideoId,
+      // Completed videos remain rewatchable. Web Developers can freely preview
+      // the whole playlist while preparing a day; learners unlock it in order.
+      isLocked,
+    };
+
+    // Do not expose a future YouTube ID to learners through the API. This is a
+    // course-flow lock rather than DRM, but it prevents a direct Lugaish API
+    // response from bypassing the sequential playlist screen.
+    if (isLocked) delete videoPayload.youtubeId;
+    return videoPayload;
+  });
+
+  return {
+    ...lessonData,
+    videoProgress: {
+      ...videoProgress,
+      isPreview: preview,
+    },
+  };
+}
+
 function getInsertText(value, fallback, maxLength) {
   if (typeof value !== 'string') return fallback;
   const text = value.normalize('NFKC').replace(/\s+/gu, ' ').trim();
@@ -87,13 +127,13 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const { currentDay, completedDays } = await getLanguageProgressState(user, language);
+    const { currentDay, completedDays, progress } = await getLanguageProgressState(user, language);
     const lesson = await Lesson.findOne({ language, day: currentDay });
     if (!lesson || !isDayModulePublished(lesson)) {
       return res.status(404).json({ error: 'Lesson not found' });
     }
 
-    const lessonData = getPublicLessonPayload(lesson);
+    const lessonData = getLessonPayloadWithVideoProgress(lesson, progress);
 
     return res.json({
       ...lessonData,
@@ -159,6 +199,21 @@ router.put(
 
       if (config.moduleType === 'ai_practice' && config.published && questions.length === 0) {
         return res.status(400).json({ error: 'Add at least one question before publishing an AI practice day' });
+      }
+
+      const hasPlaylistVideo = (existingLesson?.videos?.length ?? 0) > 0;
+      const hasLegacyVideo = typeof existingLesson?.videoUrl === 'string' && existingLesson.videoUrl.trim();
+      const isExistingPublishedVideoDay = existingLesson
+        && getDayModuleType(existingLesson) === 'video'
+        && isDayModulePublished(existingLesson);
+      if (
+        config.moduleType === 'video'
+        && config.published
+        && !hasPlaylistVideo
+        && !hasLegacyVideo
+        && !isExistingPublishedVideoDay
+      ) {
+        return res.status(400).json({ error: 'Add at least one YouTube video before publishing a new video day' });
       }
 
       const lesson = await Lesson.findOneAndUpdate(
@@ -357,6 +412,88 @@ router.delete(
   }
 );
 
+// Complete one playlist video. Learners unlock videos in the exact order set by
+// the Web Developer; completing every video is required before the day itself
+// can unlock the next scheduled module.
+router.post('/:language/:day/videos/:videoId/complete', authMiddleware, async (req, res) => {
+  try {
+    const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
+    const videoId = typeof req.params.videoId === 'string' ? req.params.videoId.trim() : '';
+    if (!videoId) return res.status(400).json({ error: 'A video ID is required' });
+
+    const user = await User.findById(req.userId).select('enrolledPathways role languageSelected completedLessons');
+    if (!user) return res.status(401).json({ error: 'User not found' });
+    if (isWebDeveloper(user)) {
+      return res.status(403).json({ error: 'Web Developers can preview playlists but cannot record learner video progress' });
+    }
+    if (!isEnrolled(user, language)) {
+      return res.status(403).json({ error: 'Not enrolled in this language' });
+    }
+
+    const [lesson, progressState] = await Promise.all([
+      Lesson.findOne({ language, day }),
+      getLanguageProgressForWrite(user, language),
+    ]);
+    if (!lesson || !isDayModulePublished(lesson)) {
+      return res.status(404).json({ error: 'Lesson not found' });
+    }
+    if (getDayModuleType(lesson) !== 'video') {
+      return res.status(409).json({ error: 'Individual videos can only be completed on a video lesson day' });
+    }
+    if (day > progressState.currentDay) {
+      return res.status(403).json({ error: 'Complete the current day before opening a future video day' });
+    }
+    if (progressState.completedDays.includes(day)) {
+      return res.status(409).json({ error: 'This video day is already complete' });
+    }
+
+    const requestedVideo = (lesson.videos ?? []).find(video => String(video._id) === videoId);
+    if (!requestedVideo) {
+      return res.status(404).json({ error: 'Video not found in this lesson' });
+    }
+
+    const videoProgress = getLessonVideoProgress(lesson, progressState.progress);
+    const lessonPayload = () => getLessonPayloadWithVideoProgress(lesson, progressState.progress);
+    if (videoProgress.completedVideoIds.includes(videoId)) {
+      return res.json({
+        message: 'Video was already completed',
+        lesson: lessonPayload(),
+        videoProgress,
+      });
+    }
+    if (videoProgress.allCompleted || videoProgress.nextVideoId === null) {
+      return res.status(409).json({
+        error: 'All videos are complete. Finish the video day to unlock the next module',
+        code: 'VIDEO_DAY_READY_TO_FINISH',
+        lesson: lessonPayload(),
+        videoProgress,
+      });
+    }
+    if (videoProgress.nextVideoId !== videoId) {
+      return res.status(409).json({
+        error: 'Finish the previous video before opening this one',
+        code: 'VIDEO_LOCKED',
+        lesson: lessonPayload(),
+        videoProgress,
+      });
+    }
+
+    recordLessonVideoCompletion(progressState.progress, day, videoId);
+    await progressState.progress.save();
+
+    const updatedVideoProgress = getLessonVideoProgress(lesson, progressState.progress);
+    return res.json({
+      message: updatedVideoProgress.allCompleted
+        ? 'All videos are complete. Finish this day to unlock the next module.'
+        : 'Video complete. The next video is now unlocked.',
+      lesson: getLessonPayloadWithVideoProgress(lesson, progressState.progress),
+      videoProgress: updatedVideoProgress,
+    });
+  } catch (error) {
+    return sendLessonError(error, res);
+  }
+});
+
 // Get the selected daily module. Learners may only open an enrolled, published
 // day that has already been unlocked; Web Developers may preview drafts.
 router.get('/:language/:day', authMiddleware, async (req, res) => {
@@ -373,14 +510,17 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
     const lesson = await Lesson.findOne({ language, day });
     if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
+    let progress = null;
     if (!webDeveloper) {
-      const { currentDay } = await getLanguageProgressState(user, language);
+      const progressState = await getLanguageProgressState(user, language);
+      const { currentDay } = progressState;
       if (!isDayModulePublished(lesson) || day > currentDay) {
         return res.status(403).json({ error: 'This day is not available yet' });
       }
+      progress = progressState.progress;
     }
 
-    return res.json(getPublicLessonPayload(lesson));
+    return res.json(getLessonPayloadWithVideoProgress(lesson, progress, { preview: webDeveloper }));
   } catch (error) {
     return sendLessonError(error, res);
   }
@@ -401,14 +541,23 @@ router.post('/complete', authMiddleware, async (req, res) => {
     if (!isEnrolled(user, language)) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
-    const { currentDay } = await getLanguageProgressState(user, language);
-    if (day > currentDay) {
+    const progressState = await getLanguageProgressState(user, language);
+    if (day > progressState.currentDay) {
       return res.status(403).json({ error: 'Complete the current day before unlocking a future day' });
     }
 
     const lesson = await Lesson.findOne({ language, day });
     if (!lesson || !isDayModulePublished(lesson)) {
       return res.status(404).json({ error: 'Lesson not found' });
+    }
+
+    const videoProgress = getLessonVideoProgress(lesson, progressState.progress);
+    if (getDayModuleType(lesson) === 'video' && videoProgress.enabled && !videoProgress.allCompleted) {
+      return res.status(409).json({
+        error: 'Complete every video in this playlist before finishing the day',
+        code: 'COMPLETE_ALL_VIDEOS_FIRST',
+        videoProgress,
+      });
     }
 
     const completion = await markLanguageDayCompleted({ user, language, day, score: 100 });

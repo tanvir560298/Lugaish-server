@@ -3,7 +3,8 @@ import { User } from '../models/User.js';
 import { Lesson } from '../models/Lesson.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { getLanguageProgressState, markLanguageDayCompleted } from '../utils/dayProgress.js';
-import { isDayModulePublished } from '../utils/speakingPractice.js';
+import { getDayModuleType, isDayModulePublished } from '../utils/speakingPractice.js';
+import { getLessonVideoProgress } from '../utils/videoProgress.js';
 
 const router = express.Router();
 
@@ -66,6 +67,15 @@ router.post('/update', authMiddleware, async (req, res) => {
     }
     if (normalizedDay > progressState.currentDay) {
       return res.status(403).json({ error: 'Complete the current day before unlocking a future day' });
+    }
+
+    const videoProgress = getLessonVideoProgress(lesson, progressState.progress);
+    if (getDayModuleType(lesson) === 'video' && videoProgress.enabled && !videoProgress.allCompleted) {
+      return res.status(409).json({
+        error: 'Complete every video in this playlist before finishing the day',
+        code: 'COMPLETE_ALL_VIDEOS_FIRST',
+        videoProgress,
+      });
     }
 
     const completion = await markLanguageDayCompleted({
