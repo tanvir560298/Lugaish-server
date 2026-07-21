@@ -3,6 +3,7 @@ import { User } from '../models/User.js';
 import { Lesson } from '../models/Lesson.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { getLanguageProgressState, markLanguageDayCompleted } from '../utils/dayProgress.js';
+import { getCourseSchedule, getDaySchedule } from '../utils/courseSchedule.js';
 import { getDayModuleType, isDayModulePublished } from '../utils/speakingPractice.js';
 import { getLessonVideoProgress } from '../utils/videoProgress.js';
 
@@ -27,7 +28,8 @@ router.get('/:language', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const { progress, completedDays, currentDay } = await getLanguageProgressState(user, language);
+    const { progress, completedDays, currentDay, ignoredPreLaunchDays } = await getLanguageProgressState(user, language);
+    const courseSchedule = getCourseSchedule();
 
     res.json({
       totalXP: user.totalXP,
@@ -35,8 +37,11 @@ router.get('/:language', authMiddleware, async (req, res) => {
       streak: user.streak,
       completedDays,
       currentDay,
+      ignoredPreLaunchDays,
       badges: user.badges,
       lastActiveDate: user.lastActiveDate,
+      courseSchedule,
+      ...courseSchedule,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -58,6 +63,18 @@ router.post('/update', authMiddleware, async (req, res) => {
     }
 
     const normalizedDay = Number(day);
+    const daySchedule = getDaySchedule(normalizedDay);
+    if (!daySchedule.isReleased) {
+      return res.status(403).json({
+        error: daySchedule.courseStarted
+          ? `This day is available from ${daySchedule.scheduledFor}.`
+          : `The course begins on ${daySchedule.courseStartDate}.`,
+        code: daySchedule.courseStarted ? 'DAY_NOT_RELEASED' : 'COURSE_NOT_STARTED',
+        courseSchedule: getCourseSchedule(),
+        daySchedule,
+      });
+    }
+
     const [lesson, progressState] = await Promise.all([
       Lesson.findOne({ language, day: normalizedDay }),
       getLanguageProgressState(user, language),

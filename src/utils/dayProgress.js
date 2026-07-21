@@ -1,19 +1,41 @@
 import { Progress } from '../models/Progress.js';
+import { isScheduledDayActivity } from './courseSchedule.js';
 
 function toPositiveDay(value) {
   const day = Number(value);
   return Number.isSafeInteger(day) && day > 0 ? day : null;
 }
 
-function normalizeCompletedDays(entries) {
-  const days = new Set();
+function getCompletionDayState(entries) {
+  const completedDays = new Set();
+  const ignoredPreLaunchDays = new Set();
 
   for (const entry of entries ?? []) {
     const day = toPositiveDay(typeof entry === 'object' ? entry?.day : entry);
-    if (day) days.add(day);
+    if (!day) continue;
+
+    // Legacy User.completedLessons values and older Progress records do not
+    // prove when a completion happened, so they are never allowed to unlock a
+    // new course before/after launch. Entries recorded before their own day
+    // release are treated the same way. Preserve them in MongoDB but ignore
+    // them for the active daily schedule.
+    const completedAt = typeof entry === 'object' ? entry?.completedAt : null;
+    if (!isScheduledDayActivity(day, completedAt)) {
+      ignoredPreLaunchDays.add(day);
+      continue;
+    }
+
+    completedDays.add(day);
   }
 
-  return [...days].sort((first, second) => first - second);
+  return {
+    completedDays: [...completedDays].sort((first, second) => first - second),
+    ignoredPreLaunchDays: [...ignoredPreLaunchDays].sort((first, second) => first - second),
+  };
+}
+
+function normalizeCompletedDays(entries) {
+  return getCompletionDayState(entries).completedDays;
 }
 
 function getNextUncompletedDay(completedDays) {
@@ -32,9 +54,21 @@ function canMigrateLegacyProgress(user, language) {
 }
 
 function getLegacyCompletedDays(user, language) {
-  return canMigrateLegacyProgress(user, language)
-    ? normalizeCompletedDays(user?.completedLessons)
-    : [];
+  // The original User.completedLessons array has no completion timestamps.
+  // It cannot safely be credited to an August 2026 course day, so preserve it
+  // as legacy data but always begin the server-controlled schedule at Day 1.
+  return [];
+}
+
+function getIgnoredLegacyCompletedDays(user, language) {
+  if (!canMigrateLegacyProgress(user, language)) return [];
+
+  const days = new Set();
+  for (const entry of user?.completedLessons ?? []) {
+    const day = toPositiveDay(entry);
+    if (day) days.add(day);
+  }
+  return [...days].sort((first, second) => first - second);
 }
 
 function createProgressDocument(user, language, completedDays) {
@@ -69,13 +103,14 @@ export function getCurrentDay(completedDays) {
 
 export async function getLanguageProgressState(user, language) {
   const progress = await Progress.findOne({ userId: user._id, language });
-  const completedDays = progress
-    ? normalizeCompletedDays(progress.completedDays)
-    : getLegacyCompletedDays(user, language);
+  const completionState = progress ? getCompletionDayState(progress.completedDays) : null;
+  const completedDays = completionState?.completedDays ?? getLegacyCompletedDays(user, language);
+  const ignoredPreLaunchDays = completionState?.ignoredPreLaunchDays ?? getIgnoredLegacyCompletedDays(user, language);
 
   return {
     progress,
     completedDays,
+    ignoredPreLaunchDays,
     currentDay: getNextUncompletedDay(completedDays),
   };
 }
@@ -104,7 +139,8 @@ export async function markLanguageDayCompleted({ user, language, day, score = 0 
     progress = createProgressDocument(user, language, currentState.completedDays);
   }
 
-  const alreadyCompleted = progress.completedDays.some(entry => entry.day === normalizedDay);
+  const activeCompletedDays = normalizeCompletedDays(progress.completedDays);
+  const alreadyCompleted = activeCompletedDays.includes(normalizedDay);
   if (!alreadyCompleted) {
     const now = new Date();
     progress.completedDays.push({

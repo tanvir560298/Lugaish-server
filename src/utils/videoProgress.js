@@ -1,3 +1,5 @@
+import { isScheduledDayActivity } from './courseSchedule.js';
+
 function normalizeDay(value) {
   const day = Number(value);
   return Number.isSafeInteger(day) && day > 0 ? day : null;
@@ -20,21 +22,24 @@ function getLessonVideoIds(lesson) {
   return [...uniqueIds];
 }
 
-function getCompletionEntry(progress, day) {
+function getCompletionEntries(progress, day) {
   const normalizedDay = normalizeDay(day);
-  if (!normalizedDay) return null;
+  if (!normalizedDay) return [];
 
-  return (progress?.videoCompletions ?? []).find(entry => Number(entry?.day) === normalizedDay) ?? null;
+  return (progress?.videoCompletions ?? []).filter(entry => Number(entry?.day) === normalizedDay);
 }
 
 function getCompletedVideoIds(progress, day, activeVideoIds) {
   const activeIds = new Set(activeVideoIds);
   const completedIds = new Set();
-  const entry = getCompletionEntry(progress, day);
+  const entries = getCompletionEntries(progress, day)
+    .filter(entry => isScheduledDayActivity(day, entry?.completedAt));
 
-  for (const videoId of entry?.completedVideoIds ?? []) {
-    const normalizedId = normalizeVideoId(videoId);
-    if (activeIds.has(normalizedId)) completedIds.add(normalizedId);
+  for (const entry of entries) {
+    for (const videoId of entry?.completedVideoIds ?? []) {
+      const normalizedId = normalizeVideoId(videoId);
+      if (activeIds.has(normalizedId)) completedIds.add(normalizedId);
+    }
   }
 
   return [...completedIds];
@@ -65,11 +70,13 @@ export function recordLessonVideoCompletion(progress, day, videoId) {
 
   if (!Array.isArray(progress.videoCompletions)) progress.videoCompletions = [];
 
-  let entry = getCompletionEntry(progress, normalizedDay);
+  let entry = getCompletionEntries(progress, normalizedDay)
+    .find(existingEntry => isScheduledDayActivity(normalizedDay, existingEntry?.completedAt));
   if (!entry) {
-    entry = { day: normalizedDay, completedVideoIds: [] };
+    entry = { day: normalizedDay, completedVideoIds: [], completedAt: new Date() };
     progress.videoCompletions.push(entry);
-    entry = getCompletionEntry(progress, normalizedDay) ?? entry;
+    entry = getCompletionEntries(progress, normalizedDay)
+      .find(existingEntry => isScheduledDayActivity(normalizedDay, existingEntry?.completedAt)) ?? entry;
   }
 
   const completedVideoIds = Array.isArray(entry.completedVideoIds) ? entry.completedVideoIds : [];

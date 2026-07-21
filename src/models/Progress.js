@@ -6,6 +6,9 @@ const videoCompletionSchema = new mongoose.Schema(
     // Store IDs as strings so this remains compatible with existing lessons
     // and does not depend on a particular MongoDB ObjectId representation.
     completedVideoIds: { type: [String], default: [] },
+    // Missing or too-early timestamps are treated as legacy/pre-release
+    // progress and never unlock a video in the August 2026 course schedule.
+    completedAt: { type: Date, default: null },
   },
   { _id: false }
 );
