@@ -194,11 +194,30 @@ export function normalizeDayModuleConfig(value) {
 }
 
 function extractYouTubeId(value) {
+  const trimmedValue = value.trim();
+  let sourceUrl = trimmedValue;
+
+  // Course managers often copy the full YouTube embed snippet. Read only its
+  // src attribute instead of accepting arbitrary HTML or a third-party iframe.
+  if (/^<iframe\b/iu.test(trimmedValue)) {
+    const srcMatch = trimmedValue.match(/\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/iu);
+    sourceUrl = srcMatch?.[1] ?? srcMatch?.[2] ?? srcMatch?.[3] ?? '';
+    if (!sourceUrl) {
+      throw new SpeakingPracticeValidationError('youtubeUrl iframe must include a YouTube src attribute');
+    }
+  }
+
+  if (sourceUrl.startsWith('//')) sourceUrl = `https:${sourceUrl}`;
+
   let parsedUrl;
   try {
-    parsedUrl = new URL(value);
+    parsedUrl = new URL(sourceUrl);
   } catch {
     throw new SpeakingPracticeValidationError('youtubeUrl must be a valid URL');
+  }
+
+  if (!['https:', 'http:'].includes(parsedUrl.protocol)) {
+    throw new SpeakingPracticeValidationError('youtubeUrl must be an http or https YouTube link');
   }
 
   const host = parsedUrl.hostname.toLowerCase().replace(/^www\./, '');
