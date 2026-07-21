@@ -1,9 +1,17 @@
 import express from 'express';
 import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
+import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
+import { getLanguageProgressState } from '../utils/dayProgress.js';
+import {
+  getDayModuleType,
+  isDayModulePublished,
+  normalizeLessonScope,
+  SpeakingPracticeValidationError,
+} from '../utils/speakingPractice.js';
 
 const router = express.Router();
 
@@ -33,6 +41,84 @@ function getRooms() {
 
 function isStaff(user) {
   return normalizeRole(user?.role) !== ROLES.learner;
+}
+
+function isWebDeveloper(user) {
+  return normalizeRole(user?.role) === ROLES.webDeveloper;
+}
+
+function isEnrolled(user, language) {
+  const pathways = Array.isArray(user?.enrolledPathways) ? user.enrolledPathways : [];
+  return pathways.includes(language);
+}
+
+class InterviewAccessError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.name = 'InterviewAccessError';
+    this.status = status;
+  }
+}
+
+function normalizeInterviewScope(value) {
+  const dayValue = typeof value?.day === 'number' ? String(value.day) : value?.day;
+  return normalizeLessonScope(value?.language, dayValue);
+}
+
+function getDayModulePayload(lesson) {
+  return {
+    day: lesson.day,
+    language: lesson.language,
+    title: lesson.title,
+    description: lesson.description ?? '',
+    introTitle: lesson.moduleIntroTitle ?? '',
+    introText: lesson.moduleIntroText ?? '',
+  };
+}
+
+async function getInterviewDayAccess(userId, scope) {
+  const { language, day } = normalizeInterviewScope(scope);
+  const [user, lesson] = await Promise.all([
+    User.findById(userId).select('name email languageSelected enrolledPathways completedLessons role'),
+    Lesson.findOne({ language, day }).select(
+      'day language title description moduleType modulePublished moduleIntroTitle moduleIntroText'
+    ),
+  ]);
+
+  if (!user) throw new InterviewAccessError(401, 'User not found');
+
+  const webDeveloper = isWebDeveloper(user);
+  if (!webDeveloper && !isEnrolled(user, language)) {
+    throw new InterviewAccessError(403, 'Not enrolled in this language');
+  }
+
+  if (!lesson || getDayModuleType(lesson) !== 'interview') {
+    throw new InterviewAccessError(404, 'This day is not configured as an interview session');
+  }
+
+  const { currentDay } = await getLanguageProgressState(user, language);
+  const available = day <= currentDay;
+  if (!webDeveloper && (!isDayModulePublished(lesson) || !available)) {
+    throw new InterviewAccessError(403, 'This interview session is not available yet');
+  }
+
+  return {
+    user,
+    language,
+    day,
+    dayModule: getDayModulePayload(lesson),
+    canJoinInterview: !webDeveloper,
+  };
+}
+
+function sendInterviewError(error, res) {
+  if (error instanceof SpeakingPracticeValidationError) {
+    return res.status(400).json({ error: error.message });
+  }
+  if (error instanceof InterviewAccessError) {
+    return res.status(error.status).json({ error: error.message });
+  }
+  return res.status(500).json({ error: error.message });
 }
 
 function toEntryPayload(entry) {
@@ -75,17 +161,19 @@ async function getSessionEntries(sessionKey) {
 
 router.get('/weekly', authMiddleware, async (req, res) => {
   try {
+    // A queue is only reachable from a configured daily interview module.
+    // Requiring the language/day context prevents `/interview` from becoming a
+    // generic bypass around the course schedule.
+    const access = await getInterviewDayAccess(req.userId, req.query);
     const sessionKey = getIsoWeekKey();
-    const [user, entries] = await Promise.all([
-      User.findById(req.userId).select('role'),
-      getSessionEntries(sessionKey),
-    ]);
+    const entries = await getSessionEntries(sessionKey);
     const rooms = getRooms();
     const ownEntry = entries.find(entry => String(entry.userId) === String(req.userId));
-    const staff = isStaff(user);
+    const staff = isStaff(access.user);
 
     res.json({
       sessionKey,
+      dayModule: access.dayModule,
       supportEmail: config.INTERVIEW_SUPPORT_EMAIL,
       totalCapacity: rooms.reduce((sum, room) => sum + room.capacity, 0),
       totalAssigned: entries.length,
@@ -93,27 +181,30 @@ router.get('/weekly', authMiddleware, async (req, res) => {
       ownEntry: ownEntry ? toEntryPayload(ownEntry) : null,
       entries: staff ? entries.map(toEntryPayload) : [],
       canManageQueue: staff,
+      canJoinInterview: access.canJoinInterview,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendInterviewError(error, res);
   }
 });
 
 router.post('/join', authMiddleware, async (req, res) => {
   try {
+    const access = await getInterviewDayAccess(req.userId, req.body);
+    if (!access.canJoinInterview) {
+      return res.status(403).json({ error: 'Web Developers can preview this interview day but cannot join the learner queue' });
+    }
+
     const sessionKey = getIsoWeekKey();
     const rooms = getRooms();
-    const user = await User.findById(req.userId).select('name email languageSelected enrolledPathways');
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const user = access.user;
 
     const existingEntry = await InterviewQueueEntry.findOne({ sessionKey, userId: req.userId });
     if (existingEntry) {
       return res.json({
         message: `You are #${existingEntry.roomSerial} in ${existingEntry.roomName}. Please wait and be respectful to everyone while you wait for your serial.`,
         supportEmail: config.INTERVIEW_SUPPORT_EMAIL,
+        dayModule: access.dayModule,
         entry: toEntryPayload(existingEntry),
       });
     }
@@ -145,7 +236,7 @@ router.post('/join', authMiddleware, async (req, res) => {
       userId: req.userId,
       name: user.name,
       email: user.email,
-      language: user.languageSelected || user.enrolledPathways?.[0] || 'english',
+      language: access.language,
       roomIndex: assignedRoom.roomIndex,
       roomName: assignedRoom.roomName,
       meetUrl: assignedRoom.meetUrl,
@@ -158,6 +249,7 @@ router.post('/join', authMiddleware, async (req, res) => {
     res.status(201).json({
       message: `You are #${entry.roomSerial} in ${entry.roomName}. Please wait and be respectful to everyone while you wait for your serial.`,
       supportEmail: config.INTERVIEW_SUPPORT_EMAIL,
+      dayModule: access.dayModule,
       entry: toEntryPayload(entry),
     });
   } catch (error) {
@@ -172,7 +264,7 @@ router.post('/join', authMiddleware, async (req, res) => {
       }
     }
 
-    res.status(500).json({ error: error.message });
+    return sendInterviewError(error, res);
   }
 });
 
