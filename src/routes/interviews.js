@@ -6,6 +6,7 @@ import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
 import { getLanguageProgressState } from '../utils/dayProgress.js';
+import { getCourseSchedule, getDaySchedule } from '../utils/courseSchedule.js';
 import {
   getDayModuleType,
   isDayModulePublished,
@@ -53,10 +54,13 @@ function isEnrolled(user, language) {
 }
 
 class InterviewAccessError extends Error {
-  constructor(status, message) {
+  constructor(status, message, details = {}) {
     super(message);
     this.name = 'InterviewAccessError';
     this.status = status;
+    this.code = details.code;
+    this.courseSchedule = details.courseSchedule;
+    this.daySchedule = details.daySchedule;
   }
 }
 
@@ -96,6 +100,21 @@ async function getInterviewDayAccess(userId, scope) {
     throw new InterviewAccessError(404, 'This day is not configured as an interview session');
   }
 
+  const daySchedule = getDaySchedule(day);
+  if (!webDeveloper && !daySchedule.isReleased) {
+    throw new InterviewAccessError(
+      403,
+      daySchedule.courseStarted
+        ? `This day is available from ${daySchedule.scheduledFor}.`
+        : `The course begins on ${daySchedule.courseStartDate}.`,
+      {
+        code: daySchedule.courseStarted ? 'DAY_NOT_RELEASED' : 'COURSE_NOT_STARTED',
+        courseSchedule: getCourseSchedule(),
+        daySchedule,
+      }
+    );
+  }
+
   const { currentDay } = await getLanguageProgressState(user, language);
   const available = day <= currentDay;
   if (!webDeveloper && (!isDayModulePublished(lesson) || !available)) {
@@ -107,6 +126,8 @@ async function getInterviewDayAccess(userId, scope) {
     language,
     day,
     dayModule: getDayModulePayload(lesson),
+    courseSchedule: getCourseSchedule(),
+    daySchedule,
     canJoinInterview: !webDeveloper,
   };
 }
@@ -116,7 +137,12 @@ function sendInterviewError(error, res) {
     return res.status(400).json({ error: error.message });
   }
   if (error instanceof InterviewAccessError) {
-    return res.status(error.status).json({ error: error.message });
+    return res.status(error.status).json({
+      error: error.message,
+      ...(error.code ? { code: error.code } : {}),
+      ...(error.courseSchedule ? { courseSchedule: error.courseSchedule } : {}),
+      ...(error.daySchedule ? { daySchedule: error.daySchedule } : {}),
+    });
   }
   return res.status(500).json({ error: error.message });
 }
@@ -174,6 +200,8 @@ router.get('/weekly', authMiddleware, async (req, res) => {
     res.json({
       sessionKey,
       dayModule: access.dayModule,
+      courseSchedule: access.courseSchedule,
+      daySchedule: access.daySchedule,
       supportEmail: config.INTERVIEW_SUPPORT_EMAIL,
       totalCapacity: rooms.reduce((sum, room) => sum + room.capacity, 0),
       totalAssigned: entries.length,

@@ -8,6 +8,10 @@ export default {
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production',
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
   WEB_DEVELOPER_EMAILS: process.env.WEB_DEVELOPER_EMAILS || 'tahmadium@gmail.com',
+  // Keep the server as the source of truth for daily-course availability. The
+  // default matches the public launch announcement and can be changed later
+  // without a code release if the course date moves.
+  COURSE_START_AT: process.env.COURSE_START_AT || '2026-08-01T00:00:00+06:00',
   COURSE_SEAT_LIMIT: Number(process.env.COURSE_SEAT_LIMIT || 100),
   COURSE_SEAT_LIMITS: {
     english: Number(process.env.COURSE_SEAT_LIMIT_ENGLISH || 110),

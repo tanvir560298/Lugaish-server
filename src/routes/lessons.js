@@ -8,6 +8,7 @@ import {
   getLanguageProgressState,
   markLanguageDayCompleted,
 } from '../utils/dayProgress.js';
+import { getCourseSchedule, getDaySchedule } from '../utils/courseSchedule.js';
 import { getLessonVideoProgress, recordLessonVideoCompletion } from '../utils/videoProgress.js';
 import {
   getDayModuleType,
@@ -36,6 +37,54 @@ function sendLessonError(error, res) {
     return res.status(400).json({ error: error.message });
   }
   return res.status(500).json({ error: error.message });
+}
+
+function getCourseSchedulePayload(schedule) {
+  return {
+    courseStarted: schedule.courseStarted,
+    courseStartAt: schedule.courseStartAt,
+    courseStartDate: schedule.courseStartDate,
+    timeZone: schedule.timeZone,
+    calendarDay: schedule.calendarDay,
+    // Keep the client contract readable while retaining calendarDay for API
+    // consumers that need to distinguish schedule date from learner progress.
+    courseDay: schedule.calendarDay,
+  };
+}
+
+function getDaySchedulePayload(schedule) {
+  return {
+    ...getCourseSchedulePayload(schedule),
+    day: schedule.day,
+    releaseAt: schedule.releaseAt,
+    scheduledFor: schedule.scheduledFor,
+    isReleased: schedule.isReleased,
+  };
+}
+
+function sendScheduleAccessError(res, daySchedule) {
+  const courseSchedule = getCourseSchedulePayload(daySchedule);
+  if (!daySchedule.courseStarted) {
+    return res.status(403).json({
+      error: `The course begins on ${daySchedule.courseStartDate}.`,
+      code: 'COURSE_NOT_STARTED',
+      courseSchedule,
+      daySchedule: getDaySchedulePayload(daySchedule),
+    });
+  }
+
+  return res.status(403).json({
+    error: `This day is available from ${daySchedule.scheduledFor}.`,
+    code: 'DAY_NOT_RELEASED',
+    courseSchedule,
+    daySchedule: getDaySchedulePayload(daySchedule),
+  });
+}
+
+function isLearnerDayAvailable(lesson, progressState, daySchedule) {
+  return isDayModulePublished(lesson)
+    && daySchedule.isReleased
+    && lesson.day <= progressState.currentDay;
 }
 
 function getModulePayload(lesson, { includeQuestions = false } = {}) {
@@ -128,6 +177,9 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
     }
 
     const { currentDay, completedDays, progress } = await getLanguageProgressState(user, language);
+    const daySchedule = getDaySchedule(currentDay);
+    if (!daySchedule.isReleased) return sendScheduleAccessError(res, daySchedule);
+
     const lesson = await Lesson.findOne({ language, day: currentDay });
     if (!lesson || !isDayModulePublished(lesson)) {
       return res.status(404).json({ error: 'Lesson not found' });
@@ -139,6 +191,8 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
       ...lessonData,
       userDay: currentDay,
       alreadyCompleted: completedDays.includes(currentDay),
+      courseSchedule: getCourseSchedulePayload(daySchedule),
+      daySchedule: getDaySchedulePayload(daySchedule),
     });
   } catch (error) {
     return sendLessonError(error, res);
@@ -163,19 +217,27 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
       Lesson.find({ language }).sort({ day: 1 }),
       getLanguageProgressState(user, language),
     ]);
-    const { currentDay, completedDays } = progressState;
+    const { currentDay, completedDays, ignoredPreLaunchDays } = progressState;
+    const courseSchedule = getCourseSchedule();
     const modules = lessons
       .filter(lesson => webDeveloper || isDayModulePublished(lesson))
-      .map(lesson => ({
-        ...getModulePayload(lesson),
-        available: webDeveloper || lesson.day <= currentDay,
-      }));
+      .map(lesson => {
+        const daySchedule = getDaySchedule(lesson.day);
+        return {
+          ...getModulePayload(lesson),
+          available: webDeveloper || isLearnerDayAvailable(lesson, progressState, daySchedule),
+          daySchedule: getDaySchedulePayload(daySchedule),
+        };
+      });
 
     return res.json({
       modules,
       currentDay,
       completedDays,
+      ignoredPreLaunchDays,
       canConfigure: webDeveloper,
+      courseSchedule: getCourseSchedulePayload(courseSchedule),
+      ...getCourseSchedulePayload(courseSchedule),
     });
   } catch (error) {
     return sendLessonError(error, res);
@@ -263,18 +325,24 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
     );
     if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
-    const { currentDay } = await getLanguageProgressState(user, language);
+    const progressState = await getLanguageProgressState(user, language);
+    const daySchedule = getDaySchedule(day);
     const isPracticeDay = getDayModuleType(lesson) === 'ai_practice';
     const published = isDayModulePublished(lesson);
-    const available = day <= currentDay;
+    const available = isPracticeDay && isLearnerDayAvailable(lesson, progressState, daySchedule);
+    if (!webDeveloper && !daySchedule.isReleased) {
+      return sendScheduleAccessError(res, daySchedule);
+    }
     if (!webDeveloper && (!isPracticeDay || !published || !available)) {
       return res.status(403).json({ error: 'This AI practice session is not available yet' });
     }
 
     return res.json({
-      ...getModulePayload(lesson, { includeQuestions: webDeveloper || (isPracticeDay && published && available) }),
+      ...getModulePayload(lesson, { includeQuestions: webDeveloper || available }),
       enabled: isPracticeDay && published,
-      available: webDeveloper || (isPracticeDay && published && available),
+      available: webDeveloper || available,
+      courseSchedule: getCourseSchedulePayload(daySchedule),
+      daySchedule: getDaySchedulePayload(daySchedule),
     });
   } catch (error) {
     return sendLessonError(error, res);
@@ -294,17 +362,21 @@ router.get('/:language/speaking-practice-availability', authMiddleware, async (r
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const [{ currentDay }, lessons] = await Promise.all([
+    const [progressState, lessons] = await Promise.all([
       getLanguageProgressState(user, language),
       Lesson.find({ language }).select('day moduleType modulePublished speakingPracticeEnabled'),
     ]);
+    const courseSchedule = getCourseSchedule();
     const enabledDays = lessons
       .filter(lesson => getDayModuleType(lesson) === 'ai_practice')
-      .filter(lesson => webDeveloper || (isDayModulePublished(lesson) && lesson.day <= currentDay))
+      .filter(lesson => webDeveloper || isLearnerDayAvailable(lesson, progressState, getDaySchedule(lesson.day)))
       .map(lesson => lesson.day)
       .sort((first, second) => first - second);
 
-    return res.json({ enabledDays });
+    return res.json({
+      enabledDays,
+      courseSchedule: getCourseSchedulePayload(courseSchedule),
+    });
   } catch (error) {
     return sendLessonError(error, res);
   }
@@ -430,6 +502,9 @@ router.post('/:language/:day/videos/:videoId/complete', authMiddleware, async (r
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
+    const daySchedule = getDaySchedule(day);
+    if (!daySchedule.isReleased) return sendScheduleAccessError(res, daySchedule);
+
     const [lesson, progressState] = await Promise.all([
       Lesson.findOne({ language, day }),
       getLanguageProgressForWrite(user, language),
@@ -510,17 +585,23 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
     const lesson = await Lesson.findOne({ language, day });
     if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
 
+    const daySchedule = getDaySchedule(day);
     let progress = null;
     if (!webDeveloper) {
       const progressState = await getLanguageProgressState(user, language);
       const { currentDay } = progressState;
+      if (!daySchedule.isReleased) return sendScheduleAccessError(res, daySchedule);
       if (!isDayModulePublished(lesson) || day > currentDay) {
         return res.status(403).json({ error: 'This day is not available yet' });
       }
       progress = progressState.progress;
     }
 
-    return res.json(getLessonPayloadWithVideoProgress(lesson, progress, { preview: webDeveloper }));
+    return res.json({
+      ...getLessonPayloadWithVideoProgress(lesson, progress, { preview: webDeveloper }),
+      courseSchedule: getCourseSchedulePayload(daySchedule),
+      daySchedule: getDaySchedulePayload(daySchedule),
+    });
   } catch (error) {
     return sendLessonError(error, res);
   }
@@ -541,6 +622,9 @@ router.post('/complete', authMiddleware, async (req, res) => {
     if (!isEnrolled(user, language)) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
+    const daySchedule = getDaySchedule(day);
+    if (!daySchedule.isReleased) return sendScheduleAccessError(res, daySchedule);
+
     const progressState = await getLanguageProgressState(user, language);
     if (day > progressState.currentDay) {
       return res.status(403).json({ error: 'Complete the current day before unlocking a future day' });
