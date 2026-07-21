@@ -144,3 +144,11 @@ export function normalizeSpeakingQuestions(value, lessonLanguage) {
     return normalizedQuestion;
   });
 }
+
+export function normalizeSpeakingPracticeEnabled(value) {
+  if (typeof value !== 'boolean') {
+    throw new SpeakingPracticeValidationError('enabled must be true or false');
+  }
+
+  return value;
+}

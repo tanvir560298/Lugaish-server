@@ -3,10 +3,11 @@ import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import { Progress } from '../models/Progress.js';
 import { Quiz } from '../models/Quiz.js';
-import { authMiddleware, requirePermission } from '../middleware/auth.js';
-import { hasPermission } from '../utils/roles.js';
+import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { normalizeRole, ROLES } from '../utils/roles.js';
 import {
   normalizeLessonScope,
+  normalizeSpeakingPracticeEnabled,
   normalizeSpeakingQuestions,
   SpeakingPracticeValidationError,
 } from '../utils/speakingPractice.js';
@@ -16,6 +17,10 @@ const router = express.Router();
 function isEnrolled(user, language) {
   const pathways = Array.isArray(user?.enrolledPathways) ? user.enrolledPathways : [];
   return pathways.includes(language);
+}
+
+function isWebDeveloper(user) {
+  return normalizeRole(user?.role) === ROLES.webDeveloper;
 }
 
 function sendSpeakingPracticeError(error, res) {
@@ -46,6 +51,7 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
       question: q.question,
       options: q.options,
     }));
+    delete lessonData.speakingQuestions;
 
     res.json({
       ...lessonData,
@@ -58,58 +64,101 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
 });
 
 // Get the speaking-practice questions for a lesson.
-// Enrolled learners can access their pathway; lesson managers can preview either pathway.
+// Only the Web Developer can preview drafts. Learners receive questions only after the
+// Web Developer explicitly enables the practice for that day.
 router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res) => {
   try {
     const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
-    const user = await User.findById(req.userId).select('enrolledPathways role');
+    const user = await User.findById(req.userId).select('enrolledPathways role currentDay');
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
-    if (!isEnrolled(user, language) && !hasPermission(user.role, 'manage_lessons')) {
+    const webDeveloper = isWebDeveloper(user);
+    if (!isEnrolled(user, language) && !webDeveloper) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
+    if (!webDeveloper && day > Math.max(Number(user.currentDay) || 1, 1)) {
+      return res.status(403).json({ error: 'This lesson is not available yet' });
+    }
 
-    const lesson = await Lesson.findOne({ language, day }).select('speakingQuestions');
+    const lesson = await Lesson.findOne({ language, day }).select('speakingPracticeEnabled speakingQuestions');
     if (!lesson) {
       return res.status(404).json({ error: 'Lesson not found' });
     }
 
-    return res.json({ questions: lesson.speakingQuestions || [] });
+    const enabled = Boolean(lesson.speakingPracticeEnabled);
+    return res.json({
+      enabled,
+      questions: webDeveloper || enabled ? lesson.speakingQuestions || [] : [],
+    });
   } catch (error) {
     return sendSpeakingPracticeError(error, res);
   }
 });
 
-// Replace a lesson's speaking-practice questions.
+// List enabled practice days. This lets the client hide unavailable tests without
+// making a separate request for every lesson card.
+router.get('/:language/speaking-practice-availability', authMiddleware, async (req, res) => {
+  try {
+    const { language } = normalizeLessonScope(req.params.language, '1');
+    const user = await User.findById(req.userId).select('enrolledPathways role currentDay');
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+    const webDeveloper = isWebDeveloper(user);
+    if (!isEnrolled(user, language) && !webDeveloper) {
+      return res.status(403).json({ error: 'Not enrolled in this language' });
+    }
+
+    const lessonFilter = { language, speakingPracticeEnabled: true };
+    if (!webDeveloper) {
+      lessonFilter.day = { $lte: Math.max(Number(user.currentDay) || 1, 1) };
+    }
+
+    const lessons = await Lesson.find(lessonFilter).select('day').sort({ day: 1 });
+    return res.json({ enabledDays: lessons.map(lesson => lesson.day) });
+  } catch (error) {
+    return sendSpeakingPracticeError(error, res);
+  }
+});
+
+// Replace a lesson's speaking-practice draft and decide whether learners can see it.
 router.put(
   '/:language/:day/speaking-practice',
   authMiddleware,
-  requirePermission('manage_lessons'),
+  requireRole(ROLES.webDeveloper),
   async (req, res) => {
     try {
       const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
+      const enabled = req.body?.enabled === undefined
+        ? false
+        : normalizeSpeakingPracticeEnabled(req.body.enabled);
       const questions = normalizeSpeakingQuestions(req.body?.questions, language);
+      if (enabled && questions.length === 0) {
+        return res.status(400).json({ error: 'Add at least one question before enabling AI practice' });
+      }
 
       const lesson = await Lesson.findOneAndUpdate(
         { language, day },
-        { $set: { speakingQuestions: questions } },
+        { $set: { speakingPracticeEnabled: enabled, speakingQuestions: questions } },
         { new: true, runValidators: true }
-      ).select('day language title description speakingQuestions');
+      ).select('day language title description speakingPracticeEnabled speakingQuestions');
 
       if (!lesson) {
         return res.status(404).json({ error: 'Lesson not found' });
       }
 
       return res.json({
-        message: 'Speaking-practice questions updated',
+        message: enabled ? 'AI practice is now available to learners' : 'AI practice draft saved privately',
         lesson: {
           day: lesson.day,
           language: lesson.language,
           title: lesson.title,
           description: lesson.description,
         },
+        enabled: Boolean(lesson.speakingPracticeEnabled),
         questions: lesson.speakingQuestions,
       });
     } catch (error) {

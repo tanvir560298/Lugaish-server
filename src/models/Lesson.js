@@ -61,6 +61,10 @@ const lessonSchema = new mongoose.Schema(
         message: 'A lesson can have at most 30 speaking questions',
       },
     },
+    speakingPracticeEnabled: {
+      type: Boolean,
+      default: false,
+    },
     quiz: [
       {
         question: String,
