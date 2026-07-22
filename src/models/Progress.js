@@ -45,4 +45,9 @@ const progressSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// A learner must have exactly one progress ledger per course. Besides keeping
+// reads predictable, this prevents two simultaneous completion requests from
+// creating separate XP ledgers for the same learner and language.
+progressSchema.index({ userId: 1, language: 1 }, { unique: true });
+
 export const Progress = mongoose.model('Progress', progressSchema);

@@ -136,38 +136,58 @@ export async function markLanguageDayCompleted({ user, language, day, score = 0 
   let progress = currentState.progress;
 
   if (!progress) {
-    progress = createProgressDocument(user, language, currentState.completedDays);
+    try {
+      progress = await createProgressDocument(user, language, currentState.completedDays).save();
+    } catch (error) {
+      // A parallel request may have created the unique language ledger first.
+      if (error?.code !== 11000) throw error;
+      progress = await Progress.findOne({ userId: user._id, language });
+    }
   }
 
   const activeCompletedDays = normalizeCompletedDays(progress.completedDays);
   const alreadyCompleted = activeCompletedDays.includes(normalizedDay);
+  let didAwardXP = false;
   if (!alreadyCompleted) {
     const now = new Date();
-    progress.completedDays.push({
-      day: normalizedDay,
-      completedAt: now,
-      score: Number.isFinite(Number(score)) ? Number(score) : 0,
-    });
-    progress.totalXP = Math.max(Number(progress.totalXP) || 0, 0) + 100;
-    progress.lastActiveDate = now;
-    progress.streak = Math.max(Number(user.streak) || 0, 0);
+    const previousVersion = Number(progress.__v) || 0;
+    const updatedProgress = await Progress.findOneAndUpdate(
+      { _id: progress._id, __v: previousVersion },
+      {
+        $push: {
+          completedDays: {
+            day: normalizedDay,
+            completedAt: now,
+            score: Number.isFinite(Number(score)) ? Number(score) : 0,
+          },
+        },
+        $inc: { totalXP: 100, __v: 1 },
+        $set: { lastActiveDate: now },
+      },
+      { new: true, runValidators: true },
+    );
 
-    user.totalXP = Math.max(Number(user.totalXP) || 0, 0) + 100;
-    updateUserStreak(user, now);
-    progress.streak = user.streak;
-
-    await Promise.all([progress.save(), user.save()]);
-  } else if (progress.isNew) {
-    // Persist a one-time legacy migration even when the requested day was
-    // completed before language-specific progress existed.
-    await progress.save();
+    if (updatedProgress) {
+      user.totalXP = Math.max(Number(user.totalXP) || 0, 0) + 100;
+      updateUserStreak(user, now);
+      updatedProgress.streak = user.streak;
+      await Promise.all([updatedProgress.save(), user.save()]);
+      progress = updatedProgress;
+      didAwardXP = true;
+    } else {
+      // Another request changed this ledger first. Re-read it instead of
+      // awarding XP twice; its completed-day entry is now authoritative.
+      progress = await Progress.findById(progress._id);
+    }
   }
 
   const completedDays = normalizeCompletedDays(progress.completedDays);
+  const completionRecorded = completedDays.includes(normalizedDay);
   return {
     progress,
     completedDays,
     currentDay: getNextUncompletedDay(completedDays),
-    alreadyCompleted,
+    alreadyCompleted: alreadyCompleted || !didAwardXP,
+    xpAwarded: didAwardXP && completionRecorded ? 100 : 0,
   };
 }

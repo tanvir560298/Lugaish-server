@@ -4,8 +4,9 @@ import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { getDaySchedule } from '../utils/courseSchedule.js';
-import { getLanguageProgressState } from '../utils/dayProgress.js';
-import { isDayModulePublished } from '../utils/speakingPractice.js';
+import { getLanguageProgressState, markLanguageDayCompleted } from '../utils/dayProgress.js';
+import { getDayModuleType, isDayModulePublished } from '../utils/speakingPractice.js';
+import { getLessonVideoProgress } from '../utils/videoProgress.js';
 
 const router = express.Router();
 
@@ -56,7 +57,25 @@ router.post('/submit', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'This day is not available yet' });
     }
 
-    // Calculate score
+    if (!Array.isArray(lesson.quiz) || lesson.quiz.length === 0) {
+      return res.status(409).json({ error: 'This lesson does not have a published quiz yet' });
+    }
+    if (responses.length !== lesson.quiz.length || responses.some(response => (
+      !response || !Number.isSafeInteger(response.selectedAnswer)
+    ))) {
+      return res.status(400).json({ error: 'Submit exactly one valid answer for every quiz question' });
+    }
+
+    const videoProgress = getLessonVideoProgress(lesson, progressState.progress);
+    if (getDayModuleType(lesson) === 'video' && videoProgress.enabled && !videoProgress.allCompleted) {
+      return res.status(409).json({
+        error: 'Complete every video in this playlist before finishing the quiz',
+        code: 'COMPLETE_ALL_VIDEOS_FIRST',
+        videoProgress,
+      });
+    }
+
+    // Calculate the score only from server-held answers.
     let correctCount = 0;
     responses.forEach((response, idx) => {
       if (lesson.quiz[idx] && lesson.quiz[idx].correctAnswer === response.selectedAnswer) {
@@ -82,11 +101,25 @@ router.post('/submit', authMiddleware, async (req, res) => {
 
     await quiz.save();
 
+    const completion = await markLanguageDayCompleted({
+      user,
+      language,
+      day: normalizedDay,
+      score,
+    });
+
     res.json({
       message: 'Quiz submitted',
       score,
       correctAnswers: correctCount,
       totalQuestions: lesson.quiz.length,
+      xpAwarded: completion.xpAwarded,
+      totalXP: user.totalXP,
+      courseXP: completion.progress.totalXP,
+      streak: user.streak,
+      completedDays: completion.completedDays,
+      currentDay: completion.currentDay,
+      alreadyCompleted: completion.alreadyCompleted,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
