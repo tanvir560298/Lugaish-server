@@ -37,6 +37,7 @@ export const ROLE_PERMISSIONS = {
     'create_post',
     'edit_any_post',
     'publish_post',
+    'manage_lessons',
   ],
   [ROLES.tester]: [
     'manage_roles', 'manage_users', 'create_post', 'edit_any_post',

@@ -46,6 +46,16 @@ const CORE_CONVERSATION = [
   },
 ];
 
+export const ARABIC_DAY_ONE_VIDEO = {
+  day: 1,
+  managedContentKey: 'arabic-day-1-video-DVV9_7V7WEI-v1',
+  title: 'Arabic Day 1: Greetings and Introductions',
+  description: 'Learn essential Arabic greetings, introductions, and everyday conversation foundations.',
+  youtubeId: 'DVV9_7V7WEI',
+  videoTitle: 'Arabic Day 1 Video Lesson',
+  durationMinutes: 15,
+};
+
 function buildQuestions(day, mode) {
   return CORE_CONVERSATION.map(item => ({
     ...item,

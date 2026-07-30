@@ -32,7 +32,7 @@ function isEnrolled(user, language) {
 }
 
 function isWebDeveloper(user) {
-  return [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user?.role));
+  return [ROLES.webDeveloper, ROLES.tester, ROLES.instructor, ROLES.editor].includes(normalizeRole(user?.role));
 }
 
 function isTester(user) {
