@@ -22,6 +22,20 @@ const speakingQuestionSchema = new mongoose.Schema(
     sampleAnswer: { type: String, required: true, trim: true, maxlength: 2000 },
     maxMarks: { type: Number, required: true, min: 0.01, max: 100 },
     audioUrl: { type: String, trim: true, maxlength: 2048 },
+    acceptedResponses: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: responses => responses.length <= 30,
+        message: 'A speaking question can have at most 30 accepted responses',
+      },
+    },
+    aiResponse: { type: String, trim: true, maxlength: 2000, default: '' },
+    scoringStrategy: {
+      type: String,
+      enum: ['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading'],
+      default: 'keywords',
+    },
   },
   { _id: false }
 );
@@ -91,6 +105,12 @@ const lessonSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    speakingPracticeMode: {
+      type: String,
+      enum: ['respond', 'ask'],
+      default: 'respond',
+    },
+    managedContentKey: { type: String, trim: true, maxlength: 120, default: '' },
     quiz: [
       {
         question: String,

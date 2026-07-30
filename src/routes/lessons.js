@@ -22,6 +22,7 @@ import {
   normalizeSpeakingQuestions,
   SpeakingPracticeValidationError,
 } from '../utils/speakingPractice.js';
+import { getPublishedQuizForLesson } from '../data/arabicDayOneQuiz.js';
 
 const router = express.Router();
 
@@ -121,6 +122,7 @@ function getModulePayload(lesson, { includeQuestions = false } = {}) {
     introTitle: lesson.moduleIntroTitle ?? '',
     introText: lesson.moduleIntroText ?? '',
     questionCount: moduleType === 'ai_practice' ? (lesson.speakingQuestions?.length ?? 0) : 0,
+    practiceMode: lesson.speakingPracticeMode === 'ask' ? 'ask' : 'respond',
   };
 
   if (includeQuestions) payload.questions = lesson.speakingQuestions ?? [];
@@ -132,7 +134,7 @@ function getPublicLessonPayload(lesson) {
   delete lessonData.speakingQuestions;
   // Quiz answers and explanations must never be sent to a learner before they
   // submit the quiz. The quiz endpoint remains the sole scoring authority.
-  lessonData.quiz = (lessonData.quiz ?? []).map(question => ({
+  lessonData.quiz = getPublishedQuizForLesson(lessonData).map(question => ({
     question: question.question,
     options: question.options,
   }));
@@ -314,6 +316,7 @@ router.put(
           moduleIntroTitle: config.introTitle, moduleIntroText: config.introText,
           speakingPracticeEnabled: config.moduleType === 'ai_practice' && config.published,
           speakingQuestions: questions,
+          speakingPracticeMode: req.body?.practiceMode === 'ask' ? 'ask' : 'respond',
         };
         await saveTesterLesson(req.userId, language, day, content);
         return res.json({ message: 'Saved only in your tester sandbox. Live content was not changed.', module: getModulePayload(content, { includeQuestions: true }), sandbox: true });
@@ -331,6 +334,7 @@ router.put(
             moduleIntroText: config.introText,
             speakingPracticeEnabled: config.moduleType === 'ai_practice' && config.published,
             speakingQuestions: questions,
+            speakingPracticeMode: req.body?.practiceMode === 'ask' ? 'ask' : 'respond',
           },
           $setOnInsert: { language, day },
         },
@@ -484,7 +488,11 @@ router.post(
       if (tester) {
         const content = { ...existingLesson, language, day, videos: [...(existingLesson.videos ?? []), { ...video, _id: new mongoose.Types.ObjectId().toString() }] };
         await saveTesterLesson(req.userId, language, day, content);
-        return res.status(201).json({ message: 'Video added only to your tester sandbox', lesson: getPublicLessonPayload(content), sandbox: true });
+        return res.status(201).json({
+          message: 'Video added only to your tester sandbox',
+          lesson: { ...getPublicLessonPayload(content), daySchedule: getDaySchedulePayload(getDaySchedule(day)) },
+          sandbox: true,
+        });
       }
       const lesson = await Lesson.findOneAndUpdate(
         { language, day },
@@ -504,7 +512,10 @@ router.post(
         { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
       );
 
-      return res.status(201).json({ message: 'Video added to the lesson', lesson: getPublicLessonPayload(lesson) });
+      return res.status(201).json({
+        message: 'Video added to the lesson',
+        lesson: { ...getPublicLessonPayload(lesson), daySchedule: getDaySchedulePayload(getDaySchedule(day)) },
+      });
     } catch (error) {
       return sendLessonError(error, res);
     }
@@ -637,10 +648,23 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const lesson = isTester(user) ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
-    if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
-
     const daySchedule = getDaySchedule(day);
+    const lesson = isTester(user) ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
+    if (!lesson) {
+      if (!webDeveloper) return res.status(404).json({ error: 'Lesson not found' });
+      return res.json({
+        day,
+        language,
+        title: `Day ${day} lesson`,
+        description: '',
+        videos: [],
+        moduleType: 'video',
+        modulePublished: false,
+        courseSchedule: getCourseSchedulePayload(daySchedule),
+        daySchedule: getDaySchedulePayload(daySchedule),
+      });
+    }
+
     let progress = null;
     if (!webDeveloper) {
       const progressState = await getLanguageProgressState(user, language);

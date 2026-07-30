@@ -11,6 +11,7 @@ import progressRoutes from './routes/progress.js';
 import quizRoutes from './routes/quiz.js';
 import interviewRoutes from './routes/interviews.js';
 import emailRoutes from './routes/email.js';
+import { ensureArabicConversationPractice } from './services/ensureArabicConversationPractice.js';
 
 const app = express();
 
@@ -91,6 +92,7 @@ const DATABASE_RETRY_DELAY_MS = 5000;
 async function connectDatabase() {
   try {
     await mongoose.connect(config.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+    await ensureArabicConversationPractice();
     console.log('MongoDB connected');
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}. Retrying...`);

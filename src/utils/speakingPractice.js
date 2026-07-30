@@ -3,6 +3,7 @@ export const DAY_MODULE_TYPES = ['video', 'ai_practice', 'interview'];
 const DAY_MODULE_TYPE_SET = new Set(DAY_MODULE_TYPES);
 
 export const MAX_SPEAKING_QUESTIONS = 30;
+const SPEAKING_SCORING_STRATEGIES = new Set(['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading']);
 
 export class SpeakingPracticeValidationError extends Error {
   constructor(message) {
@@ -138,6 +139,17 @@ export function normalizeSpeakingQuestions(value, lessonLanguage) {
       expectedKeywords,
       sampleAnswer: normalizeText(item.sampleAnswer, `${fieldPrefix}.sampleAnswer`, 2000),
       maxMarks: normalizeMaxMarks(item.maxMarks, `${fieldPrefix}.maxMarks`),
+      acceptedResponses: Array.isArray(item.acceptedResponses)
+        ? item.acceptedResponses.slice(0, 30).map((response, responseIndex) => normalizeText(
+            response,
+            `${fieldPrefix}.acceptedResponses[${responseIndex}]`,
+            500,
+          ))
+        : [],
+      aiResponse: normalizeOptionalText(item.aiResponse, `${fieldPrefix}.aiResponse`, 2000),
+      scoringStrategy: SPEAKING_SCORING_STRATEGIES.has(item.scoringStrategy)
+        ? item.scoringStrategy
+        : 'keywords',
     };
 
     const audioUrl = normalizeAudioUrl(item.audioUrl, `${fieldPrefix}.audioUrl`);
