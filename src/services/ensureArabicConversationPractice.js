@@ -1,4 +1,4 @@
-import { ARABIC_CONVERSATION_DAYS } from '../data/arabicConversationPractice.js';
+import { CONVERSATION_DAYS } from '../data/arabicConversationPractice.js';
 import { DAY_ONE_VIDEOS } from '../data/dayOneVideos.js';
 import { Lesson } from '../models/Lesson.js';
 
@@ -33,18 +33,17 @@ export async function ensureArabicConversationPractice() {
     );
   }
 
-  for (const content of ARABIC_CONVERSATION_DAYS) {
-    const existing = await Lesson.findOne({ language: 'arabic', day: content.day })
+  for (const content of CONVERSATION_DAYS) {
+    const existing = await Lesson.findOne({ language: content.language, day: content.day })
       .select('managedContentKey')
       .lean();
     if (existing?.managedContentKey === content.managedContentKey) continue;
 
     await Lesson.findOneAndUpdate(
-      { language: 'arabic', day: content.day },
+      { language: content.language, day: content.day },
       {
         $set: {
           ...content,
-          language: 'arabic',
           moduleType: 'ai_practice',
           modulePublished: true,
           speakingPracticeEnabled: true,

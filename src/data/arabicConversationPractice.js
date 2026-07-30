@@ -1,4 +1,4 @@
-const CORE_CONVERSATION = [
+const ARABIC_CORE_CONVERSATION = [
   {
     id: 'greeting',
     question: 'السَّلَامُ عَلَيْكُمْ',
@@ -46,35 +46,109 @@ const CORE_CONVERSATION = [
   },
 ];
 
-function buildQuestions(day, mode) {
-  return CORE_CONVERSATION.map(item => ({
+const ENGLISH_CORE_CONVERSATION = [
+  {
+    id: 'greeting',
+    question: 'Hello! How are you?',
+    expectedKeywords: ['hello', 'fine'],
+    acceptedResponses: ['Hello, I am fine', 'I am fine, thank you', 'Fine, thank you', 'I am good', 'I am well', 'Great, thank you'],
+    sampleAnswer: 'Hello! I am fine, thank you.',
+    aiResponse: 'Hello! I am doing well, thank you. How are you?',
+    scoringStrategy: 'greeting',
+  },
+  {
+    id: 'name',
+    question: 'What is your name?',
+    expectedKeywords: ['my name', 'I am'],
+    acceptedResponses: ['My name is Ahmed', 'I am Ahmed'],
+    sampleAnswer: 'My name is Ahmed.',
+    aiResponse: 'My name is Lugaish, and I am your language-learning assistant.',
+    scoringStrategy: 'name',
+  },
+  {
+    id: 'wellbeing',
+    question: 'How are you today?',
+    expectedKeywords: ['fine', 'good'],
+    acceptedResponses: ['I am fine', 'I am good', 'I am very well', 'Great, thank you', 'Fine, thank you'],
+    sampleAnswer: 'I am fine, thank you.',
+    aiResponse: 'I am doing very well today. Thank you for asking.',
+    scoringStrategy: 'wellbeing',
+  },
+  {
+    id: 'origin',
+    question: 'Where are you from?',
+    expectedKeywords: ['from', 'Bangladesh'],
+    acceptedResponses: ['I am from Bangladesh', 'From Bangladesh', 'Bangladesh', 'I am Bangladeshi'],
+    sampleAnswer: 'I am from Bangladesh.',
+    aiResponse: 'I am a digital assistant, and I help you through the Lugaish platform.',
+    scoringStrategy: 'origin',
+  },
+  {
+    id: 'nationality',
+    question: 'What is your nationality?',
+    expectedKeywords: ['Bangladeshi'],
+    acceptedResponses: ['I am Bangladeshi', 'My nationality is Bangladeshi', 'Bangladeshi', 'I am from Bangladesh'],
+    sampleAnswer: 'I am Bangladeshi.',
+    aiResponse: 'I do not have a nationality because I am a digital language-learning assistant.',
+    scoringStrategy: 'nationality',
+  },
+];
+
+function buildQuestions(coreQuestions, language, day, mode) {
+  return coreQuestions.map(item => ({
     ...item,
-    id: `arabic-conversation-${item.id}-day-${day}`,
-    language: 'arabic',
+    id: `${language}-conversation-${item.id}-day-${day}`,
+    language,
     maxMarks: 10,
     scoringStrategy: mode === 'ask' ? 'question_reading' : item.scoringStrategy,
   }));
 }
 
-export const ARABIC_CONVERSATION_DAYS = [
+export const CONVERSATION_DAYS = [
   {
+    language: 'english',
     day: 2,
-    managedContentKey: 'arabic-conversation-day-2-v1',
+    managedContentKey: 'english-conversation-day-2-v1',
+    title: 'English Conversation: Listen and Respond',
+    description: 'Listen to five everyday English questions, answer by microphone, and receive phrase-based feedback.',
+    moduleIntroTitle: 'Listen carefully, then answer in English',
+    moduleIntroText: 'The assistant will read each question aloud. Tap the microphone, answer naturally in English, review the transcript, and retry when needed.',
+    speakingPracticeMode: 'respond',
+    speakingQuestions: buildQuestions(ENGLISH_CORE_CONVERSATION, 'english', 2, 'respond'),
+  },
+  {
+    language: 'english',
+    day: 3,
+    managedContentKey: 'english-conversation-day-3-v1',
+    title: 'English Conversation: You Ask Today',
+    description: 'Read five written English questions aloud. The assistant will recognize each question and answer it in English.',
+    moduleIntroTitle: 'Today, you ask the questions',
+    moduleIntroText: 'Read the question shown on screen and say it into the microphone. The assistant will listen, score your question, and answer you in English.',
+    speakingPracticeMode: 'ask',
+    speakingQuestions: buildQuestions(ENGLISH_CORE_CONVERSATION, 'english', 3, 'ask'),
+  },
+  {
+    language: 'arabic',
+    day: 2,
+    managedContentKey: 'arabic-conversation-day-2-v2',
     title: 'Arabic Conversation: Listen and Respond',
     description: 'Listen to five everyday Arabic questions, answer by microphone, and receive phrase-based feedback.',
     moduleIntroTitle: 'Listen carefully, then answer in Arabic',
     moduleIntroText: 'The assistant will read each question aloud. Tap the microphone, answer naturally in Arabic, review the transcript, and retry when needed.',
     speakingPracticeMode: 'respond',
-    speakingQuestions: buildQuestions(2, 'respond'),
+    speakingQuestions: buildQuestions(ARABIC_CORE_CONVERSATION, 'arabic', 2, 'respond'),
   },
   {
+    language: 'arabic',
     day: 3,
-    managedContentKey: 'arabic-conversation-day-3-v1',
+    managedContentKey: 'arabic-conversation-day-3-v2',
     title: 'Arabic Conversation: Ask the Assistant',
     description: 'Read five Arabic questions aloud. The assistant will recognize each question and answer it in Arabic.',
-    moduleIntroTitle: 'Now you ask the questions',
-    moduleIntroText: 'Read the Arabic question shown on screen, tap the microphone, and say it clearly. When it is recognized, the assistant will answer aloud in Arabic.',
+    moduleIntroTitle: 'Today, you ask the questions',
+    moduleIntroText: 'Read the Arabic question shown on screen and say it into the microphone. The assistant will listen, score your question, and answer you in Arabic.',
     speakingPracticeMode: 'ask',
-    speakingQuestions: buildQuestions(3, 'ask'),
+    speakingQuestions: buildQuestions(ARABIC_CORE_CONVERSATION, 'arabic', 3, 'ask'),
   },
 ];
+
+export const ARABIC_CONVERSATION_DAYS = CONVERSATION_DAYS.filter(item => item.language === 'arabic');
