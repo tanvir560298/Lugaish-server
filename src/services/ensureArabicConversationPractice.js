@@ -1,27 +1,30 @@
-import { ARABIC_CONVERSATION_DAYS, ARABIC_DAY_ONE_VIDEO } from '../data/arabicConversationPractice.js';
+import { ARABIC_CONVERSATION_DAYS } from '../data/arabicConversationPractice.js';
+import { DAY_ONE_VIDEOS } from '../data/dayOneVideos.js';
 import { Lesson } from '../models/Lesson.js';
 
 export async function ensureArabicConversationPractice() {
-  const dayOne = await Lesson.findOne({ language: 'arabic', day: 1 })
-    .select('managedContentKey')
-    .lean();
-  if (dayOne?.managedContentKey !== ARABIC_DAY_ONE_VIDEO.managedContentKey) {
+  for (const content of DAY_ONE_VIDEOS) {
+    const existing = await Lesson.findOne({ language: content.language, day: content.day })
+      .select('managedContentKey')
+      .lean();
+    if (existing?.managedContentKey === content.managedContentKey) continue;
+
     await Lesson.findOneAndUpdate(
-      { language: 'arabic', day: 1 },
+      { language: content.language, day: content.day },
       {
         $set: {
-          language: 'arabic',
-          day: ARABIC_DAY_ONE_VIDEO.day,
-          title: ARABIC_DAY_ONE_VIDEO.title,
-          description: ARABIC_DAY_ONE_VIDEO.description,
+          language: content.language,
+          day: content.day,
+          title: content.title,
+          description: content.description,
           moduleType: 'video',
           modulePublished: true,
-          managedContentKey: ARABIC_DAY_ONE_VIDEO.managedContentKey,
+          managedContentKey: content.managedContentKey,
           videos: [
             {
-              youtubeId: ARABIC_DAY_ONE_VIDEO.youtubeId,
-              title: ARABIC_DAY_ONE_VIDEO.videoTitle,
-              durationMinutes: ARABIC_DAY_ONE_VIDEO.durationMinutes,
+              youtubeId: content.youtubeId,
+              title: content.videoTitle,
+              durationMinutes: content.durationMinutes,
             },
           ],
         },

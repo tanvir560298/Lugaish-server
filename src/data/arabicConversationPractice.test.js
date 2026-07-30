@@ -1,17 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ARABIC_CONVERSATION_DAYS, ARABIC_DAY_ONE_VIDEO } from './arabicConversationPractice.js';
+import { ARABIC_CONVERSATION_DAYS } from './arabicConversationPractice.js';
 import { normalizeSpeakingQuestions } from '../utils/speakingPractice.js';
 
 test('Arabic conversation curriculum contains respond and ask days', () => {
   assert.deepEqual(ARABIC_CONVERSATION_DAYS.map(item => item.day), [2, 3]);
   assert.deepEqual(ARABIC_CONVERSATION_DAYS.map(item => item.speakingPracticeMode), ['respond', 'ask']);
-});
-
-test('Arabic Day 1 uses the requested YouTube video', () => {
-  assert.equal(ARABIC_DAY_ONE_VIDEO.day, 1);
-  assert.equal(ARABIC_DAY_ONE_VIDEO.youtubeId, 'DVV9_7V7WEI');
-  assert.ok(ARABIC_DAY_ONE_VIDEO.managedContentKey.includes(ARABIC_DAY_ONE_VIDEO.youtubeId));
 });
 
 test('both conversation days contain five valid ten-mark questions', () => {
