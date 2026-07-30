@@ -14,6 +14,11 @@ import emailRoutes from './routes/email.js';
 import { ensureArabicConversationPractice } from './services/ensureArabicConversationPractice.js';
 
 const app = express();
+const RELEASE_ID = 'managed-day-one-videos-v2';
+const managedContentSync = {
+  state: 'pending',
+  error: '',
+};
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
@@ -92,8 +97,17 @@ const DATABASE_RETRY_DELAY_MS = 5000;
 async function connectDatabase() {
   try {
     await mongoose.connect(config.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
-    await ensureArabicConversationPractice();
     console.log('MongoDB connected');
+    try {
+      await ensureArabicConversationPractice();
+      managedContentSync.state = 'ready';
+      managedContentSync.error = '';
+      console.log('Managed course content synchronized');
+    } catch (error) {
+      managedContentSync.state = 'error';
+      managedContentSync.error = error.message;
+      console.error(`Managed course content sync error: ${error.message}`);
+    }
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}. Retrying...`);
     setTimeout(connectDatabase, DATABASE_RETRY_DELAY_MS);
@@ -117,6 +131,9 @@ app.get('/health', (req, res) => {
     status: 'Backend running',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     apiBase: '/api',
+    release: RELEASE_ID,
+    commit: String(process.env.RENDER_GIT_COMMIT || '').slice(0, 12),
+    managedContent: managedContentSync.state,
   });
 });
 
