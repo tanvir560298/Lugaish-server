@@ -39,19 +39,16 @@ test('every Day 3 is versioned as ask mode with learner instructions', () => {
   assert.ok(askDays.every(item => item.moduleIntroTitle && item.moduleIntroText));
 });
 
-test('English classmate conversation assigns Rafi and Sami correctly', () => {
+test('English Day 2 is guided by Rafi while Day 3 retains the Rafi and Sami role play', () => {
   const englishDays = CONVERSATION_DAYS.filter(item => item.language === 'english');
   const [respondDay, askDay] = englishDays;
 
   assert.equal(respondDay.speakingQuestions.length, 7);
   assert.equal(askDay.speakingQuestions.length, 7);
-  assert.match(respondDay.moduleIntroTitle, /Rafi.*Sami/i);
+  assert.match(respondDay.moduleIntroTitle, /Rafi/i);
   assert.match(askDay.moduleIntroTitle, /Rafi/i);
-  assert.equal(respondDay.speakingQuestions[0].question, 'Hi! My name is Rafi. What’s your name?');
-  assert.equal(respondDay.speakingQuestions[0].sampleAnswer, 'Hello, Rafi! I’m Sami. Nice to meet you.');
+  assert.equal(respondDay.speakingQuestions[0].question, "Hi! I'm Rafi. Nice to meet you. What is your name?");
+  assert.equal(respondDay.speakingQuestions[0].scoringStrategy, 'english_first_meeting');
   assert.ok(askDay.speakingQuestions.every(question => question.scoringStrategy === 'question_reading'));
-  assert.deepEqual(
-    askDay.speakingQuestions.map(question => question.aiResponse),
-    respondDay.speakingQuestions.map(question => question.sampleAnswer),
-  );
+  assert.equal(askDay.speakingQuestions[0].question, 'Hi! My name is Rafi. What’s your name?');
 });

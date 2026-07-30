@@ -46,7 +46,73 @@ const ARABIC_CORE_CONVERSATION = [
   },
 ];
 
-const ENGLISH_CORE_CONVERSATION = [
+const ENGLISH_DAY_TWO_CONVERSATION = [
+  {
+    id: 'name',
+    question: "Hi! I'm Rafi. Nice to meet you. What is your name?",
+    expectedKeywords: ['name'],
+    acceptedResponses: [],
+    sampleAnswer: "My name is Hasan. Nice to meet you.",
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 1,
+  },
+  {
+    id: 'first-day',
+    question: 'Is this your first day here?',
+    expectedKeywords: ['yes', 'no'],
+    acceptedResponses: [],
+    sampleAnswer: 'Yes, this is my first day.',
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 2,
+  },
+  {
+    id: 'hometown',
+    question: 'Where are you from?',
+    expectedKeywords: ['from'],
+    acceptedResponses: [],
+    sampleAnswer: "I'm from Rangpur, a city in Bangladesh.",
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 3,
+  },
+  {
+    id: 'current-home',
+    question: 'Where do you live now?',
+    expectedKeywords: ['live'],
+    acceptedResponses: [],
+    sampleAnswer: 'I live in Dhaka now with my family.',
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 4,
+  },
+  {
+    id: 'student-or-worker',
+    question: 'Are you a student, or do you work?',
+    expectedKeywords: ['student', 'work'],
+    acceptedResponses: [],
+    sampleAnswer: "I'm a university student.",
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 5,
+  },
+  {
+    id: 'study-or-work',
+    question: 'What do you study, or what kind of work do you do?',
+    expectedKeywords: ['study', 'work'],
+    acceptedResponses: [],
+    sampleAnswer: 'I study Computer Science because I like technology.',
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 6,
+  },
+  {
+    id: 'return-question',
+    question: 'Now ask me one question about myself.',
+    expectedKeywords: ['what', 'where', 'how'],
+    acceptedResponses: [],
+    sampleAnswer: 'What subject do you study?',
+    scoringStrategy: 'english_first_meeting',
+    conversationStep: 7,
+  },
+];
+
+const ENGLISH_DAY_THREE_CONVERSATION = [
   {
     id: 'introductions',
     question: 'Hi! My name is Rafi. What’s your name?',
@@ -126,13 +192,13 @@ export const CONVERSATION_DAYS = [
   {
     language: 'english',
     day: 2,
-    managedContentKey: 'english-classmate-conversation-day-2-v2',
-    title: 'Meeting a New Classmate: Reply as Sami',
-    description: 'The assistant plays Rafi and starts each part of the conversation. Reply naturally as Sami.',
-    moduleIntroTitle: 'The assistant is Rafi; you are Sami',
-    moduleIntroText: 'Listen as Rafi starts each conversational turn. Tap the microphone and reply as Sami. Your spoken reply will be scored before the next turn.',
+    managedContentKey: 'english-first-meeting-day-2-v3',
+    title: 'Meeting Someone for the First Time',
+    description: 'Have a friendly seven-step conversation with Rafi. Speak naturally—different correct answers are welcome.',
+    moduleIntroTitle: 'Meet Rafi, your new classmate',
+    moduleIntroText: 'Rafi will ask one question at a time. Answer naturally by microphone. Your marks stay hidden during the conversation and appear in the final report.',
     speakingPracticeMode: 'respond',
-    speakingQuestions: buildQuestions(ENGLISH_CORE_CONVERSATION, 'english', 2, 'respond'),
+    speakingQuestions: buildQuestions(ENGLISH_DAY_TWO_CONVERSATION, 'english', 2, 'respond'),
   },
   {
     language: 'english',
@@ -143,7 +209,7 @@ export const CONVERSATION_DAYS = [
     moduleIntroTitle: 'Today, you are Rafi and you start the conversation',
     moduleIntroText: 'Read Rafi’s line shown on screen and say it into the microphone. Your question will be scored, then the assistant will reply as Sami.',
     speakingPracticeMode: 'ask',
-    speakingQuestions: buildQuestions(ENGLISH_CORE_CONVERSATION, 'english', 3, 'ask'),
+    speakingQuestions: buildQuestions(ENGLISH_DAY_THREE_CONVERSATION, 'english', 3, 'ask'),
   },
   {
     language: 'arabic',
