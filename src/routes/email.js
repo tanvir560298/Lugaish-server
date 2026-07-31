@@ -79,7 +79,7 @@ router.get('/status', ...manageEmail, async (req, res) => {
     if (req.isTester) return res.json({ configured: true, connected: true, senderEmail: 'tester-sandbox@lugaish.local', maxRecipientsPerCampaign: MAX_RECIPIENTS_PER_CAMPAIGN, recentCampaigns: [], sandbox: true });
     const connection = await MailConnection.findOne({ key: 'primary' }).select('senderEmail connectedAt');
     const recentCampaigns = await EmailCampaign.find({})
-      .select('subject recipientCount sentCount failedCount status createdAt').sort({ createdAt: -1 }).limit(10);
+      .select('subject audience recipientCount sentCount failedCount status createdAt').sort({ createdAt: -1 }).limit(10);
     const connected = connection?.senderEmail === config.GMAIL_SENDER_EMAIL;
     res.json({
       configured: Boolean(config.GMAIL_CLIENT_ID && config.GMAIL_CLIENT_SECRET && config.GMAIL_TOKEN_ENCRYPTION_KEY),
@@ -152,19 +152,23 @@ router.post('/send-test', ...manageEmail, async (req, res) => {
 
 router.post('/campaigns', ...manageEmail, async (req, res) => {
   try {
+    const audience = String(req.body.audience || '').trim().toLowerCase();
     const subject = String(req.body.subject || '').trim().slice(0, 150);
     const message = String(req.body.message || '').trim().slice(0, 10000);
+    if (!['english', 'arabic'].includes(audience)) return res.status(400).json({ error: 'Choose an English or Arabic student audience' });
     if (!subject || !message) return res.status(400).json({ error: 'Subject and message are required' });
-    if (String(req.body.confirmation || '') !== 'SEND TO ALL USERS') return res.status(400).json({ error: 'Campaign confirmation text does not match' });
-    if (req.isTester) return res.json({ message: 'Tester campaign preview complete. No recipients were contacted.', campaign: { subject, recipientCount: 0, sentCount: 0, failedCount: 0, status: 'sandbox' }, sandbox: true });
+    if (String(req.body.confirmation || '') !== `SEND TO ${audience.toUpperCase()} STUDENTS`) {
+      return res.status(400).json({ error: `Type SEND TO ${audience.toUpperCase()} STUDENTS to confirm this audience` });
+    }
+    if (req.isTester) return res.json({ message: 'Tester campaign preview complete. No recipients were contacted.', campaign: { subject, audience, recipientCount: 0, sentCount: 0, failedCount: 0, status: 'sandbox' }, sandbox: true });
     const lockKey = String(req.userId);
     if (campaignLocks.has(lockKey)) return res.status(409).json({ error: 'Another campaign is already sending. Wait for it to finish.' });
     campaignLocks.add(lockKey);
     try {
-      const users = await User.find({ email: { $exists: true, $ne: '' } }).select('name email').sort({ createdAt: 1 }).limit(MAX_RECIPIENTS_PER_CAMPAIGN + 1);
+      const users = await User.find({ enrolledPathways: audience, email: { $exists: true, $ne: '' } }).select('name email').sort({ createdAt: 1 }).limit(MAX_RECIPIENTS_PER_CAMPAIGN + 1);
       if (users.length > MAX_RECIPIENTS_PER_CAMPAIGN) return res.status(409).json({ error: `Safety limit is ${MAX_RECIPIENTS_PER_CAMPAIGN} recipients per campaign. Use a dedicated bulk email provider for larger lists.` });
       if (!users.length) return res.status(400).json({ error: 'No recipients found' });
-      const campaign = await EmailCampaign.create({ subject, message, senderEmail: config.GMAIL_SENDER_EMAIL, createdBy: req.userId, recipientCount: users.length });
+      const campaign = await EmailCampaign.create({ subject, message, audience, senderEmail: config.GMAIL_SENDER_EMAIL, createdBy: req.userId, recipientCount: users.length });
       const gmail = await getAuthorizedGmail();
       const failures = [];
       let sentCount = 0;
@@ -201,7 +205,7 @@ router.post('/campaigns/latest/activate-signup', ...manageEmail, async (req, res
     if (!campaign) return res.status(404).json({ error: 'Send the campaign once before enabling automatic delivery' });
     campaign.autoSendUntil = deadline;
     await campaign.save();
-    return res.json({ message: 'New users will receive this campaign automatically until 18 July 2026, 9:00 PM (Bangladesh time)' });
+    return res.json({ message: `New ${campaign.audience} students will receive this campaign automatically until the course starts` });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

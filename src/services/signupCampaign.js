@@ -36,6 +36,7 @@ export async function sendActiveSignupCampaign(user) {
   const campaign = await EmailCampaign.findOne({
     autoSendUntil: { $gt: now },
     status: { $in: ['completed', 'partial'] },
+    audience: { $in: Array.isArray(user.enrolledPathways) ? user.enrolledPathways : [] },
   }).sort({ createdAt: -1 });
   if (!campaign) return;
 

@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const emailCampaignSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   message: { type: String, required: true },
+  audience: { type: String, enum: ['english', 'arabic'], required: true },
   senderEmail: { type: String, required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   recipientCount: { type: Number, required: true },

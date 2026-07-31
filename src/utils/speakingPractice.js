@@ -3,7 +3,7 @@ export const DAY_MODULE_TYPES = ['video', 'ai_practice', 'interview'];
 const DAY_MODULE_TYPE_SET = new Set(DAY_MODULE_TYPES);
 
 export const MAX_SPEAKING_QUESTIONS = 30;
-const SPEAKING_SCORING_STRATEGIES = new Set(['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading']);
+const SPEAKING_SCORING_STRATEGIES = new Set(['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading', 'english_first_meeting']);
 
 export class SpeakingPracticeValidationError extends Error {
   constructor(message) {
