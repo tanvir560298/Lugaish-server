@@ -168,8 +168,8 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
       const users = await User.find({ enrolledPathways: audience, email: { $exists: true, $ne: '' } }).select('name email').sort({ createdAt: 1 }).limit(MAX_RECIPIENTS_PER_CAMPAIGN + 1);
       if (users.length > MAX_RECIPIENTS_PER_CAMPAIGN) return res.status(409).json({ error: `Safety limit is ${MAX_RECIPIENTS_PER_CAMPAIGN} recipients per campaign. Use a dedicated bulk email provider for larger lists.` });
       if (!users.length) return res.status(400).json({ error: 'No recipients found' });
-      const campaign = await EmailCampaign.create({ subject, message, audience, senderEmail: config.GMAIL_SENDER_EMAIL, createdBy: req.userId, recipientCount: users.length });
       const gmail = await getAuthorizedGmail();
+      const campaign = await EmailCampaign.create({ subject, message, audience, senderEmail: config.GMAIL_SENDER_EMAIL, createdBy: req.userId, recipientCount: users.length });
       const failures = [];
       let sentCount = 0;
       for (let index = 0; index < users.length; index += 3) {
