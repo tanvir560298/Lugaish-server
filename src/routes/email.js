@@ -71,7 +71,15 @@ async function getAuthorizedGmail() {
   }
   const auth = getOAuthClient();
   auth.setCredentials({ refresh_token: decryptSecret(connection.encryptedRefreshToken) });
+  await auth.getAccessToken();
   return google.gmail({ version: 'v1', auth });
+}
+
+function getGmailErrorMessage(error) {
+  if (String(error?.message || '').toLowerCase().includes('invalid_grant')) {
+    return 'Gmail authorization has expired or was revoked. Reconnect Gmail before sending email.';
+  }
+  return error?.message || 'Gmail connection failed';
 }
 
 router.get('/status', ...manageEmail, async (req, res) => {
@@ -80,14 +88,23 @@ router.get('/status', ...manageEmail, async (req, res) => {
     const connection = await MailConnection.findOne({ key: 'primary' }).select('senderEmail connectedAt');
     const recentCampaigns = await EmailCampaign.find({})
       .select('subject audience recipientCount sentCount failedCount status createdAt').sort({ createdAt: -1 }).limit(10);
-    const connected = connection?.senderEmail === config.GMAIL_SENDER_EMAIL;
+    let connected = connection?.senderEmail === config.GMAIL_SENDER_EMAIL;
+    let connectionError = '';
+    if (connected) {
+      try {
+        await getAuthorizedGmail();
+      } catch (error) {
+        connected = false;
+        connectionError = getGmailErrorMessage(error);
+      }
+    }
     res.json({
       configured: Boolean(config.GMAIL_CLIENT_ID && config.GMAIL_CLIENT_SECRET && config.GMAIL_TOKEN_ENCRYPTION_KEY),
-      connected, senderEmail: config.GMAIL_SENDER_EMAIL,
+      connected, connectionError, senderEmail: config.GMAIL_SENDER_EMAIL,
       connectedAt: connected ? connection.connectedAt : null, maxRecipientsPerCampaign: MAX_RECIPIENTS_PER_CAMPAIGN, recentCampaigns,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: getGmailErrorMessage(error) });
   }
 });
 
@@ -146,7 +163,7 @@ router.post('/send-test', ...manageEmail, async (req, res) => {
     await gmail.users.messages.send({ userId: 'me', requestBody: { raw: createRawMessage({ to: recipient, name: 'Test recipient', subject, message }) } });
     return res.json({ message: `Test email sent to ${recipient}` });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: getGmailErrorMessage(error) });
   }
 });
 
