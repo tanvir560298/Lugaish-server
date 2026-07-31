@@ -11,6 +11,10 @@ export function getCourseStartDate() {
   return new Date(DEFAULT_COURSE_START_AT);
 }
 
+export function isCourseEnrollmentOpen(now = new Date()) {
+  return now.getTime() < getCourseStartDate().getTime();
+}
+
 export function isScheduledDayActivity(day, activityAt) {
   const normalizedDay = normalizeDay(day);
   if (!normalizedDay || !activityAt) return false;

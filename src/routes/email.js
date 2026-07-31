@@ -8,6 +8,7 @@ import { MailConnection } from '../models/MailConnection.js';
 import { EmailCampaign } from '../models/EmailCampaign.js';
 import { decryptSecret, encryptSecret } from '../utils/mailCrypto.js';
 import { ROLES, hasPermission, normalizeRole } from '../utils/roles.js';
+import { getCourseStartDate } from '../utils/courseSchedule.js';
 
 const router = express.Router();
 const emailManagerEmails = new Set(config.EMAIL_MANAGER_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean));
@@ -194,7 +195,7 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
 router.post('/campaigns/latest/activate-signup', ...manageEmail, async (req, res) => {
   try {
     if (req.isTester) return res.json({ message: 'Tester preview complete. Automatic delivery was not activated.', sandbox: true });
-    const deadline = new Date('2026-07-18T15:00:00.000Z');
+    const deadline = getCourseStartDate();
     if (deadline <= new Date()) return res.status(400).json({ error: 'The automatic signup campaign deadline has passed' });
     const campaign = await EmailCampaign.findOne({ status: { $in: ['completed', 'partial'] } }).sort({ createdAt: -1 });
     if (!campaign) return res.status(404).json({ error: 'Send the campaign once before enabling automatic delivery' });

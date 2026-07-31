@@ -81,10 +81,17 @@ function createProgressDocument(user, language, completedDays) {
 
 function updateUserStreak(user, now) {
   const lastActive = user?.lastActiveDate ? new Date(user.lastActiveDate) : null;
-  const millisecondsPerDay = 1000 * 60 * 60 * 24;
-  const dayDifference = lastActive && !Number.isNaN(lastActive.getTime())
-    ? Math.floor((now - lastActive) / millisecondsPerDay)
-    : null;
+  const dateKey = date => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Dhaka',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+  const todayKey = dateKey(now);
+  const previousKey = lastActive && !Number.isNaN(lastActive.getTime()) ? dateKey(lastActive) : null;
+  const today = new Date(`${todayKey}T00:00:00Z`);
+  const previous = previousKey ? new Date(`${previousKey}T00:00:00Z`) : null;
+  const dayDifference = previous ? Math.round((today - previous) / (1000 * 60 * 60 * 24)) : null;
 
   if (dayDifference === 1) {
     user.streak = Math.max(Number(user.streak) || 0, 0) + 1;

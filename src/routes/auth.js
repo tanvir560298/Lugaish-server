@@ -10,6 +10,7 @@ import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
 import { sendActiveSignupCampaign } from '../services/signupCampaign.js';
+import { getCourseStartDate, isCourseEnrollmentOpen } from '../utils/courseSchedule.js';
 
 const router = express.Router();
 
@@ -137,7 +138,7 @@ router.post('/firebase', async (req, res) => {
     const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
     const selectedLanguageEnrollmentCount = await getEnrollmentCount(selectedLanguage);
     const selectedLanguageLimit = getCourseSeatLimit(selectedLanguage);
-    const selectedLanguageHasSeat = selectedLanguageEnrollmentCount < selectedLanguageLimit;
+    const selectedLanguageHasSeat = isCourseEnrollmentOpen() && selectedLanguageEnrollmentCount < selectedLanguageLimit;
     const firebaseUser = await verifyFirebaseToken(idToken);
     const firebaseEmail = firebaseUser.email.toLowerCase();
     const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
@@ -181,7 +182,7 @@ router.post('/firebase', async (req, res) => {
         ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
         ...cleanedProfile,
       };
-      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected, { includeFallback: false });
     }
 
     await user.save();
@@ -200,6 +201,8 @@ router.post('/firebase', async (req, res) => {
       message: 'Google login successful',
       token,
       user: toPublicUser(user),
+      courseEnrollmentOpen: isCourseEnrollmentOpen(),
+      courseStartAt: getCourseStartDate().toISOString(),
     });
   } catch (error) {
     res.status(401).json({ error: error.message });
@@ -220,13 +223,16 @@ router.get('/enrollment-status/:language', async (req, res) => {
     ]);
     const limit = getCourseSeatLimit(language);
     const seatsAvailable = limit === 0 ? 0 : Math.max(limit - enrolledCount, 0);
+    const enrollmentOpen = isCourseEnrollmentOpen();
 
     res.json({
       language,
       limit,
       enrolledCount,
       seatsAvailable,
-      isFull: seatsAvailable <= 0,
+      isFull: enrollmentOpen ? seatsAvailable <= 0 : true,
+      enrollmentOpen,
+      courseStartAt: getCourseStartDate().toISOString(),
       ...getCapacityPayload(language, user),
     });
   } catch (error) {
@@ -252,6 +258,15 @@ router.post('/enroll', authMiddleware, async (req, res) => {
     const alreadyEnrolled = user.enrolledPathways.includes(language);
 
     const limit = getCourseSeatLimit(language);
+
+    if (!alreadyEnrolled && !isCourseEnrollmentOpen()) {
+      return res.status(409).json({
+        error: 'This course has already started. Please wait for the next session to enroll.',
+        code: 'COURSE_ALREADY_STARTED',
+        language,
+        courseStartAt: getCourseStartDate().toISOString(),
+      });
+    }
 
     if (!alreadyEnrolled && enrolledCount >= limit) {
       return res.status(409).json({
