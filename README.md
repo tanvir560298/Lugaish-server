@@ -210,6 +210,32 @@ curl -X GET http://localhost:5000/api/lessons/today/english \
 
 ## 🚨 Common Issues
 
+## 📬 Daily task reminder email
+
+The server includes an idempotent daily reminder command. It emails enrolled
+learners only when today's course task is published, and skips learners who
+have already completed that language's task. A delivery record prevents the
+same learner from receiving the same reminder twice.
+
+Set these environment variables on the scheduled service:
+
+```env
+DAILY_REMINDER_ENABLED=true
+DAILY_REMINDER_TIME_ZONE=Asia/Dhaka
+FRONTEND_URL=https://lugaish.vercel.app
+```
+
+The scheduled service also needs the same MongoDB and Gmail environment
+variables as the web service. Run:
+
+```bash
+npm run reminders:daily
+```
+
+For Render Cron Jobs, use schedule `0 18 * * *`. Render schedules use UTC, so
+18:00 UTC is 00:00 in Bangladesh. The command is safe to retry because each
+daily learner/course delivery is unique.
+
 ### MongoDB Connection Error
 
 ```

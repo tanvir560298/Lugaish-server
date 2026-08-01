@@ -32,6 +32,8 @@ export default {
   GMAIL_SENDER_EMAIL: (process.env.GMAIL_SENDER_EMAIL || 'lugaishodyssey@gmail.com').trim().toLowerCase(),
   EMAIL_MANAGER_EMAILS: process.env.EMAIL_MANAGER_EMAILS || 'tahmadium@gmail.com',
   GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || '',
+  DAILY_REMINDER_ENABLED: process.env.DAILY_REMINDER_ENABLED === 'true',
+  DAILY_REMINDER_TIME_ZONE: process.env.DAILY_REMINDER_TIME_ZONE || 'Asia/Dhaka',
   CORS_ORIGINS: [
     'https://lugaish.vercel.app',
     'http://localhost:4174',

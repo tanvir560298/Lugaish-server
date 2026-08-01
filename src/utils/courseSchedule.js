@@ -1,7 +1,7 @@
 import config from '../config.js';
 
 const DEFAULT_COURSE_START_AT = '2026-08-01T00:00:00+06:00';
-const COURSE_TIME_ZONE = 'Asia/Dhaka';
+const COURSE_TIME_ZONE = config.DAILY_REMINDER_TIME_ZONE || 'Asia/Dhaka';
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export function getCourseStartDate() {
