@@ -10,7 +10,7 @@ import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
 import { sendActiveSignupCampaign } from '../services/signupCampaign.js';
-import { getCourseStartDate, isCourseEnrollmentOpen } from '../utils/courseSchedule.js';
+import { getCourseStartDate } from '../utils/courseSchedule.js';
 
 const router = express.Router();
 
@@ -139,9 +139,6 @@ router.post('/firebase', async (req, res) => {
     }
 
     const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
-    const selectedLanguageEnrollmentCount = await getEnrollmentCount(selectedLanguage);
-    const selectedLanguageLimit = getCourseSeatLimit(selectedLanguage);
-    const selectedLanguageHasSeat = isCourseEnrollmentOpen() && selectedLanguageEnrollmentCount < selectedLanguageLimit;
     const firebaseUser = await verifyFirebaseToken(idToken);
     const firebaseEmail = firebaseUser.email.toLowerCase();
     const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
@@ -173,7 +170,7 @@ router.post('/firebase', async (req, res) => {
             ? ROLES.tester
             : shouldBootstrapIntern ? ROLES.intern : ROLES.learner,
         languageSelected: selectedLanguage,
-        enrolledPathways: selectedLanguageHasSeat ? [selectedLanguage] : [],
+        enrolledPathways: [selectedLanguage],
         learnerProfile: cleanedProfile,
       });
     } else {
@@ -192,7 +189,10 @@ router.post('/firebase', async (req, res) => {
         ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
         ...cleanedProfile,
       };
-      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected, { includeFallback: false });
+      // Signing in always grants access to the selected pathway. Lesson order
+      // remains protected independently by the progress/current-day checks.
+      user.languageSelected = selectedLanguage;
+      user.enrolledPathways = normalizePathways(user.enrolledPathways, selectedLanguage);
     }
 
     await user.save();
@@ -211,7 +211,7 @@ router.post('/firebase', async (req, res) => {
       message: 'Google login successful',
       token,
       user: toPublicUser(user),
-      courseEnrollmentOpen: isCourseEnrollmentOpen(),
+      courseEnrollmentOpen: true,
       courseStartAt: getCourseStartDate().toISOString(),
     });
   } catch (error) {
@@ -232,16 +232,15 @@ router.get('/enrollment-status/:language', async (req, res) => {
       getUserFromOptionalToken(req),
     ]);
     const limit = getCourseSeatLimit(language);
-    const seatsAvailable = limit === 0 ? 0 : Math.max(limit - enrolledCount, 0);
-    const enrollmentOpen = isCourseEnrollmentOpen();
+    const seatsAvailable = Math.max(limit - enrolledCount, 0);
 
     res.json({
       language,
       limit,
       enrolledCount,
       seatsAvailable,
-      isFull: enrollmentOpen ? seatsAvailable <= 0 : true,
-      enrollmentOpen,
+      isFull: false,
+      enrollmentOpen: true,
       courseStartAt: getCourseStartDate().toISOString(),
       ...getCapacityPayload(language, user),
     });
@@ -264,29 +263,6 @@ router.post('/enroll', authMiddleware, async (req, res) => {
     }
 
     user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
-    const enrolledCount = await getEnrollmentCount(language);
-    const alreadyEnrolled = user.enrolledPathways.includes(language);
-
-    const limit = getCourseSeatLimit(language);
-
-    if (!alreadyEnrolled && !isCourseEnrollmentOpen()) {
-      return res.status(409).json({
-        error: 'This course has already started. Please wait for the next session to enroll.',
-        code: 'COURSE_ALREADY_STARTED',
-        language,
-        courseStartAt: getCourseStartDate().toISOString(),
-      });
-    }
-
-    if (!alreadyEnrolled && enrolledCount >= limit) {
-      return res.status(409).json({
-        error: 'This cohort is currently full. Apply for a priority seat and our team will get back to you.',
-        code: 'COURSE_FULL',
-        language,
-        limit,
-        enrolledCount,
-      });
-    }
 
     if (!user.enrolledPathways.includes(language)) {
       user.enrolledPathways.push(language);
