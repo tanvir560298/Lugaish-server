@@ -32,11 +32,15 @@ function isEnrolled(user, language) {
 }
 
 function isWebDeveloper(user) {
-  return [ROLES.webDeveloper, ROLES.tester, ROLES.instructor, ROLES.editor].includes(normalizeRole(user?.role));
+  return [ROLES.webDeveloper, ROLES.tester, ROLES.instructor, ROLES.editor, ROLES.intern].includes(normalizeRole(user?.role));
 }
 
 function isTester(user) {
   return normalizeRole(user?.role) === ROLES.tester;
+}
+
+function isIntern(user) {
+  return normalizeRole(user?.role) === ROLES.intern;
 }
 
 async function getTesterLesson(testerId, language, day) {
@@ -290,6 +294,15 @@ router.put(
         ? (existingLesson?.speakingQuestions ?? [])
         : normalizeSpeakingQuestions(req.body.questions, language);
 
+      if (isIntern(user) && existingLesson?.speakingQuestions?.length) {
+        const submittedIds = new Set(questions.map(question => question.id));
+        const removedExistingQuestion = existingLesson.speakingQuestions
+          .some(question => !submittedIds.has(question.id));
+        if (removedExistingQuestion) {
+          return res.status(403).json({ error: 'Interns can add or edit questions, but cannot delete existing questions' });
+        }
+      }
+
       if (config.moduleType === 'ai_practice' && config.published && questions.length === 0) {
         return res.status(400).json({ error: 'Add at least one question before publishing an AI practice day' });
       }
@@ -445,6 +458,12 @@ router.put(
         ? getDayModuleType(lesson) === 'ai_practice' && isDayModulePublished(lesson)
         : normalizeSpeakingPracticeEnabled(req.body.enabled);
       const questions = normalizeSpeakingQuestions(req.body?.questions, language);
+      if (isIntern(user) && lesson.speakingQuestions?.length) {
+        const submittedIds = new Set(questions.map(question => question.id));
+        if (lesson.speakingQuestions.some(question => !submittedIds.has(question.id))) {
+          return res.status(403).json({ error: 'Interns can add or edit questions, but cannot delete existing questions' });
+        }
+      }
       if (enabled && questions.length === 0) {
         return res.status(400).json({ error: 'Add at least one question before enabling AI practice' });
       }
@@ -530,6 +549,9 @@ router.delete(
     try {
       const { language, day } = normalizeLessonScope(req.params.language, req.params.day);
       const user = await User.findById(req.userId).select('role');
+      if (isIntern(user)) {
+        return res.status(403).json({ error: 'Interns can add or edit videos, but cannot delete existing videos' });
+      }
       const tester = isTester(user);
       const lesson = tester ? await getTesterLesson(req.userId, language, day) : await Lesson.findOne({ language, day });
       if (!lesson) return res.status(404).json({ error: 'Lesson not found' });

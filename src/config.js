@@ -8,6 +8,7 @@ export default {
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production',
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
   WEB_DEVELOPER_EMAILS: process.env.WEB_DEVELOPER_EMAILS || 'tahmadium@gmail.com',
+  INTERN_EMAILS: process.env.INTERN_EMAILS || 'shakibalam601@gmail.com,rjhassan2k19@gmail.com',
   // Keep the server as the source of truth for daily-course availability. The
   // default matches the public launch announcement and can be changed later
   // without a code release if the course date moves.
