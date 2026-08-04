@@ -33,7 +33,7 @@ const speakingQuestionSchema = new mongoose.Schema(
     aiResponse: { type: String, trim: true, maxlength: 2000, default: '' },
     scoringStrategy: {
       type: String,
-      enum: ['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading', 'english_first_meeting'],
+      enum: ['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading', 'english_first_meeting', 'english_self_introduction'],
       default: 'keywords',
     },
   },
