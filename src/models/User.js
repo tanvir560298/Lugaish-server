@@ -49,6 +49,7 @@ const userSchema = new mongoose.Schema(
     completedLessons: [{ type: Number }],
     badges: [{ type: String }],
     lastActiveDate: { type: Date, default: Date.now },
+    arabicStartDate: { type: Date },
   },
   { timestamps: true }
 );

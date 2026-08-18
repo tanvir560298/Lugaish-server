@@ -161,6 +161,7 @@ router.post('/firebase', async (req, res) => {
         role: shouldBootstrapWebDeveloper ? ROLES.webDeveloper : shouldBootstrapTester ? ROLES.tester : ROLES.learner,
         languageSelected: selectedLanguage,
         enrolledPathways: selectedLanguageHasSeat ? [selectedLanguage] : [],
+        arabicStartDate: (selectedLanguage === 'arabic' && selectedLanguageHasSeat) ? new Date() : undefined,
         learnerProfile: cleanedProfile,
       });
     } else {
@@ -253,6 +254,9 @@ router.post('/enroll', authMiddleware, async (req, res) => {
 
     if (!user.enrolledPathways.includes(language)) {
       user.enrolledPathways.push(language);
+    }
+    if (language === 'arabic' && !user.arabicStartDate) {
+      user.arabicStartDate = new Date();
     }
     user.languageSelected = language;
 
