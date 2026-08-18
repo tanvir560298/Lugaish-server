@@ -3,16 +3,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default {
-  PORT: process.env.PORT || 5001,
+  PORT: process.env.PORT || 5000,
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/lugaish',
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production',
   FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID || '',
   WEB_DEVELOPER_EMAILS: process.env.WEB_DEVELOPER_EMAILS || 'tahmadium@gmail.com',
-  INTERN_EMAILS: process.env.INTERN_EMAILS || 'shakibalam601@gmail.com,rjhassan2k19@gmail.com',
-  // Keep the server as the source of truth for daily-course availability. The
-  // default matches the public launch announcement and can be changed later
-  // without a code release if the course date moves.
-  COURSE_START_AT: process.env.COURSE_START_AT || '2026-08-01T00:00:00+06:00',
   COURSE_SEAT_LIMIT: Number(process.env.COURSE_SEAT_LIMIT || 100),
   COURSE_SEAT_LIMITS: {
     english: Number(process.env.COURSE_SEAT_LIMIT_ENGLISH || 110),
@@ -30,11 +25,9 @@ export default {
   GMAIL_CLIENT_ID: process.env.GMAIL_CLIENT_ID || '',
   GMAIL_CLIENT_SECRET: process.env.GMAIL_CLIENT_SECRET || '',
   GMAIL_REDIRECT_URI: process.env.GMAIL_REDIRECT_URI || 'http://localhost:5001/api/email/oauth/callback',
-  GMAIL_SENDER_EMAIL: (process.env.GMAIL_SENDER_EMAIL || 'lugaishodyssey@gmail.com').trim().toLowerCase(),
+  GMAIL_SENDER_EMAIL: (process.env.GMAIL_SENDER_EMAIL || 'tahmadium@gmail.com').toLowerCase(),
   EMAIL_MANAGER_EMAILS: process.env.EMAIL_MANAGER_EMAILS || 'tahmadium@gmail.com',
   GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || '',
-  DAILY_REMINDER_ENABLED: process.env.DAILY_REMINDER_ENABLED === 'true',
-  DAILY_REMINDER_TIME_ZONE: process.env.DAILY_REMINDER_TIME_ZONE || 'Asia/Dhaka',
   CORS_ORIGINS: [
     'https://lugaish.vercel.app',
     'http://localhost:4174',

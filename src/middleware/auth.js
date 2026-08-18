@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '../config.js';
 import { User } from '../models/User.js';
-import { hasPermission, normalizeRole } from '../utils/roles.js';
+import { hasPermission } from '../utils/roles.js';
 
 export const authMiddleware = (req, res, next) => {
   try {
@@ -18,6 +18,16 @@ export const authMiddleware = (req, res, next) => {
   }
 };
 
+export const optionalAuthMiddleware = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) req.userId = jwt.verify(token, config.JWT_SECRET).userId;
+  } catch {
+    // Public lesson reads remain public when a token is absent or stale.
+  }
+  next();
+};
+
 export const requirePermission = permission => async (req, res, next) => {
   try {
     const user = await User.findById(req.userId).select('role');
@@ -26,20 +36,6 @@ export const requirePermission = permission => async (req, res, next) => {
     }
 
     req.userRole = user.role;
-    return next();
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-export const requireRole = requiredRole => async (req, res, next) => {
-  try {
-    const user = await User.findById(req.userId).select('role');
-    if (!user || normalizeRole(user.role) !== requiredRole) {
-      return res.status(403).json({ error: 'You do not have permission for this action' });
-    }
-
-    req.userRole = normalizeRole(user.role);
     return next();
   } catch (error) {
     return res.status(500).json({ error: error.message });

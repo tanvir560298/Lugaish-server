@@ -3,14 +3,9 @@ import jwt from 'jsonwebtoken';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
-import { Progress } from '../models/Progress.js';
-import { Quiz } from '../models/Quiz.js';
-import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
-import { sendActiveSignupCampaign } from '../services/signupCampaign.js';
-import { getCourseStartDate } from '../utils/courseSchedule.js';
 
 const router = express.Router();
 
@@ -25,10 +20,8 @@ const webDeveloperEmails = new Set(
     .map(email => email.trim().toLowerCase())
     .filter(Boolean)
 );
+
 const testerEmails = new Set(['chatgpt.tanvir1@gmail.com']);
-const internEmails = new Set(
-  config.INTERN_EMAILS.split(',').map(email => email.trim().toLowerCase()).filter(Boolean)
-);
 
 function normalizePathways(pathways, fallback = 'english', { includeFallback = true } = {}) {
   const valid = new Set(['english', 'arabic']);
@@ -139,11 +132,13 @@ router.post('/firebase', async (req, res) => {
     }
 
     const selectedLanguage = ['english', 'arabic'].includes(languageSelected) ? languageSelected : 'english';
+    const selectedLanguageEnrollmentCount = await getEnrollmentCount(selectedLanguage);
+    const selectedLanguageLimit = getCourseSeatLimit(selectedLanguage);
+    const selectedLanguageHasSeat = selectedLanguageEnrollmentCount < selectedLanguageLimit;
     const firebaseUser = await verifyFirebaseToken(idToken);
     const firebaseEmail = firebaseUser.email.toLowerCase();
     const shouldBootstrapWebDeveloper = webDeveloperEmails.has(firebaseEmail);
     const shouldBootstrapTester = testerEmails.has(firebaseEmail);
-    const shouldBootstrapIntern = internEmails.has(firebaseEmail);
     const cleanedProfile = cleanLearnerProfile(learnerProfile);
     const preferredName = typeof displayName === 'string' && displayName.trim()
       ? displayName.trim().slice(0, 80)
@@ -156,21 +151,16 @@ router.post('/firebase', async (req, res) => {
       ],
     });
 
-    const isNewUser = !user;
-    if (isNewUser) {
+    if (!user) {
       user = new User({
         name: preferredName || firebaseUser.name || firebaseUser.email.split('@')[0],
         email: firebaseUser.email,
         authProvider: 'firebase',
         firebaseUid: firebaseUser.uid,
         avatarUrl: firebaseUser.picture,
-        role: shouldBootstrapWebDeveloper
-          ? ROLES.webDeveloper
-          : shouldBootstrapTester
-            ? ROLES.tester
-            : shouldBootstrapIntern ? ROLES.intern : ROLES.learner,
+        role: shouldBootstrapWebDeveloper ? ROLES.webDeveloper : shouldBootstrapTester ? ROLES.tester : ROLES.learner,
         languageSelected: selectedLanguage,
-        enrolledPathways: [selectedLanguage],
+        enrolledPathways: selectedLanguageHasSeat ? [selectedLanguage] : [],
         learnerProfile: cleanedProfile,
       });
     } else {
@@ -182,28 +172,15 @@ router.post('/firebase', async (req, res) => {
         user.role = ROLES.webDeveloper;
       } else if (shouldBootstrapTester && normalizeRole(user.role) !== ROLES.tester) {
         user.role = ROLES.tester;
-      } else if (shouldBootstrapIntern && normalizeRole(user.role) !== ROLES.intern) {
-        user.role = ROLES.intern;
       }
       user.learnerProfile = {
         ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
         ...cleanedProfile,
       };
-      // Signing in always grants access to the selected pathway. Lesson order
-      // remains protected independently by the progress/current-day checks.
-      user.languageSelected = selectedLanguage;
-      user.enrolledPathways = normalizePathways(user.enrolledPathways, selectedLanguage);
+      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
     }
 
     await user.save();
-
-    if (isNewUser) {
-      try {
-        await sendActiveSignupCampaign(user);
-      } catch (error) {
-        console.error(`New-user campaign error: ${error.message}`);
-      }
-    }
 
     const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
 
@@ -211,8 +188,6 @@ router.post('/firebase', async (req, res) => {
       message: 'Google login successful',
       token,
       user: toPublicUser(user),
-      courseEnrollmentOpen: true,
-      courseStartAt: getCourseStartDate().toISOString(),
     });
   } catch (error) {
     res.status(401).json({ error: error.message });
@@ -232,16 +207,14 @@ router.get('/enrollment-status/:language', async (req, res) => {
       getUserFromOptionalToken(req),
     ]);
     const limit = getCourseSeatLimit(language);
-    const seatsAvailable = Math.max(limit - enrolledCount, 0);
+    const seatsAvailable = limit === 0 ? 0 : Math.max(limit - enrolledCount, 0);
 
     res.json({
       language,
       limit,
       enrolledCount,
       seatsAvailable,
-      isFull: false,
-      enrollmentOpen: true,
-      courseStartAt: getCourseStartDate().toISOString(),
+      isFull: seatsAvailable <= 0,
       ...getCapacityPayload(language, user),
     });
   } catch (error) {
@@ -263,6 +236,20 @@ router.post('/enroll', authMiddleware, async (req, res) => {
     }
 
     user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+    const enrolledCount = await getEnrollmentCount(language);
+    const alreadyEnrolled = user.enrolledPathways.includes(language);
+
+    const limit = getCourseSeatLimit(language);
+
+    if (!alreadyEnrolled && enrolledCount >= limit) {
+      return res.status(409).json({
+        error: 'This cohort is currently full. Apply for a priority seat and our team will get back to you.',
+        code: 'COURSE_FULL',
+        language,
+        limit,
+        enrolledCount,
+      });
+    }
 
     if (!user.enrolledPathways.includes(language)) {
       user.enrolledPathways.push(language);
@@ -377,10 +364,15 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
     if (req.userRole === ROLES.tester) {
       const preview = user.toObject();
       preview.role = normalizeRole(role);
-      return res.json({ message: 'Tester preview only. The live role was not changed.', user: toPublicUser(preview), sandbox: true });
+      return res.json({
+        message: 'Tester preview only. The live user role was not changed.',
+        user: toPublicUser(preview),
+        sandbox: true,
+      });
     }
 
     user.role = normalizeRole(role);
@@ -395,43 +387,12 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
   }
 });
 
-// Only Web Developer can permanently remove a member and their learning data.
 router.delete('/users/:id', authMiddleware, requirePermission('manage_users'), async (req, res) => {
   try {
-    if (req.userRole === ROLES.intern) {
-      return res.status(403).json({ error: 'Interns cannot delete accounts or existing content' });
-    }
     if (req.userRole === ROLES.tester) {
-      return res.json({ message: 'Tester preview only. No account was removed.', sandbox: true });
+      return res.json({ message: 'Tester preview only. No user account was removed.', sandbox: true });
     }
-    if (req.params.id === req.userId) {
-      return res.status(400).json({ error: 'You cannot remove your own account' });
-    }
-
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (user.firebaseUid) {
-      try {
-        await getAuth().deleteUser(user.firebaseUid);
-      } catch (error) {
-        if (error?.code !== 'auth/user-not-found') throw error;
-      }
-    }
-
-    await Promise.all([
-      Progress.deleteMany({ userId: user._id }),
-      Quiz.deleteMany({ userId: user._id }),
-      InterviewQueueEntry.deleteMany({ userId: user._id }),
-      User.deleteOne({ _id: user._id }),
-    ]);
-
-    return res.json({
-      message: 'Member removed successfully',
-      removedUserId: user._id,
-    });
+    return res.status(501).json({ error: 'Live account removal is not enabled on this server' });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

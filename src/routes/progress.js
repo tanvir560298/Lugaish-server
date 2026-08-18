@@ -1,11 +1,7 @@
 import express from 'express';
 import { User } from '../models/User.js';
-import { Lesson } from '../models/Lesson.js';
+import { Progress } from '../models/Progress.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { getLanguageProgressState, markLanguageDayCompleted } from '../utils/dayProgress.js';
-import { getCourseSchedule, getDaySchedule } from '../utils/courseSchedule.js';
-import { getDayModuleType, isDayModulePublished } from '../utils/speakingPractice.js';
-import { getLessonVideoProgress } from '../utils/videoProgress.js';
 
 const router = express.Router();
 
@@ -18,30 +14,25 @@ function isEnrolled(user, language) {
 router.get('/:language', authMiddleware, async (req, res) => {
   try {
     const { language } = req.params;
-    if (!['english', 'arabic'].includes(language)) {
-      return res.status(400).json({ error: 'Invalid language' });
-    }
     const user = await User.findById(req.userId);
 
-    if (!user) return res.status(401).json({ error: 'User not found' });
     if (!isEnrolled(user, language)) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const { progress, completedDays, currentDay, ignoredPreLaunchDays } = await getLanguageProgressState(user, language);
-    const courseSchedule = getCourseSchedule();
+    let progress = await Progress.findOne({ userId: req.userId, language });
+    if (!progress) {
+      progress = new Progress({ userId: req.userId, language });
+      await progress.save();
+    }
 
     res.json({
       totalXP: user.totalXP,
-      courseXP: progress?.totalXP ?? 0,
       streak: user.streak,
-      completedDays,
-      currentDay,
-      ignoredPreLaunchDays,
+      completedDays: user.completedLessons,
+      currentDay: user.currentDay,
       badges: user.badges,
       lastActiveDate: user.lastActiveDate,
-      courseSchedule,
-      ...courseSchedule,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -52,62 +43,48 @@ router.get('/:language', authMiddleware, async (req, res) => {
 router.post('/update', authMiddleware, async (req, res) => {
   try {
     const { language, day, score } = req.body;
-    if (!['english', 'arabic'].includes(language) || !Number.isSafeInteger(Number(day)) || Number(day) < 1) {
-      return res.status(400).json({ error: 'language and a positive day are required' });
-    }
     const user = await User.findById(req.userId);
 
-    if (!user) return res.status(401).json({ error: 'User not found' });
     if (!isEnrolled(user, language)) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const normalizedDay = Number(day);
-    const daySchedule = getDaySchedule(normalizedDay);
-    if (!daySchedule.isReleased) {
-      return res.status(403).json({
-        error: daySchedule.courseStarted
-          ? `This day is available from ${daySchedule.scheduledFor}.`
-          : `The course begins on ${daySchedule.courseStartDate}.`,
-        code: daySchedule.courseStarted ? 'DAY_NOT_RELEASED' : 'COURSE_NOT_STARTED',
-        courseSchedule: getCourseSchedule(),
-        daySchedule,
+    let progress = await Progress.findOne({ userId: req.userId, language });
+    if (!progress) {
+      progress = new Progress({ userId: req.userId, language });
+    }
+
+    // Update completed days
+    const completedDay = progress.completedDays.find(d => d.day === day);
+    if (!completedDay) {
+      progress.completedDays.push({
+        day,
+        completedAt: new Date(),
+        score: score || 0,
       });
     }
 
-    const [lesson, progressState] = await Promise.all([
-      Lesson.findOne({ language, day: normalizedDay }),
-      getLanguageProgressState(user, language),
-    ]);
-    if (!lesson || !isDayModulePublished(lesson)) {
-      return res.status(404).json({ error: 'Lesson not found' });
-    }
-    if (normalizedDay > progressState.currentDay) {
-      return res.status(403).json({ error: 'Complete the current day before unlocking a future day' });
-    }
+    progress.totalXP += 100;
+    progress.lastActiveDate = new Date();
 
-    const videoProgress = getLessonVideoProgress(lesson, progressState.progress);
-    if (getDayModuleType(lesson) === 'video' && videoProgress.enabled && !videoProgress.allCompleted) {
-      return res.status(409).json({
-        error: 'Complete every video in this playlist before finishing the day',
-        code: 'COMPLETE_ALL_VIDEOS_FIRST',
-        videoProgress,
-      });
+    // Update streak
+    const today = new Date();
+    const lastActive = new Date(user.lastActiveDate);
+    const dayDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff === 1) {
+      user.streak += 1;
+      progress.streak += 1;
+    } else if (dayDiff > 1) {
+      user.streak = 1;
+      progress.streak = 1;
     }
 
-    const completion = await markLanguageDayCompleted({
-      user,
-      language,
-      day: normalizedDay,
-      score,
-    });
+    user.lastActiveDate = today;
+    await user.save();
+    await progress.save();
 
-    res.json({
-      message: completion.alreadyCompleted ? 'Progress was already recorded' : 'Progress updated',
-      progress: completion.progress,
-      completedDays: completion.completedDays,
-      currentDay: completion.currentDay,
-    });
+    res.json({ message: 'Progress updated', progress });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

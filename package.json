@@ -6,8 +6,6 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node --test",
-    "reminders:daily": "node scripts/send-daily-reminders.js",
     "seed": "node seed.js",
     "make:web-developer": "node scripts/set-web-developer.js",
     "make:tester": "node scripts/set-tester.js"

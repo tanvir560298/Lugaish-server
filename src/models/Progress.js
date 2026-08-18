@@ -1,18 +1,5 @@
 import mongoose from 'mongoose';
 
-const videoCompletionSchema = new mongoose.Schema(
-  {
-    day: { type: Number, required: true, min: 1 },
-    // Store IDs as strings so this remains compatible with existing lessons
-    // and does not depend on a particular MongoDB ObjectId representation.
-    completedVideoIds: { type: [String], default: [] },
-    // Missing or too-early timestamps are treated as legacy/pre-release
-    // progress and never unlock a video in the August 2026 course schedule.
-    completedAt: { type: Date, default: null },
-  },
-  { _id: false }
-);
-
 const progressSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -24,13 +11,6 @@ const progressSchema = new mongoose.Schema(
         score: Number,
       },
     ],
-    // Completion is intentionally separate from completedDays: a learner must
-    // finish every video in the ordered playlist before a video day can be
-    // marked as complete and unlock the next course day.
-    videoCompletions: {
-      type: [videoCompletionSchema],
-      default: [],
-    },
     totalXP: { type: Number, default: 0 },
     streak: { type: Number, default: 0 },
     lastActiveDate: { type: Date, default: Date.now },
@@ -44,10 +24,5 @@ const progressSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// A learner must have exactly one progress ledger per course. Besides keeping
-// reads predictable, this prevents two simultaneous completion requests from
-// creating separate XP ledgers for the same learner and language.
-progressSchema.index({ userId: 1, language: 1 }, { unique: true });
 
 export const Progress = mongoose.model('Progress', progressSchema);

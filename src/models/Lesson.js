@@ -1,50 +1,11 @@
 import mongoose from 'mongoose';
 
-const speakingQuestionSchema = new mongoose.Schema(
-  {
-    id: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 80,
-      match: /^[A-Za-z0-9_-]+$/,
-    },
-    question: { type: String, required: true, trim: true, maxlength: 500 },
-    language: { type: String, enum: ['english', 'arabic'], required: true },
-    expectedKeywords: {
-      type: [String],
-      required: true,
-      validate: {
-        validator: keywords => Array.isArray(keywords) && keywords.length > 0 && keywords.length <= 30,
-        message: 'A speaking question must have between 1 and 30 expected keywords',
-      },
-    },
-    sampleAnswer: { type: String, required: true, trim: true, maxlength: 2000 },
-    maxMarks: { type: Number, required: true, min: 0.01, max: 100 },
-    audioUrl: { type: String, trim: true, maxlength: 2048 },
-    acceptedResponses: {
-      type: [String],
-      default: [],
-      validate: {
-        validator: responses => responses.length <= 30,
-        message: 'A speaking question can have at most 30 accepted responses',
-      },
-    },
-    aiResponse: { type: String, trim: true, maxlength: 2000, default: '' },
-    scoringStrategy: {
-      type: String,
-      enum: ['keywords', 'greeting', 'name', 'wellbeing', 'origin', 'nationality', 'question_reading', 'english_first_meeting', 'english_self_introduction'],
-      default: 'keywords',
-    },
-  },
-  { _id: false }
-);
-
 const lessonVideoSchema = new mongoose.Schema(
   {
-    youtubeId: { type: String, required: true, trim: true, match: /^[A-Za-z0-9_-]{11}$/ },
     title: { type: String, required: true, trim: true, maxlength: 120 },
+    youtubeId: { type: String, required: true, trim: true },
     durationMinutes: { type: Number, required: true, min: 1, max: 600 },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
 );
@@ -57,23 +18,20 @@ const lessonSchema = new mongoose.Schema(
     description: { type: String },
     videoUrl: { type: String },
     duration: { type: Number }, // in minutes
-    videos: {
-      type: [lessonVideoSchema],
-      default: [],
-    },
-    // Legacy lessons without these fields remain normal published video days.
-    // The Web Developer can change a day to an AI practice or interview module.
-    moduleType: {
-      type: String,
-      enum: ['video', 'ai_practice', 'interview'],
-      default: 'video',
-    },
-    modulePublished: {
-      type: Boolean,
-      default: true,
-    },
-    moduleIntroTitle: { type: String, trim: true, maxlength: 160, default: '' },
-    moduleIntroText: { type: String, trim: true, maxlength: 2000, default: '' },
+    videos: { type: [lessonVideoSchema], default: [] },
+    moduleType: { type: String, enum: ['video', 'ai_practice', 'interview'], default: 'video' },
+    modulePublished: { type: Boolean, default: false },
+    moduleIntroTitle: { type: String, default: '', maxlength: 160 },
+    moduleIntroText: { type: String, default: '', maxlength: 2000 },
+    speakingQuestions: [{
+      id: { type: String, required: true, maxlength: 80 },
+      question: { type: String, required: true, maxlength: 500 },
+      language: { type: String, enum: ['english', 'arabic'], required: true },
+      expectedKeywords: [{ type: String, maxlength: 100 }],
+      sampleAnswer: { type: String, required: true, maxlength: 2000 },
+      maxMarks: { type: Number, required: true, min: 1, max: 100 },
+      audioUrl: { type: String, maxlength: 2048 },
+    }],
     vocabulary: [
       {
         word: String,
@@ -93,24 +51,6 @@ const lessonSchema = new mongoose.Schema(
         hint: String,
       },
     ],
-    speakingQuestions: {
-      type: [speakingQuestionSchema],
-      default: [],
-      validate: {
-        validator: questions => questions.length <= 30,
-        message: 'A lesson can have at most 30 speaking questions',
-      },
-    },
-    speakingPracticeEnabled: {
-      type: Boolean,
-      default: false,
-    },
-    speakingPracticeMode: {
-      type: String,
-      enum: ['respond', 'ask'],
-      default: 'respond',
-    },
-    managedContentKey: { type: String, trim: true, maxlength: 120, default: '' },
     quiz: [
       {
         question: String,
@@ -122,5 +62,7 @@ const lessonSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+lessonSchema.index({ language: 1, day: 1 }, { unique: true });
 
 export const Lesson = mongoose.model('Lesson', lessonSchema);
