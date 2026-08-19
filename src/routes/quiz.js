@@ -21,9 +21,10 @@ router.post('/submit', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'A valid language, day, and response list are required' });
     }
 
-    const [user, lesson] = await Promise.all([
+    const [user, lesson, previousSubmission] = await Promise.all([
       User.findById(req.userId),
       Lesson.findOne({ language, day }),
+      Quiz.exists({ userId: req.userId, language, day: Number(day) }),
     ]);
 
     if (!user) return res.status(401).json({ error: 'User not found' });
@@ -79,13 +80,28 @@ router.post('/submit', authMiddleware, async (req, res) => {
       totalQuestions: answerKey.length,
     });
 
-    await quiz.save();
+    const xpAwarded = previousSubmission ? 0 : 500;
+    if (xpAwarded) {
+      user.totalXP = Math.max(Number(user.totalXP) || 0, 0) + xpAwarded;
+      if (!user.completedLessons.includes(Number(day))) user.completedLessons.push(Number(day));
+      if (Number(day) === Number(user.currentDay)) user.currentDay += 1;
+      user.lastActiveDate = new Date();
+    }
+
+    await Promise.all([
+      quiz.save(),
+      ...(xpAwarded ? [user.save()] : []),
+    ]);
 
     res.json({
       message: 'Quiz submitted',
       score,
       correctAnswers: correctCount,
       totalQuestions: answerKey.length,
+      xpAwarded,
+      totalXP: user.totalXP,
+      streak: user.streak,
+      alreadyCompleted: Boolean(previousSubmission),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
