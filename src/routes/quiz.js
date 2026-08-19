@@ -4,6 +4,7 @@ import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { getArabicCourseDay } from '../utils/courseLaunch.js';
+import { getPublishedQuizAnswers } from '../data/publishedQuizAnswers.js';
 
 const router = express.Router();
 
@@ -41,22 +42,28 @@ router.post('/submit', authMiddleware, async (req, res) => {
     if (!lesson) {
       return res.status(404).json({ error: 'Lesson not found' });
     }
-    if (!Array.isArray(lesson.quiz) || lesson.quiz.length === 0) {
+    const storedAnswers = Array.isArray(lesson.quiz)
+      ? lesson.quiz.map(question => question.correctAnswer)
+      : [];
+    const answerKey = storedAnswers.length
+      ? storedAnswers
+      : getPublishedQuizAnswers(language, day);
+    if (answerKey.length === 0) {
       return res.status(409).json({ error: 'This lesson does not have a quiz yet' });
     }
-    if (responses.length !== lesson.quiz.length || responses.some(response => !Number.isSafeInteger(response?.selectedAnswer))) {
+    if (responses.length !== answerKey.length || responses.some(response => !Number.isSafeInteger(response?.selectedAnswer))) {
       return res.status(400).json({ error: 'Submit one valid answer for every quiz question' });
     }
 
     // Calculate score
     let correctCount = 0;
     responses.forEach((response, idx) => {
-      if (lesson.quiz[idx] && lesson.quiz[idx].correctAnswer === response.selectedAnswer) {
+      if (answerKey[idx] === response.selectedAnswer) {
         correctCount += 1;
       }
     });
 
-    const score = Math.round((correctCount / lesson.quiz.length) * 100);
+    const score = Math.round((correctCount / answerKey.length) * 100);
 
     // Save quiz result
     const quiz = new Quiz({
@@ -66,10 +73,10 @@ router.post('/submit', authMiddleware, async (req, res) => {
       responses: responses.map((r, idx) => ({
         questionIndex: idx,
         selectedAnswer: r.selectedAnswer,
-        isCorrect: lesson.quiz[idx].correctAnswer === r.selectedAnswer,
+        isCorrect: answerKey[idx] === r.selectedAnswer,
       })),
       score,
-      totalQuestions: lesson.quiz.length,
+      totalQuestions: answerKey.length,
     });
 
     await quiz.save();
@@ -78,7 +85,7 @@ router.post('/submit', authMiddleware, async (req, res) => {
       message: 'Quiz submitted',
       score,
       correctAnswers: correctCount,
-      totalQuestions: lesson.quiz.length,
+      totalQuestions: answerKey.length,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
