@@ -29,10 +29,13 @@ function getLessonParams(req, res) {
   return { language, day };
 }
 
-async function getRequesterRole(userId) {
+async function getRequesterRole(userId, req = null) {
   if (!userId) return ROLES.learner;
   const user = await User.findById(userId).select('role');
-  return normalizeRole(user?.role);
+  const role = normalizeRole(user?.role);
+  return role === ROLES.webDeveloper && req?.get('X-Lugaish-Learner-Preview') === '1'
+    ? ROLES.learner
+    : role;
 }
 
 function modulePayload(lesson) {
@@ -135,7 +138,7 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
     const { language } = req.params;
     if (!['english', 'arabic'].includes(language)) return res.status(400).json({ error: 'Invalid language' });
     
-    const role = await getRequesterRole(req.userId);
+    const role = await getRequesterRole(req.userId, req);
     const user = await User.findById(req.userId);
     
     let courseDay = 365;
@@ -159,7 +162,8 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
         questionCount: lesson.speakingQuestions?.length ?? 0,
         videoCount: lesson.videos?.length ?? 0,
       };
-    }).sort((a, b) => a.day - b.day);
+    }).filter(module => role !== ROLES.learner || (module.published && module.available))
+      .sort((a, b) => a.day - b.day);
     
     res.json({
       modules,
@@ -211,7 +215,7 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
   try {
     const params = getLessonParams(req, res);
     if (!params) return;
-    const role = await getRequesterRole(req.userId);
+    const role = await getRequesterRole(req.userId, req);
     if (params.language === 'arabic' && role === ROLES.learner) {
       const user = await User.findById(req.userId);
       const courseDay = await getArabicCourseDay(user);
@@ -234,7 +238,7 @@ router.get('/:language/:day', optionalAuthMiddleware, async (req, res) => {
     const params = getLessonParams(req, res);
     if (!params) return;
 
-    const role = await getRequesterRole(req.userId);
+    const role = await getRequesterRole(req.userId, req);
     if (params.language === 'arabic' && role === ROLES.learner) {
       const user = await User.findById(req.userId);
       const courseDay = await getArabicCourseDay(user);

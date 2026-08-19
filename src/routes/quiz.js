@@ -16,7 +16,16 @@ function isEnrolled(user, language) {
 router.post('/submit', authMiddleware, async (req, res) => {
   try {
     const { day, language, responses } = req.body;
-    const user = await User.findById(req.userId);
+    if (!['english', 'arabic'].includes(language) || !Number.isSafeInteger(Number(day)) || !Array.isArray(responses)) {
+      return res.status(400).json({ error: 'A valid language, day, and response list are required' });
+    }
+
+    const [user, lesson] = await Promise.all([
+      User.findById(req.userId),
+      Lesson.findOne({ language, day }),
+    ]);
+
+    if (!user) return res.status(401).json({ error: 'User not found' });
 
     if (!isEnrolled(user, language)) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
@@ -29,10 +38,14 @@ router.post('/submit', authMiddleware, async (req, res) => {
       }
     }
 
-    // Get lesson to verify answers
-    const lesson = await Lesson.findOne({ language, day });
     if (!lesson) {
       return res.status(404).json({ error: 'Lesson not found' });
+    }
+    if (!Array.isArray(lesson.quiz) || lesson.quiz.length === 0) {
+      return res.status(409).json({ error: 'This lesson does not have a quiz yet' });
+    }
+    if (responses.length !== lesson.quiz.length || responses.some(response => !Number.isSafeInteger(response?.selectedAnswer))) {
+      return res.status(400).json({ error: 'Submit one valid answer for every quiz question' });
     }
 
     // Calculate score
