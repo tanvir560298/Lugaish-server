@@ -1,6 +1,10 @@
 import { ROLES, normalizeRole } from './roles.js';
 
 const COURSE_TIME_ZONE = 'Asia/Dhaka';
+// The Arabic founding cohort started on this Bangladesh calendar date. Keep
+// every learner on the same daily schedule instead of basing it on the time
+// their individual account happened to enroll.
+const ARABIC_COURSE_START_DATE = process.env.ARABIC_COURSE_START_DATE || '2026-08-17';
 const dhakaDateFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: COURSE_TIME_ZONE,
   year: 'numeric',
@@ -21,7 +25,7 @@ function getDhakaCalendarDayNumber(value) {
   return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / (24 * 60 * 60 * 1000));
 }
 
-export function getArabicCourseDay(user, now = new Date()) {
+export function getArabicCourseDay(user, now = new Date(), courseStartDate = ARABIC_COURSE_START_DATE) {
   if (!user) return 365;
 
   const role = normalizeRole(user.role);
@@ -29,7 +33,7 @@ export function getArabicCourseDay(user, now = new Date()) {
     return 365;
   }
 
-  const startDate = user.arabicStartDate || user.createdAt || now;
+  const startDate = courseStartDate || user.arabicStartDate || user.createdAt || now;
   const startCalendarDay = getDhakaCalendarDayNumber(startDate);
   const currentCalendarDay = getDhakaCalendarDayNumber(now);
   if (startCalendarDay === null || currentCalendarDay === null) return 1;
