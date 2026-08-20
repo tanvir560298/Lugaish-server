@@ -1,6 +1,27 @@
 import { ROLES, normalizeRole } from './roles.js';
 
-export function getArabicCourseDay(user) {
+const COURSE_TIME_ZONE = 'Asia/Dhaka';
+const dhakaDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: COURSE_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function getDhakaCalendarDayNumber(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const parts = Object.fromEntries(
+    dhakaDateFormatter.formatToParts(date)
+      .filter(part => part.type !== 'literal')
+      .map(part => [part.type, Number(part.value)]),
+  );
+
+  return Math.floor(Date.UTC(parts.year, parts.month - 1, parts.day) / (24 * 60 * 60 * 1000));
+}
+
+export function getArabicCourseDay(user, now = new Date()) {
   if (!user) return 365;
 
   const role = normalizeRole(user.role);
@@ -8,8 +29,12 @@ export function getArabicCourseDay(user) {
     return 365;
   }
 
-  const startDate = user.arabicStartDate || user.createdAt || new Date();
-  const msDiff = Date.now() - new Date(startDate).getTime();
-  const daysDiff = Math.floor(msDiff / (24 * 60 * 60 * 1000));
-  return Math.max(1, daysDiff + 1);
+  const startDate = user.arabicStartDate || user.createdAt || now;
+  const startCalendarDay = getDhakaCalendarDayNumber(startDate);
+  const currentCalendarDay = getDhakaCalendarDayNumber(now);
+  if (startCalendarDay === null || currentCalendarDay === null) return 1;
+
+  // Course days follow Bangladesh calendar dates. A new day therefore opens
+  // at 12:00 AM in Dhaka, rather than 24 hours after the enrollment timestamp.
+  return Math.max(1, currentCalendarDay - startCalendarDay + 1);
 }
