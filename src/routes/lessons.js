@@ -143,7 +143,13 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
     
     let courseDay = 365;
     if (language === 'arabic') {
-      courseDay = await getArabicCourseDay(user);
+      // Learner preview must use the same enrollment-based schedule as a real
+      // learner. Passing the original web-developer document would otherwise
+      // make getArabicCourseDay return unrestricted planning access (365).
+      const scheduleUser = role === ROLES.learner && normalizeRole(user.role) !== ROLES.learner
+        ? { ...user.toObject(), role: ROLES.learner }
+        : user;
+      courseDay = await getArabicCourseDay(scheduleUser);
     }
     
     const liveLessons = await Lesson.find({ language }).lean();
