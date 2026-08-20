@@ -72,6 +72,7 @@ app.get('/health', (req, res) => {
     status: 'Backend running',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     apiBase: '/api',
+    scheduleVersion: 'per-learner-dhaka-v3',
   });
 });
 
