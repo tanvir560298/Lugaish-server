@@ -1,6 +1,9 @@
 import { ROLES, normalizeRole } from './roles.js';
 
 const COURSE_TIME_ZONE = 'Asia/Dhaka';
+// All Arabic learners follow the same website-wide calendar. In Bangladesh,
+// 18 August 2026 is Day 1, so 21 August is Day 4.
+const ARABIC_COURSE_START_DATE = '2026-08-18';
 const dhakaDateFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: COURSE_TIME_ZONE,
   year: 'numeric',
@@ -29,7 +32,7 @@ export function getArabicCourseDay(user, now = new Date()) {
     return 365;
   }
 
-  const startDate = user.arabicStartDate || user.createdAt || now;
+  const startDate = ARABIC_COURSE_START_DATE;
   const startCalendarDay = getDhakaCalendarDayNumber(startDate);
   const currentCalendarDay = getDhakaCalendarDayNumber(now);
   if (startCalendarDay === null || currentCalendarDay === null) return 1;
