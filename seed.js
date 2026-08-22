@@ -136,6 +136,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Always control non-essential operational ________.', options: ['Expence', 'Expense', 'Expens', 'Expanse'], correctAnswer: 1, explanation: "'Expense' is the correct spelling for the cost required for something." },
       { question: 'Please send the official tax ________ to the procurement team.', options: ['Invoise', 'Invoys', 'Invoice', 'Invoicee'], correctAnswer: 2, explanation: "'Invoice' is the correct spelling for a list of goods sent or services provided, with a statement of the sum due." },
       { question: 'The marketing team prepared a strict quarterly ________.', options: ['Buget', 'Budjet', 'Budget', 'Budgett'], correctAnswer: 2, explanation: "'Budget' is the correct spelling for an estimate of income and expenditure for a set period." }
+    ] : day === 20 ? [
+      { question: 'The auditor requested a formal ________ from management.', options: ['Conferm', 'Confirm', 'Confirme', 'Cunfirm'], correctAnswer: 1, explanation: "'Confirm' is the correct spelling for establishing the truth or correctness." },
+      { question: 'We need to ________ the whole procurement workflow.', options: ['Revise', 'Revize', 'Revaise', 'Revice'], correctAnswer: 0, explanation: "'Revise' is the correct spelling for re-examining and improving." },
+      { question: 'Management will ________ the final restructuring proposal.', options: ['Acept', 'Accept', 'Axcept', 'Acsept'], correctAnswer: 1, explanation: "'Accept' is the correct spelling for consenting to receive." },
+      { question: 'The finance manager gave verbal ________ for the payment.', options: ['Concent', 'Consent', 'Consente', 'Consant'], correctAnswer: 1, explanation: "'Consent' is the correct spelling for permission for something to happen." },
+      { question: 'Please ________ the internal control weaknesses clearly.', options: ['Explane', 'Explain', 'Explayn', 'Explaine'], correctAnswer: 1, explanation: "'Explain' is the correct spelling for making something clear." },
+      { question: 'The board will ________ the financial viability of the merger.', options: ['Discus', 'Discuss', 'Discusse', 'Discuse'], correctAnswer: 1, explanation: "'Discuss' is the correct spelling for talking about something to reach a decision." },
+      { question: 'Students must critically ________ the investment proposal.', options: ['Evalute', 'Evaluate', 'Evaluaite', 'Evaluatee'], correctAnswer: 1, explanation: "'Evaluate' is the correct spelling for assessing or forming an idea of amount or value." },
+      { question: '________ the current year ratios with last year\'s figures.', options: ['Compare', 'Compair', 'Compere', 'Comparee'], correctAnswer: 0, explanation: "'Compare' is the correct spelling for estimating, measuring, or noting the similarity or dissimilarity." },
+      { question: 'The external audit team will ________ the variance ledger.', options: ['Analize', 'Analyse', 'Analise', 'Analyz'], correctAnswer: 1, explanation: "'Analyse' is the correct spelling (UK standard, common in ACCA) for examining methodically." },
+      { question: 'The consultant will ________ a cost reduction strategy.', options: ['Reccomend', 'Recomended', 'Recommend', 'Recommende'], correctAnswer: 2, explanation: "'Recommend' is the correct spelling for advising or suggesting." }
     ] : spellingQuestions[qIndex];
     return {
       day,
