@@ -48,6 +48,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'I read an English ________ every morning.', options: ['Boke', 'Bookk', 'Book', 'Buke'], correctAnswer: 2, explanation: "'Book' is the correct spelling for a written or printed work." },
       { question: 'Smart ________ always produces the best results.', options: ['Wrok', 'Work', 'Wark', 'Worke'], correctAnswer: 1, explanation: "'Work' is the correct spelling for activity involving work/effort." },
       { question: 'We must ________ each other in difficult situations.', options: ['Halp', 'Helpp', 'Hlep', 'Help'], correctAnswer: 3, explanation: "'Help' is the correct spelling for assist or support." }
+    ] : day === 4 ? [
+      { question: 'Please pay the monthly electricity ________ on time.', options: ['Bil', 'Bill', 'Bile', 'Bll'], correctAnswer: 1, explanation: "'Bill' is the correct spelling for a statement of charges." },
+      { question: 'He studied hard to ________ the final examination.', options: ['Pas', 'Pase', 'Pass', 'Paas'], correctAnswer: 2, explanation: "'Pass' is the correct spelling for succeeding in an exam." },
+      { question: 'I will ________ you after the meeting ends.', options: ['Call', 'Cal', 'Caul', 'Cale'], correctAnswer: 0, explanation: "'Call' is the correct spelling for contact by phone or summon." },
+      { question: 'The company suffered a heavy financial ________ this quarter.', options: ['Los', 'Lose', 'Loss', 'Loos'], correctAnswer: 2, explanation: "'Loss' is the correct spelling for deficit or failure to keep." },
+      { question: 'Our office ________ are very professional and cooperative.', options: ['Staf', 'Staff', 'Staffe', 'Steff'], correctAnswer: 1, explanation: "'Staff' is the correct spelling for a group of employees." },
+      { question: 'Join the English spelling ________ at 8 PM sharp.', options: ['Clas', 'Classe', 'Class', 'Claas'], correctAnswer: 2, explanation: "'Class' is the correct spelling for a course of instruction." },
+      { question: 'They ________ high-quality organic goods.', options: ['Sel', 'Sell', 'Selle', 'Cel'], correctAnswer: 1, explanation: "'Sell' is the correct spelling for exchange for money." },
+      { question: 'Always ________ the exact truth to your team.', options: ['Tel', 'Tell', 'Telle', 'Teal'], correctAnswer: 1, explanation: "'Tell' is the correct spelling for speak or communicate." },
+      { question: 'Do not let your focus and attention ________.', options: ['Fal', 'Fall', 'Fawl', 'Fale'], correctAnswer: 1, explanation: "'Fall' is the correct spelling for drop or decrease." },
+      { question: 'The meeting room was ________ of executives.', options: ['Ful', 'Fule', 'Full', 'Fool'], correctAnswer: 2, explanation: "'Full' is the correct spelling for containing all that can be held." }
     ] : spellingQuestions[qIndex];
     return {
       day,
