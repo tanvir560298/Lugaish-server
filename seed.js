@@ -125,6 +125,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Managing regular ________ is essential for small business liquidity.', options: ['Cash flow', 'Cashflow', 'Cash-flow', 'Casheflow'], correctAnswer: 1, explanation: "'Cashflow' is the correct spelling for the movement of money in and out of a business." },
       { question: 'Build a solid professional ________ to explore better business partnerships.', options: ['Net work', 'Network', 'Net-work', 'Netwrok'], correctAnswer: 1, explanation: "'Network' is the correct spelling for a group of interconnected people or things." },
       { question: 'The board requested a brief financial ________ of the upcoming budget.', options: ['Over vew', 'Over-view', 'Overview', 'Overveiw'], correctAnswer: 2, explanation: "'Overview' is the correct spelling for a general review or summary." }
+    ] : day === 18 ? [
+      { question: 'The company reported a record net ________ this financial year.', options: ['Profet', 'Profit', 'Proffit', 'Prophit'], correctAnswer: 1, explanation: "'Profit' is the correct spelling for financial gain." },
+      { question: 'Cash in hand and inventory are classified as current ________.', options: ['Asett', 'Aset', 'Asset', 'Assett'], correctAnswer: 2, explanation: "'Asset' is the correct spelling for a useful or valuable quality, person, or thing." },
+      { question: 'Check the warehouse closing ________ before finalizing accounts.', options: ['Stoc', 'Stock', 'Stok', 'Stoak'], correctAnswer: 1, explanation: "'Stock' is the correct spelling for goods or merchandise kept on the premises." },
+      { question: 'We need to determine the fair market ________ of the machinery.', options: ['Valu', 'Valew', 'Value', 'Vallue'], correctAnswer: 2, explanation: "'Value' is the correct spelling for the regard that something is held to deserve." },
+      { question: 'We need to raise equity ________ to expand operations.', options: ['Capitel', 'Capital', 'Capitall', 'Capytal'], correctAnswer: 1, explanation: "'Capital' is the correct spelling for wealth in the form of money or other assets." },
+      { question: 'Download the updated general ________ for ledger auditing.', options: ['Lejer', 'Leger', 'Ledger', 'Ledjer'], correctAnswer: 2, explanation: "'Ledger' is the correct spelling for a book or other collection of financial accounts." },
+      { question: 'The annual company ________ crossed our initial budget projection.', options: ['Revenew', 'Revenu', 'Revenue', 'Revnue'], correctAnswer: 2, explanation: "'Revenue' is the correct spelling for income, especially when of a company or organization." },
+      { question: 'Always control non-essential operational ________.', options: ['Expence', 'Expense', 'Expens', 'Expanse'], correctAnswer: 1, explanation: "'Expense' is the correct spelling for the cost required for something." },
+      { question: 'Please send the official tax ________ to the procurement team.', options: ['Invoise', 'Invoys', 'Invoice', 'Invoicee'], correctAnswer: 2, explanation: "'Invoice' is the correct spelling for a list of goods sent or services provided, with a statement of the sum due." },
+      { question: 'The marketing team prepared a strict quarterly ________.', options: ['Buget', 'Budjet', 'Budget', 'Budgett'], correctAnswer: 2, explanation: "'Budget' is the correct spelling for an estimate of income and expenditure for a set period." }
     ] : spellingQuestions[qIndex];
     return {
       day,
