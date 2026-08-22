@@ -18,7 +18,30 @@ const ARABIC_QUIZ_ANSWERS = new Map([
   [26, [1, 2]],
 ]);
 
+const ENGLISH_QUIZ_ANSWERS = new Map([
+  [2, [1, 2, 1, 0, 1, 2, 0, 2, 1, 3]],
+  [4, [1, 2, 0, 2, 1, 2, 1, 1, 1, 2]],
+  [6, [1, 1, 1, 2, 1, 1, 1, 2, 1, 2]],
+  [8, [1, 1, 1, 2, 1, 1, 1, 2, 1, 0]],
+  [10, [1, 2, 1, 1, 1, 1, 0, 1, 2, 0]],
+  [12, [1, 0, 1, 2, 2, 0, 1, 1, 0, 2]],
+  [14, [1, 1, 1, 1, 2, 1, 2, 1, 2, 1]],
+  [16, [1, 1, 2, 1, 2, 1, 0, 1, 1, 2]],
+  [18, [1, 2, 1, 2, 1, 2, 2, 1, 2, 2]],
+  [20, [1, 0, 1, 1, 1, 1, 1, 0, 1, 2]],
+  [22, [2, 1, 0, 2, 1, 1, 2, 1, 2, 0]],
+  [24, [1, 2, 0, 0, 1, 0, 1, 1, 1, 1]],
+  [26, [1, 1, 1, 0, 2, 0, 0, 2, 1, 0]],
+  [28, [0, 1, 1, 1, 1, 1, 1, 1, 0, 1]],
+  [30, [0, 0, 1, 1, 1, 2, 1, 1, 1, 0]],
+]);
+
 export function getPublishedQuizAnswers(language, day) {
-  if (language !== 'arabic') return [];
-  return ARABIC_QUIZ_ANSWERS.get(Number(day)) ?? [];
+  if (language === 'arabic') {
+    return ARABIC_QUIZ_ANSWERS.get(Number(day)) ?? [];
+  }
+  if (language === 'english') {
+    return ENGLISH_QUIZ_ANSWERS.get(Number(day)) ?? [];
+  }
+  return [];
 }
