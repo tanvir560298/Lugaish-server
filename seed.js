@@ -114,6 +114,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Please check the compliance ________ in the annual report.', options: ['Secsion', 'Section', 'Secktion', 'Sectshon'], correctAnswer: 1, explanation: "'Section' is the correct spelling for part, area, or division." },
       { question: 'The team successfully completed its audit ________ on time.', options: ['Mision', 'Mishtion', 'Mission', 'Misson'], correctAnswer: 2, explanation: "'Mission' is the correct spelling for an important assignment." },
       { question: 'He shared a clear corporate ________ for future expansion.', options: ['Vition', 'Vision', 'Visyon', 'Vizion'], correctAnswer: 1, explanation: "'Vision' is the correct spelling for the ability to think about the future with wisdom." }
+    ] : day === 16 ? [
+      { question: 'The company managed to pay off its long-term bank ________.', options: ['Det', 'Debt', 'Debte', 'Dept'], correctAnswer: 1, explanation: "'Debt' is the correct spelling for something owed." },
+      { question: 'Always collect the payment ________ after completing the purchase.', options: ['Resit', 'Receipt', 'Reciept', 'Receit'], correctAnswer: 1, explanation: "'Receipt' is the correct spelling for a written acknowledgment of payment." },
+      { question: 'Clear any sort of ________ with the lead auditor before signing.', options: ['Dout', 'Dowt', 'Doubt', 'Doubte'], correctAnswer: 2, explanation: "'Doubt' is the correct spelling for uncertainty or lack of conviction." },
+      { question: 'Please ________ carefully to the instructions given in the briefing.', options: ['Lisen', 'Listen', 'Liston', 'Lissin'], correctAnswer: 1, explanation: "'Listen' is the correct spelling for giving attention to sound." },
+      { question: 'We must submit the finalized audit file before the ________.', options: ['Dead line', 'Dedline', 'Deadline', 'Dead-line'], correctAnswer: 2, explanation: "'Deadline' is the correct spelling for the latest time by which something must be completed." },
+      { question: 'Client ________ on the new financial software was overwhelmingly positive.', options: ['Feed back', 'Feedback', 'Feed-back', 'Feede-back'], correctAnswer: 1, explanation: "'Feedback' is the correct spelling for information about reactions to a product." },
+      { question: 'Ensure the secure customer ________ is backed up on the cloud daily.', options: ['Database', 'Data base', 'Data-base', 'Databaise'], correctAnswer: 0, explanation: "'Database' is the correct spelling for a structured set of data." },
+      { question: 'Managing regular ________ is essential for small business liquidity.', options: ['Cash flow', 'Cashflow', 'Cash-flow', 'Casheflow'], correctAnswer: 1, explanation: "'Cashflow' is the correct spelling for the movement of money in and out of a business." },
+      { question: 'Build a solid professional ________ to explore better business partnerships.', options: ['Net work', 'Network', 'Net-work', 'Netwrok'], correctAnswer: 1, explanation: "'Network' is the correct spelling for a group of interconnected people or things." },
+      { question: 'The board requested a brief financial ________ of the upcoming budget.', options: ['Over vew', 'Over-view', 'Overview', 'Overveiw'], correctAnswer: 2, explanation: "'Overview' is the correct spelling for a general review or summary." }
     ] : spellingQuestions[qIndex];
     return {
       day,
