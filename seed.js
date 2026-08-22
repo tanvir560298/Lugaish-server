@@ -158,6 +158,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Every investment carries an element of financial ________.', options: ['Risc', 'Risk', 'Riske', 'Risck'], correctAnswer: 1, explanation: "'Risk' is the correct spelling for danger or hazard." },
       { question: 'Record the daily ledger ________ accurately.', options: ['Transacktion', 'Transation', 'Transaction', 'Tranzaction'], correctAnswer: 2, explanation: "'Transaction' is the correct spelling for business event or transfer." },
       { question: 'The business negotiated terms with its primary ________.', options: ['Creditor', 'Crediter', 'Creaditor', 'Credytor'], correctAnswer: 0, explanation: "'Creditor' is the correct spelling for a person or company to whom money is owed." }
+    ] : day === 24 ? [
+      { question: 'The bank approved a formal loan ________ for the company.', options: ['Facillity', 'Facility', 'Fasility', 'Facilaty'], correctAnswer: 1, explanation: "'Facility' is the correct spelling for amenity or service." },
+      { question: 'The company issued ordinary shares to raise ________.', options: ['Equitty', 'Equitey', 'Equity', 'Equety'], correctAnswer: 2, explanation: "'Equity' is the correct spelling for stock or assets." },
+      { question: 'Check the total bank ________ limit before withdrawing.', options: ['Overdraft', 'Over-draft', 'Overdrafte', 'Overdrauft'], correctAnswer: 0, explanation: "'Overdraft' is the correct spelling for a deficit in a bank account." },
+      { question: 'Review the loan ________ schedule provided by the bank.', options: ['Repayment', 'Repayement', 'Re-payment', 'Repaymint'], correctAnswer: 0, explanation: "'Repayment' is the correct spelling for paying back money." },
+      { question: 'We need to develop a solid cost-reduction ________.', options: ['Stratejy', 'Strategy', 'Stratigy', 'Strategie'], correctAnswer: 1, explanation: "'Strategy' is the correct spelling for plan of action." },
+      { question: 'The board will ________ the new compliance policies.', options: ['Implement', 'Impliment', 'Implemant', 'Implemente'], correctAnswer: 0, explanation: "'Implement' is the correct spelling for putting a decision or plan into effect." },
+      { question: 'Our team will ________ the annual key performance indicators.', options: ['Moniter', 'Monitor', 'Monnitor', 'Mawnitor'], correctAnswer: 1, explanation: "'Monitor' is the correct spelling for keeping under systematic review." },
+      { question: 'Ensure all accounting records are 100% ________.', options: ['Acurate', 'Accurate', 'Accurite', 'Accuret'], correctAnswer: 1, explanation: "'Accurate' is the correct spelling for precise or correct." },
+      { question: 'The external auditor identified a severe system ________.', options: ['Weekness', 'Weakness', 'Weaknes', 'Weaknesse'], correctAnswer: 1, explanation: "'Weakness' is the correct spelling for lacking strength or flaw." },
+      { question: 'The manager gave a detailed ________ of the operational workflow.', options: ['Discription', 'Description', 'Descreption', 'Descriptione'], correctAnswer: 1, explanation: "'Description' is the correct spelling for representation in words." }
     ] : spellingQuestions[qIndex];
     return {
       day,
