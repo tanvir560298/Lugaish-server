@@ -3,7 +3,7 @@ import { Quiz } from '../models/Quiz.js';
 import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { getArabicCourseDay } from '../utils/courseLaunch.js';
+import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
 import { getPublishedQuizAnswers } from '../data/publishedQuizAnswers.js';
 
 const router = express.Router();
@@ -33,11 +33,15 @@ router.post('/submit', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
+    let courseDay = 365;
     if (language === 'arabic') {
-      const courseDay = await getArabicCourseDay(user);
-      if (day > courseDay) {
-        return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
-      }
+      courseDay = await getArabicCourseDay(user);
+    } else if (language === 'english') {
+      courseDay = await getEnglishCourseDay(user);
+    }
+
+    if (day > courseDay) {
+      return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
     }
 
     if (!lesson) {

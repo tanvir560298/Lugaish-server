@@ -41,3 +41,17 @@ export function getArabicCourseDay(user, now = new Date()) {
   // at 12:00 AM in Dhaka, rather than 24 hours after the enrollment timestamp.
   return Math.max(1, currentCalendarDay - startCalendarDay + 1);
 }
+
+export function getEnglishCourseDay(user) {
+  if (!user) return 365;
+
+  const role = normalizeRole(user.role);
+  if (role !== ROLES.learner) {
+    return 365;
+  }
+
+  const startDate = user.englishStartDate || user.createdAt || new Date();
+  const msDiff = Date.now() - new Date(startDate).getTime();
+  const daysDiff = Math.floor(msDiff / (24 * 60 * 60 * 1000));
+  return Math.max(1, daysDiff + 1);
+}

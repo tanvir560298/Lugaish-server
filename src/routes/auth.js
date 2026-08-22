@@ -162,6 +162,7 @@ router.post('/firebase', async (req, res) => {
         languageSelected: selectedLanguage,
         enrolledPathways: selectedLanguageHasSeat ? [selectedLanguage] : [],
         arabicStartDate: (selectedLanguage === 'arabic' && selectedLanguageHasSeat) ? new Date() : undefined,
+        englishStartDate: (selectedLanguage === 'english' && selectedLanguageHasSeat) ? new Date() : undefined,
         learnerProfile: cleanedProfile,
       });
     } else {
@@ -257,6 +258,9 @@ router.post('/enroll', authMiddleware, async (req, res) => {
     }
     if (language === 'arabic' && !user.arabicStartDate) {
       user.arabicStartDate = new Date();
+    }
+    if (language === 'english' && !user.englishStartDate) {
+      user.englishStartDate = new Date();
     }
     user.languageSelected = language;
 

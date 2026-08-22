@@ -8,7 +8,7 @@ import { TesterLesson } from '../models/TesterLesson.js';
 import { authMiddleware, optionalAuthMiddleware, requirePermission } from '../middleware/auth.js';
 import { getYouTubeId } from '../utils/youtube.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { getArabicCourseDay } from '../utils/courseLaunch.js';
+import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
 
 const router = express.Router();
 
@@ -98,16 +98,20 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
+    let courseDay = 365;
     if (language === 'arabic') {
-      const courseDay = await getArabicCourseDay(user);
-      if (user.currentDay > courseDay) {
-        return res.status(403).json({
-          error: 'Next day is not unlocked yet. Please wait for 24 hours.',
-          code: 'LESSON_LOCKED',
-          courseDay,
-          currentDay: user.currentDay,
-        });
-      }
+      courseDay = await getArabicCourseDay(user);
+    } else if (language === 'english') {
+      courseDay = await getEnglishCourseDay(user);
+    }
+
+    if (user.currentDay > courseDay) {
+      return res.status(403).json({
+        error: 'Next day is not unlocked yet. Please wait for 24 hours.',
+        code: 'LESSON_LOCKED',
+        courseDay,
+        currentDay: user.currentDay,
+      });
     }
 
     const lesson = await Lesson.findOne({ language, day: user.currentDay });
@@ -142,14 +146,13 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
     const user = await User.findById(req.userId);
     
     let courseDay = 365;
+    const scheduleUser = role === ROLES.learner && normalizeRole(user.role) !== ROLES.learner
+      ? { ...user.toObject(), role: ROLES.learner }
+      : user;
     if (language === 'arabic') {
-      // Learner preview must use the same enrollment-based schedule as a real
-      // learner. Passing the original web-developer document would otherwise
-      // make getArabicCourseDay return unrestricted planning access (365).
-      const scheduleUser = role === ROLES.learner && normalizeRole(user.role) !== ROLES.learner
-        ? { ...user.toObject(), role: ROLES.learner }
-        : user;
       courseDay = await getArabicCourseDay(scheduleUser);
+    } else if (language === 'english') {
+      courseDay = await getEnglishCourseDay(scheduleUser);
     }
     
     const liveLessons = await Lesson.find({ language }).lean();
@@ -159,7 +162,7 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
     
     const modules = [...byDay.entries()].map(([day, lesson]) => {
       const dayNum = Number(day);
-      const isAvailable = language !== 'arabic' || dayNum <= courseDay;
+      const isAvailable = dayNum <= courseDay;
       return {
         day: dayNum,
         ...modulePayload(lesson),
@@ -222,9 +225,14 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
     const params = getLessonParams(req, res);
     if (!params) return;
     const role = await getRequesterRole(req.userId, req);
-    if (params.language === 'arabic' && role === ROLES.learner) {
+    if (role === ROLES.learner) {
       const user = await User.findById(req.userId);
-      const courseDay = await getArabicCourseDay(user);
+      let courseDay = 365;
+      if (params.language === 'arabic') {
+        courseDay = await getArabicCourseDay(user);
+      } else if (params.language === 'english') {
+        courseDay = await getEnglishCourseDay(user);
+      }
       if (params.day > courseDay) {
         return res.status(403).json({ error: 'This practice is not unlocked yet.' });
       }
@@ -245,9 +253,14 @@ router.get('/:language/:day', optionalAuthMiddleware, async (req, res) => {
     if (!params) return;
 
     const role = await getRequesterRole(req.userId, req);
-    if (params.language === 'arabic' && role === ROLES.learner) {
+    if (role === ROLES.learner) {
       const user = await User.findById(req.userId);
-      const courseDay = await getArabicCourseDay(user);
+      let courseDay = 365;
+      if (params.language === 'arabic') {
+        courseDay = await getArabicCourseDay(user);
+      } else if (params.language === 'english') {
+        courseDay = await getEnglishCourseDay(user);
+      }
       if (params.day > courseDay) {
         return res.status(403).json({ error: 'This lesson is not unlocked yet.', code: 'LESSON_LOCKED' });
       }
@@ -356,11 +369,14 @@ router.post('/complete', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
+    let courseDay = 365;
     if (language === 'arabic') {
-      const courseDay = await getArabicCourseDay(user);
-      if (day > courseDay) {
-        return res.status(403).json({ error: 'Cannot complete a locked lesson.' });
-      }
+      courseDay = await getArabicCourseDay(user);
+    } else if (language === 'english') {
+      courseDay = await getEnglishCourseDay(user);
+    }
+    if (day > courseDay) {
+      return res.status(403).json({ error: 'Cannot complete a locked lesson.' });
     }
 
     if (!user.completedLessons.includes(day)) {

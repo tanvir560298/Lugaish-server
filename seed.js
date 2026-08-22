@@ -4,90 +4,57 @@ import config from './src/config.js';
 
 mongoose.connect(config.MONGODB_URI);
 
-const englishLessons = [
-  {
-    day: 1,
-    language: 'english',
-    title: 'Greetings & Introductions',
-    description: 'Learn how to greet and introduce yourself in English',
-    videoUrl: 'https://example.com/lesson1.mp4',
-    duration: 10,
-    vocabulary: [
-      { word: 'Hello', translation: 'مرحبا', pronunciation: 'hə-LOH', example: 'Hello, my name is Ahmed.' },
-      { word: 'Hi', translation: 'أهلا', pronunciation: 'HY', example: 'Hi there!' },
-      { word: 'Good morning', translation: 'صباح الخير', pronunciation: 'good MOR-ning', example: 'Good morning, everyone.' },
-      { word: 'Goodbye', translation: 'وداعا', pronunciation: 'good-BYE', example: 'Goodbye, see you tomorrow.' },
-      { word: 'Nice to meet you', translation: 'يسعدني التعرف عليك', pronunciation: 'nys too MEET yoo', example: 'Nice to meet you, Sara.' },
-    ],
-    grammar: {
-      concept: 'Present Simple - Introductions',
-      explanation: 'The present simple tense is used for facts, habits, and introductions.',
-      examples: ['I am Ahmed.', 'She is a teacher.', 'They are students.'],
-    },
-    speakingTasks: [
-      { prompt: 'Introduce yourself in English', hint: 'Start with "Hello, my name is..."' },
-      { prompt: 'Greet someone and ask their name', hint: 'Use "Hi" and "What is your name?"' },
-    ],
-    quiz: [
-      {
-        question: 'How do you say "Hello" in English?',
-        options: ['Goodbye', 'Hello', 'Thank you', 'Please'],
-        correctAnswer: 1,
-        explanation: 'Hello is a common greeting.',
+const englishLessons = Array.from({ length: 30 }, (_, index) => {
+  const day = index + 1;
+  if (day % 2 !== 0) {
+    return {
+      day,
+      language: 'english',
+      title: `Lesson ${day}: English Spelling Rules (PDF)`,
+      description: `Study the supplementary PDF material for Day ${day} to master spelling rules and vocabulary.`,
+      videoUrl: '',
+      duration: 10,
+      vocabulary: [],
+      grammar: {
+        concept: `Spelling Pattern ${day}`,
+        explanation: `Focus on Day ${day} spelling patterns, root words, prefixes, and suffixes.`,
+        examples: []
       },
-      {
-        question: 'What time of day do you say "Good morning"?',
-        options: ['Evening', 'Afternoon', 'Morning', 'Night'],
-        correctAnswer: 2,
-        explanation: 'Good morning is used in the early hours of the day.',
+      speakingTasks: [],
+      quiz: []
+    };
+  } else {
+    const spellingQuestions = [
+      [
+        { question: 'Choose the correct spelling:', options: ['Receive', 'Recieve', 'Receve', 'Recive'], correctAnswer: 0, explanation: 'Remember "i before e except after c".' },
+        { question: 'Select the correct spelling:', options: ['Believe', 'Beleive', 'Belive', 'Beleev'], correctAnswer: 0, explanation: 'In "believe", i comes before e.' },
+        { question: 'Which word is spelled correctly?', options: ['Separate', 'Seperate', 'Seperat', 'Separret'], correctAnswer: 0, explanation: 'The word is "separate" with an "a" in the middle.' }
+      ],
+      [
+        { question: 'Identify the correct spelling:', options: ['Definitely', 'Definately', 'Definetely', 'Definatly'], correctAnswer: 0, explanation: 'It comes from "finite", so it has "definite" + "ly".' },
+        { question: 'Choose the correct spelling:', options: ['Until', 'Untill', 'Untile', 'Untyl'], correctAnswer: 0, explanation: '"Until" ends with a single "l".' },
+        { question: 'Select the correct spelling:', options: ['Calendar', 'Calender', 'Calandar', 'Calander'], correctAnswer: 0, explanation: 'The correct spelling is "calendar".' }
+      ]
+    ];
+    const qIndex = Math.floor(day / 2) % spellingQuestions.length;
+    return {
+      day,
+      language: 'english',
+      title: `Lesson ${day}: Spelling Practice Quiz`,
+      description: `Test your spelling knowledge with the Day ${day} Review Quiz.`,
+      videoUrl: '',
+      duration: 10,
+      vocabulary: [],
+      grammar: {
+        concept: `Spelling Check ${day}`,
+        explanation: `Test spelling recall and identify common spelling mistakes.`,
+        examples: []
       },
-      {
-        question: 'Complete: "Nice to ___ you"',
-        options: ['see', 'know', 'meet', 'find'],
-        correctAnswer: 2,
-        explanation: 'The phrase is "Nice to meet you" when greeting someone.',
-      },
-    ],
-  },
-  {
-    day: 2,
-    language: 'english',
-    title: 'Basic Conversation Starters',
-    description: 'Master simple questions and answers',
-    videoUrl: 'https://example.com/lesson2.mp4',
-    duration: 12,
-    vocabulary: [
-      { word: 'How are you?', translation: 'كيف حالك؟', pronunciation: 'how ar YOO', example: 'How are you today?' },
-      { word: 'I am fine', translation: 'أنا بخير', pronunciation: 'eye am FYN', example: 'I am fine, thank you.' },
-      { word: 'Where are you from?', translation: 'من أين أنت؟', pronunciation: 'where ar yoo FROM', example: 'Where are you from?' },
-      { word: 'What is your name?', translation: 'ما اسمك؟', pronunciation: 'what iz yor NAME', example: 'What is your name?' },
-      { word: 'Thank you', translation: 'شكراً', pronunciation: 'thank YOO', example: 'Thank you very much.' },
-    ],
-    grammar: {
-      concept: 'Question Formation',
-      explanation: 'Use question words (What, Where, How) + auxiliary verbs (do, are).',
-      examples: ['What is your name?', 'Where are you from?', 'How are you?'],
-    },
-    speakingTasks: [
-      { prompt: 'Ask someone where they are from', hint: '"Where are you from?"' },
-      { prompt: 'Respond to "How are you?"', hint: 'Say "I am fine, thank you"' },
-    ],
-    quiz: [
-      {
-        question: 'What question would you ask to learn someone\'s name?',
-        options: ['Who are you?', 'What is your name?', 'Are you a person?', 'Do you exist?'],
-        correctAnswer: 1,
-        explanation: 'Use "What is your name?" to ask for someone\'s name.',
-      },
-      {
-        question: 'How do you politely respond to "How are you?"',
-        options: ['I don\'t know', 'I am fine, thank you', 'That\'s none of your business', 'I don\'t care'],
-        correctAnswer: 1,
-        explanation: '"I am fine, thank you" is a polite and common response.',
-      },
-    ],
-  },
-];
+      speakingTasks: [],
+      quiz: spellingQuestions[qIndex]
+    };
+  }
+});
 
 const arabicLessons = [
   {

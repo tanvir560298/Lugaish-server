@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema(
     badges: [{ type: String }],
     lastActiveDate: { type: Date, default: Date.now },
     arabicStartDate: { type: Date },
+    englishStartDate: { type: Date },
   },
   { timestamps: true }
 );
