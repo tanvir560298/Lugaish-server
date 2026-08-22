@@ -37,6 +37,18 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       ]
     ];
     const qIndex = Math.floor(day / 2) % spellingQuestions.length;
+    const quizQuestions = day === 2 ? [
+      { question: 'Please write your full ________ on the registration form.', options: ['Naam', 'Name', 'Naym', 'Naim'], correctAnswer: 1, explanation: "'Name' is the correct English spelling. 'Naam' is Bengali/Hindi pronunciation." },
+      { question: 'We must manage our study ________ properly.', options: ['Taim', 'Tyme', 'Time', 'Timme'], correctAnswer: 2, explanation: "'Time' is the correct spelling for duration or period." },
+      { question: 'We need a solid action ________ for this project.', options: ['Plane', 'Plan', 'Plann', 'Plen'], correctAnswer: 1, explanation: "'Plan' means a scheme or method of acting, whereas 'Plane' is an airplane or flat surface." },
+      { question: 'The total production ________ is very low.', options: ['Cost', 'Coste', 'Caust', 'Coast'], correctAnswer: 0, explanation: "'Cost' is the correct spelling for price or expense." },
+      { question: 'Every new business involves some financial ________.', options: ['Risc', 'Risk', 'Riske', 'Risck'], correctAnswer: 1, explanation: "'Risk' is the correct spelling for danger or hazard." },
+      { question: 'The organization approved a new growth ________.', options: ['Fand', 'Funde', 'Fund', 'Phund'], correctAnswer: 2, explanation: "'Fund' is the correct spelling for a sum of money saved or made available." },
+      { question: 'Keep your study ________ clean and organized.', options: ['Desk', 'Deske', 'Dask', 'Desck'], correctAnswer: 0, explanation: "'Desk' is the correct spelling for a reading or writing table." },
+      { question: 'I read an English ________ every morning.', options: ['Boke', 'Bookk', 'Book', 'Buke'], correctAnswer: 2, explanation: "'Book' is the correct spelling for a written or printed work." },
+      { question: 'Smart ________ always produces the best results.', options: ['Wrok', 'Work', 'Wark', 'Worke'], correctAnswer: 1, explanation: "'Work' is the correct spelling for activity involving work/effort." },
+      { question: 'We must ________ each other in difficult situations.', options: ['Halp', 'Helpp', 'Hlep', 'Help'], correctAnswer: 3, explanation: "'Help' is the correct spelling for assist or support." }
+    ] : spellingQuestions[qIndex];
     return {
       day,
       language: 'english',
@@ -51,7 +63,7 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
         examples: []
       },
       speakingTasks: [],
-      quiz: spellingQuestions[qIndex]
+      quiz: quizQuestions
     };
   }
 });
