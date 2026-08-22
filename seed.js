@@ -180,6 +180,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Management must measure overall workforce ________.', options: ['Efficency', 'Efficiancy', 'Efficiency', 'Efficiencce'], correctAnswer: 2, explanation: "'Efficiency' is the correct spelling for state or quality of being efficient." },
       { question: 'The new plant will increase total production ________.', options: ['Capasity', 'Capacity', 'Capacitty', 'Capacitey'], correctAnswer: 1, explanation: "'Capacity' is the correct spelling for maximum amount that something can contain." },
       { question: 'The board wants to assess long-term commercial ________.', options: ['Viability', 'Viabilty', 'Viabaliti', 'Vyability'], correctAnswer: 0, explanation: "'Viability' is the correct spelling for ability to work successfully." }
+    ] : day === 28 ? [
+      { question: 'Calculate the earnings per ________ before declaring dividends.', options: ['Share', 'Shair', 'Sheare', 'Shar'], correctAnswer: 0, explanation: "'Share' is the correct spelling for a portion of ownership." },
+      { question: 'The firm generated a high operating cash ________.', options: ['Flowe', 'Flow', 'Floe', 'Flou'], correctAnswer: 1, explanation: "'Flow' is the correct spelling for movement or circulation." },
+      { question: 'Check the total production ________ per unit.', options: ['Coste', 'Cost', 'Caust', 'Coast'], correctAnswer: 1, explanation: "'Cost' is the correct spelling for price or expense." },
+      { question: 'Verify the opening cash ________ in the bank ledger.', options: ['Balence', 'Balance', 'Balanse', 'Balaunce'], correctAnswer: 1, explanation: "'Balance' is the correct spelling for amount remaining or stable state." },
+      { question: 'Both parties signed the legally binding ________.', options: ['Contrack', 'Contract', 'Contrakt', 'Contracte'], correctAnswer: 1, explanation: "'Contract' is the correct spelling for a written or spoken agreement." },
+      { question: 'The board must follow corporate ________ guidelines.', options: ['Governanse', 'Governance', 'Governnance', 'Governmance'], correctAnswer: 1, explanation: "'Governance' is the correct spelling for action or manner of governing." },
+      { question: 'The director has an ethical ________ to disclose conflicts.', options: ['Duti', 'Duty', 'Dutey', 'Dutee'], correctAnswer: 1, explanation: "'Duty' is the correct spelling for moral or legal obligation." },
+      { question: 'Ensure all clauses in the agreement are ________.', options: ['Legel', 'Legal', 'Legall', 'Leagal'], correctAnswer: 1, explanation: "'Legal' is the correct spelling for permitted by law." },
+      { question: 'The company faced a legal ________ for late delivery.', options: ['Claim', 'Claime', 'Claym', 'Clame'], correctAnswer: 0, explanation: "'Claim' is the correct spelling for demand or assertion." },
+      { question: 'The manager has full ________ to approve the budget.', options: ['Authoriti', 'Authority', 'Authoraty', 'Authourity'], correctAnswer: 1, explanation: "'Authority' is the correct spelling for power or right to give orders." }
     ] : spellingQuestions[qIndex];
     return {
       day,
