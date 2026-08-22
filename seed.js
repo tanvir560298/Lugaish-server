@@ -1649,6 +1649,200 @@ const arabicLessons = [
         "explanation": "ছাত্রী (স্ত্রীলিঙ্গ) এর জাতীয়তা প্রকাশে “আনা বাংলাদেশিয়্যাতুন” সঠিক বাক্য।"
       }
     ]
+  },
+  {
+    "day": 27,
+    "language": "arabic",
+    "title": "Lesson 27: Arabic Reading Practice (PDF 14)",
+    "description": "Learn family vocabulary, possessive pronouns, and masculine and feminine pointers in Arabic.",
+    "videoUrl": "https://drive.google.com/file/d/1L5mulFYCCyvGN1ysm62HDBhCPJwAUVq6/view?usp=sharing",
+    "duration": 15,
+    "vocabulary": [],
+    "grammar": {
+      "concept": "Arabic Day 27",
+      "explanation": "Family vocabulary, possessive pronouns, and masculine and feminine pointers.",
+      "examples": []
+    },
+    "speakingTasks": [],
+    "moduleType": "video",
+    "modulePublished": true,
+    "quiz": []
+  },
+  {
+    "day": 28,
+    "language": "arabic",
+    "title": "Lesson 28: MCQ Quiz Practice",
+    "description": "Review the family vocabulary and grammar from Arabic PDF 14.",
+    "videoUrl": "https://example.com/arabic-lesson28.mp4",
+    "duration": 15,
+    "vocabulary": [],
+    "grammar": {
+      "concept": "Arabic Day 28",
+      "explanation": "Review the family vocabulary and grammar from Arabic PDF 14.",
+      "examples": []
+    },
+    "speakingTasks": [],
+    "moduleType": "video",
+    "modulePublished": true,
+    "quiz": [
+      {
+        "question": "আরবি শব্দ “أُسْرَةٌ” (Usratun)-এর সঠিক বাংলা অর্থ কোনটি?",
+        "options": ["বংশলতিকা", "পরিবার", "বাবা", "মা"],
+        "correctAnswer": 1,
+        "explanation": "“أُسْرَةٌ” (Usratun) অর্থ পরিবার।"
+      },
+      {
+        "question": "“شَجَرَةٌ” (Shajaratun) শব্দের সঠিক অর্থ কোনটি?",
+        "options": ["পরিবার", "মা", "গাছ বা বংশলতিকা", "ছেলে"],
+        "correctAnswer": 2,
+        "explanation": "“شَجَرَةٌ” (Shajaratun) অর্থ গাছ; পারিবারিক প্রসঙ্গে এটি বংশলতিকা বোঝায়।"
+      },
+      {
+        "question": "“দাদা/নানা” বোঝাতে কোন আরবি শব্দটি ব্যবহৃত হয়?",
+        "options": ["جَدٌّ (Jaddun)", "وَالِدٌ (Walidun)", "اِبْنٌ (Ibnun)", "عَمٌّ (Ammun)"],
+        "correctAnswer": 0,
+        "explanation": "“جَدٌّ” (Jaddun) অর্থ দাদা বা নানা।"
+      },
+      {
+        "question": "“কন্যা/মেয়ে” বোঝাতে কোন আরবি শব্দটি সঠিক?",
+        "options": ["اِبْنٌ (Ibnun)", "جَدَّةٌ (Jaddatun)", "بِنْتٌ (Bintun)", "عَمٌّ (Ammun)"],
+        "correctAnswer": 2,
+        "explanation": "“بِنْتٌ” (Bintun) বা “اِبْنَةٌ” (Ibnatun) অর্থ কন্যা বা মেয়ে।"
+      },
+      {
+        "question": "“চাচা” (Paternal Uncle) বোঝাতে কোন আরবি শব্দটি ব্যবহৃত হয়?",
+        "options": ["خَالٌ (Khaalun)", "أَخٌ (Akhun)", "وَالِدٌ (Walidun)", "عَمٌّ (Ammun)"],
+        "correctAnswer": 3,
+        "explanation": "“عَمٌّ” (Ammun) অর্থ পিতৃকুলের চাচা।"
+      },
+      {
+        "question": "“তার বাবা” (His Father) বোঝাতে “وَالِدٌ” (Walidun)-এর সঙ্গে কোন রূপটি সঠিক?",
+        "options": ["وَالِدُهُ (Waliduhu)", "وَالِدُهَا (Waliduhaa)", "وَالِدِي (Walidii)", "وَالِدُكَ (Waliduka)"],
+        "correctAnswer": 0,
+        "explanation": "পুরুষবাচক “তার” বোঝাতে শব্দের শেষে ـهُ যুক্ত হয়; তাই “وَالِدُهُ” অর্থ তার বাবা।"
+      },
+      {
+        "question": "“তার নাম” (His Name) বোঝাতে কোন রূপটি সঠিক?",
+        "options": ["اِسْمُهَا (Ismuhaa)", "اِسْمُهُ (Ismuhu)", "اِسْمِي (Ismii)", "اِسْمُكَ (Ismuka)"],
+        "correctAnswer": 1,
+        "explanation": "“اِسْمٌ” শব্দের শেষে ـهُ যুক্ত করে “اِسْمُهُ” বলা হয়, যার অর্থ তার নাম।"
+      },
+      {
+        "question": "কাছের কোনো পুরুষবাচক ব্যক্তিকে নির্দেশ করতে কোন শব্দটি ব্যবহৃত হয়?",
+        "options": ["هٰذَا (Haadhaa)", "هٰذِهِ (Haadhihi)", "هٰؤُلَاءِ (Haaulaai)", "ذٰلِكَ (Dhaalika)"],
+        "correctAnswer": 0,
+        "explanation": "কাছের পুরুষবাচক ব্যক্তি বা বস্তুর জন্য “هٰذَا” ব্যবহৃত হয়।"
+      },
+      {
+        "question": "“ইনি আমার মা” বলতে সঠিক স্ত্রীবাচক নির্দেশকসহ কোন বাক্যটি হবে?",
+        "options": ["هٰذَا وَالِدَتِي", "هٰذِهِ وَالِدَتِي", "هٰذَا وَالِدِي", "هٰؤُلَاءِ وَالِدَتِي"],
+        "correctAnswer": 1,
+        "explanation": "“وَالِدَةٌ” স্ত্রীবাচক হওয়ায় কাছের নির্দেশক হিসেবে “هٰذِهِ” ব্যবহৃত হয়।"
+      },
+      {
+        "question": "“أُسْرَةُ الرَّسُولِ” (রাসুলের পরিবার) কোন ব্যাকরণিক গঠন?",
+        "options": ["Na‘t-Man‘ut", "Question sentence", "Mudaf-Mudaf Ilayh", "Verb sentence"],
+        "correctAnswer": 2,
+        "explanation": "“أُسْرَةُ الرَّسُولِ” একটি Mudaf-Mudaf Ilayh বা সম্বন্ধযুক্ত পদগঠন।"
+      }
+    ]
+  },
+  {
+    "day": 29,
+    "language": "arabic",
+    "title": "Lesson 29: Arabic Reading Practice (PDF 15)",
+    "description": "Practice family introductions, professions, feminine possession, and gender agreement in Arabic.",
+    "videoUrl": "https://drive.google.com/file/d/1qQ-ssJzX019LVFZNR6O-3Clh3XrNmVih/view?usp=sharing",
+    "duration": 15,
+    "vocabulary": [],
+    "grammar": {
+      "concept": "Arabic Day 29",
+      "explanation": "Family introductions, professions, feminine possession, and gender agreement.",
+      "examples": []
+    },
+    "speakingTasks": [],
+    "moduleType": "video",
+    "modulePublished": true,
+    "quiz": []
+  },
+  {
+    "day": 30,
+    "language": "arabic",
+    "title": "Lesson 30: MCQ Quiz Practice",
+    "description": "Review family introductions and profession grammar from Arabic PDF 15.",
+    "videoUrl": "https://example.com/arabic-lesson30.mp4",
+    "duration": 15,
+    "vocabulary": [],
+    "grammar": {
+      "concept": "Arabic Day 30",
+      "explanation": "Review family introductions and profession grammar from Arabic PDF 15.",
+      "examples": []
+    },
+    "speakingTasks": [],
+    "moduleType": "video",
+    "modulePublished": true,
+    "quiz": [
+      {
+        "question": "“صُورَةٌ” (Suuratun) শব্দের সঠিক বাংলা অর্থ কোনটি?",
+        "options": ["ছবি", "পরিবার", "ভাই", "পেশা"],
+        "correctAnswer": 0,
+        "explanation": "“صُورَةٌ” (Suuratun) অর্থ ছবি বা চিত্র।"
+      },
+      {
+        "question": "“ভাই” বোঝাতে কোন আরবি শব্দটি ব্যবহৃত হয়?",
+        "options": ["أُخْتٌ (Ukhtun)", "أَخٌ (Akhun)", "عَمَّةٌ (Ammatun)", "خَالٌ (Khaalun)"],
+        "correctAnswer": 1,
+        "explanation": "“أَخٌ” (Akhun) অর্থ ভাই।"
+      },
+      {
+        "question": "“বোন” বোঝাতে কোন আরবি শব্দটি সঠিক?",
+        "options": ["أَخٌ (Akhun)", "بِنْتٌ (Bintun)", "أُخْتٌ (Ukhtun)", "وَالِدَةٌ (Walidatun)"],
+        "correctAnswer": 2,
+        "explanation": "“أُخْتٌ” (Ukhtun) অর্থ বোন।"
+      },
+      {
+        "question": "“আমার মামা” বোঝাতে PDF-এ কোন রূপটি শেখানো হয়েছে?",
+        "options": ["عَمِّي (Ammii)", "أَخِي (Akhii)", "وَالِدِي (Walidii)", "خَالِي (Khaalii)"],
+        "correctAnswer": 3,
+        "explanation": "“خَالِي” (Khaalii) অর্থ আমার মামা।"
+      },
+      {
+        "question": "“নারী ডাক্তার” বোঝাতে সঠিক আরবি শব্দ কোনটি?",
+        "options": ["طَبِيبٌ (Tabiibun)", "طَبِيبَةٌ (Tabiibatun)", "مُعَلِّمَةٌ (Muallimatun)", "مُهَنْدِسٌ (Muhandisun)"],
+        "correctAnswer": 1,
+        "explanation": "“طَبِيبَةٌ” (Tabiibatun) অর্থ নারী ডাক্তার।"
+      },
+      {
+        "question": "“তার বাড়ি” (Her House) বোঝাতে সঠিক আরবি রূপ কোনটি?",
+        "options": ["بَيْتُهُ (Baytuhu)", "بَيْتُهَا (Baytuhaa)", "بَيْتِي (Baytii)", "بَيْتُكَ (Baytuka)"],
+        "correctAnswer": 1,
+        "explanation": "স্ত্রীবাচক “তার” বোঝাতে শব্দের শেষে ـهَا যুক্ত হয়; তাই “بَيْتُهَا” অর্থ তার বাড়ি।"
+      },
+      {
+        "question": "“তিনি একজন নারী প্রকৌশলী”—এখানে প্রকৌশলীর সঠিক স্ত্রীবাচক আরবি শব্দ কোনটি?",
+        "options": ["مُهَنْدِسٌ (Muhandisun)", "طَبِيبَةٌ (Tabiibatun)", "مُهَنْدِسَةٌ (Muhandisatun)", "مُعَلِّمٌ (Muallimun)"],
+        "correctAnswer": 2,
+        "explanation": "পুরুষবাচক “مُهَنْدِسٌ”-এর শেষে ة যোগ করে স্ত্রীবাচক “مُهَنْدِسَةٌ” হয়।"
+      },
+      {
+        "question": "“এটি আমার পরিবারের ছবি”—বাক্যে “ছবি” স্ত্রীবাচক হওয়ায় কোন নির্দেশকটি সঠিক?",
+        "options": ["هٰذِهِ (Haadhihi)", "هٰذَا (Haadhaa)", "ذٰلِكَ (Dhaalika)", "هُوَ (Huwa)"],
+        "correctAnswer": 0,
+        "explanation": "“صُورَةٌ” স্ত্রীবাচক শব্দ, তাই কাছের নির্দেশক হিসেবে “هٰذِهِ” ব্যবহৃত হয়।"
+      },
+      {
+        "question": "“ইনি আমার বাবা, তিনি একজন প্রকৌশলী”—এর সঠিক আরবি বাক্য কোনটি?",
+        "options": ["هٰذِهِ وَالِدَتِي، هِيَ طَبِيبَةٌ", "هٰذَا أَخِي، هُوَ طَالِبٌ", "هٰذِهِ أُخْتِي، هِيَ مُعَلِّمَةٌ", "هٰذَا وَالِدِي، هُوَ مُهَنْدِسٌ"],
+        "correctAnswer": 3,
+        "explanation": "বাবার জন্য “هٰذَا وَالِدِي” এবং পুরুষ প্রকৌশলীর জন্য “هُوَ مُهَنْدِسٌ” সঠিক।"
+      },
+      {
+        "question": "“ইনি আমার বোন, তিনি একজন শিক্ষিকা”—এর সঠিক আরবি বাক্য কোনটি?",
+        "options": ["هٰذَا أَخِي، هُوَ مُعَلِّمٌ", "هٰذِهِ وَالِدَتِي، هِيَ طَبِيبَةٌ", "هٰذِهِ أُخْتِي، هِيَ مُعَلِّمَةٌ", "هٰذَا جَدِّي، هُوَ مُهَنْدِسٌ"],
+        "correctAnswer": 2,
+        "explanation": "বোনের জন্য “هٰذِهِ أُخْتِي” এবং শিক্ষিকার জন্য “هِيَ مُعَلِّمَةٌ” সঠিক।"
+      }
+    ]
   }
 ];
 ;

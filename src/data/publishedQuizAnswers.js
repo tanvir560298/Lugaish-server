@@ -16,6 +16,8 @@ const ARABIC_QUIZ_ANSWERS = new Map([
   [22, [1, 0]],
   [24, [1, 1]],
   [26, [1, 2]],
+  [28, [1, 2, 0, 2, 3, 0, 1, 0, 1, 2]],
+  [30, [0, 1, 2, 3, 1, 1, 2, 0, 3, 2]],
 ]);
 
 const ENGLISH_QUIZ_ANSWERS = new Map([
