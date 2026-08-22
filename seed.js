@@ -81,6 +81,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Always maintain accurate physical ________ records.', options: ['Cashe', 'Cask', 'Cash', 'Cashh'], correctAnswer: 2, explanation: "'Cash' is the correct spelling for physical money or currency." },
       { question: '________ does the general meeting officially begin?', options: ['Wen', 'When', 'Whan', 'Whean'], correctAnswer: 1, explanation: "'When' is the correct spelling to ask at what time." },
       { question: 'The company agreed to ________ its technical resources.', options: ['Share', 'Shair', 'Shar', 'Shaer'], correctAnswer: 0, explanation: "'Share' is the correct spelling for dividing or distributing portion." }
+    ] : day === 10 ? [
+      { question: 'Please fill out the official registration ________ carefully.', options: ['From', 'Form', 'Fourm', 'Frome'], correctAnswer: 1, explanation: "'Form' is the correct spelling for a document to be filled in." },
+      { question: 'He joined an accounting and auditing ________ last month.', options: ['Farm', 'Ferm', 'Firm', 'Phirm'], correctAnswer: 2, explanation: "'Firm' is the correct spelling for a business or company." },
+      { question: 'Now it is your ________ to present the financial slides.', options: ['Tern', 'Turn', 'Tyrn', 'Tturn'], correctAnswer: 1, explanation: "'Turn' is the correct spelling for an opportunity to do something." },
+      { question: 'Always ________ the key points in the contract ledger.', options: ['Marc', 'Mark', 'Marke', 'Maark'], correctAnswer: 1, explanation: "'Mark' is the correct spelling for write or write a sign." },
+      { question: 'Please ________ the physical cash balance before store closing.', options: ['Cownt', 'Count', 'Cowntt', 'Caunt'], correctAnswer: 1, explanation: "'Count' is the correct spelling for determine the total number." },
+      { question: 'Highlight each critical ________ in the audit report.', options: ['Poynt', 'Point', 'Poinnt', 'Poyint'], correctAnswer: 1, explanation: "'Point' is the correct spelling for an item of information or argument." },
+      { question: 'The board wants to ________ revenue rapidly this quarter.', options: ['Grow', 'Grou', 'Growe', 'Groe'], correctAnswer: 0, explanation: "'Grow' is the correct spelling for increase in size or quantity." },
+      { question: 'We plan to ________ five qualified tax associates next month.', options: ['Emploi', 'Employ', 'Employe', 'Emplay'], correctAnswer: 1, explanation: "'Employ' is the correct spelling for hiring or using services." },
+      { question: 'All manufacturing production costs must come ________ soon.', options: ['Doun', 'Downe', 'Down', 'Dawn'], correctAnswer: 2, explanation: "'Down' is the correct spelling for lower in position or value." },
+      { question: 'Make sure you take a ________ and legally compliant decision.', options: ['Sound', 'Sownd', 'Saund', 'Sounde'], correctAnswer: 0, explanation: "'Sound' is the correct spelling for logical, healthy, or secure." }
     ] : spellingQuestions[qIndex];
     return {
       day,
