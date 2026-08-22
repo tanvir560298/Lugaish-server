@@ -169,6 +169,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Ensure all accounting records are 100% ________.', options: ['Acurate', 'Accurate', 'Accurite', 'Accuret'], correctAnswer: 1, explanation: "'Accurate' is the correct spelling for precise or correct." },
       { question: 'The external auditor identified a severe system ________.', options: ['Weekness', 'Weakness', 'Weaknes', 'Weaknesse'], correctAnswer: 1, explanation: "'Weakness' is the correct spelling for lacking strength or flaw." },
       { question: 'The manager gave a detailed ________ of the operational workflow.', options: ['Discription', 'Description', 'Descreption', 'Descriptione'], correctAnswer: 1, explanation: "'Description' is the correct spelling for representation in words." }
+    ] : day === 26 ? [
+      { question: 'The firm will conduct an external ________ next month.', options: ['Addit', 'Audit', 'Audite', 'Auditt'], correctAnswer: 1, explanation: "'Audit' is the correct spelling for an official inspection of accounts." },
+      { question: 'Ensure full legal ________ with trade regulations.', options: ['Complience', 'Compliance', 'Complianse', 'Complyance'], correctAnswer: 1, explanation: "'Compliance' is the correct spelling for action or fact of complying with a wish or command." },
+      { question: 'Follow the standard operating ________ strictly.', options: ['Prosedure', 'Procedure', 'Procedur', 'Proceedure'], correctAnswer: 1, explanation: "'Procedure' is the correct spelling for an established or official way of doing something." },
+      { question: 'Review the internal system ________ before reporting.', options: ['Control', 'Controll', 'Controle', 'Conntrol'], correctAnswer: 0, explanation: "'Control' is the correct spelling for the power to influence or direct people's behavior or the course of events." },
+      { question: 'Calculate the company\'s net profit ________ accurately.', options: ['Magin', 'Margine', 'Margin', 'Marjin'], correctAnswer: 2, explanation: "'Margin' is the correct spelling for an amount by which a thing is won or falls short." },
+      { question: 'Check the short-term acid test ________ balance.', options: ['Ratio', 'Racio', 'Ratioe', 'Raytio'], correctAnswer: 0, explanation: "'Ratio' is the correct spelling for the quantitative relation between two amounts." },
+      { question: 'Ensure the business maintains adequate cash ________.', options: ['Liquidity', 'Liquidty', 'Liquidetey', 'Liquedity'], correctAnswer: 0, explanation: "'Liquidity' is the correct spelling for the availability of liquid assets to a market or company." },
+      { question: 'Management must measure overall workforce ________.', options: ['Efficency', 'Efficiancy', 'Efficiency', 'Efficiencce'], correctAnswer: 2, explanation: "'Efficiency' is the correct spelling for state or quality of being efficient." },
+      { question: 'The new plant will increase total production ________.', options: ['Capasity', 'Capacity', 'Capacitty', 'Capacitey'], correctAnswer: 1, explanation: "'Capacity' is the correct spelling for maximum amount that something can contain." },
+      { question: 'The board wants to assess long-term commercial ________.', options: ['Viability', 'Viabilty', 'Viabaliti', 'Vyability'], correctAnswer: 0, explanation: "'Viability' is the correct spelling for ability to work successfully." }
     ] : spellingQuestions[qIndex];
     return {
       day,
