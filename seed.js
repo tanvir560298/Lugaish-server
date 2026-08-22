@@ -147,6 +147,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: '________ the current year ratios with last year\'s figures.', options: ['Compare', 'Compair', 'Compere', 'Comparee'], correctAnswer: 0, explanation: "'Compare' is the correct spelling for estimating, measuring, or noting the similarity or dissimilarity." },
       { question: 'The external audit team will ________ the variance ledger.', options: ['Analize', 'Analyse', 'Analise', 'Analyz'], correctAnswer: 1, explanation: "'Analyse' is the correct spelling (UK standard, common in ACCA) for examining methodically." },
       { question: 'The consultant will ________ a cost reduction strategy.', options: ['Reccomend', 'Recomended', 'Recommend', 'Recommende'], correctAnswer: 2, explanation: "'Recommend' is the correct spelling for advising or suggesting." }
+    ] : day === 22 ? [
+      { question: 'Calculate the annual fixed asset ________ expense.', options: ['Depresiation', 'Depriciation', 'Depreciation', 'Depretiation'], correctAnswer: 2, explanation: "'Depreciation' is the correct spelling for reduction in value over time." },
+      { question: 'The auditor verified the year-end raw material ________.', options: ['Inventry', 'Inventory', 'Inventary', 'Inventree'], correctAnswer: 1, explanation: "'Inventory' is the correct spelling for stock of goods." },
+      { question: 'Check the total owner\'s ________ balance in the sheet.', options: ['Equity', 'Equitty', 'Equitey', 'Equety'], correctAnswer: 0, explanation: "'Equity' is the correct spelling for ownership interest." },
+      { question: 'Send an urgent payment reminder to the trade ________.', options: ['Detor', 'Debter', 'Debtor', 'Debttor'], correctAnswer: 2, explanation: "'Debtor' is the correct spelling for a person or company that owes money." },
+      { question: 'Borrowing money at a high ________ rate increases cost.', options: ['Intrest', 'Interest', 'Interist', 'Interst'], correctAnswer: 1, explanation: "'Interest' is the correct spelling for charge for borrowing money." },
+      { question: 'The company expects a higher ________ on investment.', options: ['Retirn', 'Return', 'Retturn', 'Returne'], correctAnswer: 1, explanation: "'Return' is the correct spelling for profit earned from investment." },
+      { question: 'Prepare a quarterly cash flow ________ for management.', options: ['Forcast', 'Forecaste', 'Forecast', 'Forcaust'], correctAnswer: 2, explanation: "'Forecast' is the correct spelling for predicting future trends." },
+      { question: 'Every investment carries an element of financial ________.', options: ['Risc', 'Risk', 'Riske', 'Risck'], correctAnswer: 1, explanation: "'Risk' is the correct spelling for danger or hazard." },
+      { question: 'Record the daily ledger ________ accurately.', options: ['Transacktion', 'Transation', 'Transaction', 'Tranzaction'], correctAnswer: 2, explanation: "'Transaction' is the correct spelling for business event or transfer." },
+      { question: 'The business negotiated terms with its primary ________.', options: ['Creditor', 'Crediter', 'Creaditor', 'Credytor'], correctAnswer: 0, explanation: "'Creditor' is the correct spelling for a person or company to whom money is owed." }
     ] : spellingQuestions[qIndex];
     return {
       day,
