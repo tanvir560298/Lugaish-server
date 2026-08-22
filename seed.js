@@ -103,6 +103,17 @@ const englishLessons = Array.from({ length: 30 }, (_, index) => {
       { question: 'Always avoid any form of ________ commercial practice.', options: ['Unfaire', 'Unfair', 'Unfere', 'Unfayre'], correctAnswer: 1, explanation: "'Unfair' is the correct spelling for not equitable or honest." },
       { question: 'The client asked us to ________ all major investment risks.', options: ['Disclose', 'Discloze', 'Discloas', 'Disclosee'], correctAnswer: 0, explanation: "'Disclose' is the correct spelling for reveal or make known." },
       { question: 'The manager was ________ to attend the financial review.', options: ['Unabell', 'Unabel', 'Unable', 'Unayble'], correctAnswer: 2, explanation: "'Unable' is the correct spelling for lacking necessary power or skill." }
+    ] : day === 14 ? [
+      { question: 'The auditor provided very ________ advice on tax compliance.', options: ['Helpfull', 'Helpful', 'Helppful', 'Helpfullly'], correctAnswer: 1, explanation: "'Helpful' is the correct spelling for giving or ready to give help." },
+      { question: 'Download your monthly bank ________ for reconciliation.', options: ['Statment', 'Statement', 'Statemint', 'State-ment'], correctAnswer: 1, explanation: "'Statement' is the correct spelling for a document containing financial details." },
+      { question: 'We processed the vendor ________ via online transfer.', options: ['Payement', 'Payment', 'Paymint', 'Paymant'], correctAnswer: 1, explanation: "'Payment' is the correct spelling for the action of paying." },
+      { question: 'Always maintain total ________ and transparency in audits.', options: ['Fairnes', 'Fairness', 'Fayrness', 'Fairniss'], correctAnswer: 1, explanation: "'Fairness' is the correct spelling for impartial and just treatment." },
+      { question: 'Management made a prompt strategic ________ on the budget.', options: ['Decition', 'Decission', 'Decision', 'Desision'], correctAnswer: 2, explanation: "'Decision' is the correct spelling for choice or resolution." },
+      { question: 'We must take immediate legal ________ against the fraud.', options: ['Actshon', 'Action', 'Acsion', 'Actione'], correctAnswer: 1, explanation: "'Action' is the correct spelling for process of doing something." },
+      { question: 'Explore every available financing ________ before closing.', options: ['Optshon', 'Opsion', 'Option', 'Optionn'], correctAnswer: 2, explanation: "'Option' is the correct spelling for a thing that is or may be chosen." },
+      { question: 'Please check the compliance ________ in the annual report.', options: ['Secsion', 'Section', 'Secktion', 'Sectshon'], correctAnswer: 1, explanation: "'Section' is the correct spelling for part, area, or division." },
+      { question: 'The team successfully completed its audit ________ on time.', options: ['Mision', 'Mishtion', 'Mission', 'Misson'], correctAnswer: 2, explanation: "'Mission' is the correct spelling for an important assignment." },
+      { question: 'He shared a clear corporate ________ for future expansion.', options: ['Vition', 'Vision', 'Visyon', 'Vizion'], correctAnswer: 1, explanation: "'Vision' is the correct spelling for the ability to think about the future with wisdom." }
     ] : spellingQuestions[qIndex];
     return {
       day,
