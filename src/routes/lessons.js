@@ -5,7 +5,7 @@ import { Progress } from '../models/Progress.js';
 import { Quiz } from '../models/Quiz.js';
 import mongoose from 'mongoose';
 import { TesterLesson } from '../models/TesterLesson.js';
-import { authMiddleware, optionalAuthMiddleware, requirePermission } from '../middleware/auth.js';
+import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { getYouTubeId } from '../utils/youtube.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
 import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
@@ -252,7 +252,7 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
   }
 });
 
-router.get('/:language/:day', optionalAuthMiddleware, async (req, res) => {
+router.get('/:language/:day', authMiddleware, async (req, res) => {
   try {
     const params = getLessonParams(req, res);
     if (!params) return;
@@ -276,7 +276,15 @@ router.get('/:language/:day', optionalAuthMiddleware, async (req, res) => {
       return res.json({ ...params, videos: [] });
     }
 
-    res.json(lesson);
+    const lessonData = lesson.toObject ? lesson.toObject() : lesson;
+    if (role === ROLES.learner && Array.isArray(lessonData.quiz)) {
+      lessonData.quiz = lessonData.quiz.map(question => ({
+        question: question.question,
+        options: question.options,
+        explanation: question.explanation,
+      }));
+    }
+    res.json(lessonData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

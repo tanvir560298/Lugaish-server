@@ -6,8 +6,14 @@ import { authMiddleware } from '../middleware/auth.js';
 import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
 import { getPublishedQuizAnswers } from '../data/publishedQuizAnswers.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
+import { createRateLimit } from '../middleware/rateLimit.js';
 
 const router = express.Router();
+const quizSubmissionLimit = createRateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  key: req => req.userId,
+});
 
 function isEnrolled(user, language) {
   const pathways = Array.isArray(user.enrolledPathways) ? user.enrolledPathways : [];
@@ -15,7 +21,7 @@ function isEnrolled(user, language) {
 }
 
 // Submit quiz
-router.post('/submit', authMiddleware, async (req, res) => {
+router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => {
   try {
     const { day, language, responses } = req.body;
     if (!['english', 'arabic'].includes(language) || !Number.isSafeInteger(Number(day)) || !Array.isArray(responses)) {
@@ -61,7 +67,11 @@ router.post('/submit', authMiddleware, async (req, res) => {
     if (answerKey.length === 0) {
       return res.status(409).json({ error: 'This lesson does not have a quiz yet' });
     }
-    if (responses.length !== answerKey.length || responses.some(response => !Number.isSafeInteger(response?.selectedAnswer))) {
+    if (responses.length !== answerKey.length || responses.some(response => (
+      !Number.isSafeInteger(response?.selectedAnswer)
+      || response.selectedAnswer < 0
+      || response.selectedAnswer > 3
+    ))) {
       return res.status(400).json({ error: 'Submit one valid answer for every quiz question' });
     }
 
@@ -89,18 +99,25 @@ router.post('/submit', authMiddleware, async (req, res) => {
       totalQuestions: answerKey.length,
     });
 
-    const xpAwarded = previousSubmission ? 0 : 500;
-    if (xpAwarded) {
-      user.totalXP = Math.max(Number(user.totalXP) || 0, 0) + xpAwarded;
-      if (!user.completedLessons.includes(Number(day))) user.completedLessons.push(Number(day));
-      if (Number(day) === Number(user.currentDay)) user.currentDay += 1;
-      user.lastActiveDate = new Date();
-    }
+    const rewardKey = `${language}:${Number(day)}`;
+    const rewardedUser = previousSubmission ? null : await User.findOneAndUpdate(
+      { _id: req.userId, completionRewards: { $ne: rewardKey } },
+      {
+        $addToSet: { completionRewards: rewardKey, completedLessons: Number(day) },
+        $inc: { totalXP: 500 },
+        $set: { lastActiveDate: new Date() },
+      },
+      { new: true },
+    );
+    const xpAwarded = rewardedUser ? 500 : 0;
 
-    await Promise.all([
-      quiz.save(),
-      ...(xpAwarded ? [user.save()] : []),
-    ]);
+    await quiz.save();
+    if (xpAwarded) {
+      await User.updateOne(
+        { _id: req.userId, currentDay: Number(day) },
+        { $inc: { currentDay: 1 } },
+      );
+    }
 
     res.json({
       message: 'Quiz submitted',
@@ -108,9 +125,9 @@ router.post('/submit', authMiddleware, async (req, res) => {
       correctAnswers: correctCount,
       totalQuestions: answerKey.length,
       xpAwarded,
-      totalXP: user.totalXP,
-      streak: user.streak,
-      alreadyCompleted: Boolean(previousSubmission),
+      totalXP: rewardedUser?.totalXP ?? user.totalXP,
+      streak: rewardedUser?.streak ?? user.streak,
+      alreadyCompleted: xpAwarded === 0,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

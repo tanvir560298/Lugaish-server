@@ -5,9 +5,11 @@ import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
+import { createRateLimit } from '../middleware/rateLimit.js';
 import { ROLE_LABELS, ROLE_VALUES, ROLES, getRolePermissions, normalizeRole } from '../utils/roles.js';
 
 const router = express.Router();
+const firebaseLoginLimit = createRateLimit({ windowMs: 15 * 60 * 1000, max: 20 });
 
 if (!getApps().length) {
   initializeApp({
@@ -124,7 +126,7 @@ router.post('/login', (req, res) => {
 });
 
 // Firebase Google-only signup/signin
-router.post('/firebase', async (req, res) => {
+router.post('/firebase', firebaseLoginLimit, async (req, res) => {
   try {
     const { idToken, languageSelected, displayName, learnerProfile } = req.body;
     if (!idToken) {

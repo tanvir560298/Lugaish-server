@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import config from './config.js';
+import { validateProductionConfig } from './utils/validateConfig.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -13,6 +14,8 @@ import interviewRoutes from './routes/interviews.js';
 import emailRoutes from './routes/email.js';
 
 const app = express();
+validateProductionConfig(config);
+app.set('trust proxy', 1);
 
 // Middleware
 const allowedOrigins = new Set(config.CORS_ORIGINS);
@@ -26,7 +29,18 @@ app.use(cors({
     return callback(new Error('Origin not allowed by CORS'));
   },
 }));
-app.use(express.json());
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.set({
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), geolocation=(), microphone=(self)',
+    'Cross-Origin-Resource-Policy': 'same-site',
+  });
+  next();
+});
+app.use(express.json({ limit: '256kb' }));
 
 app.use((error, req, res, next) => {
   if (error?.message === 'Origin not allowed by CORS') {
@@ -74,6 +88,18 @@ app.get('/health', (req, res) => {
     apiBase: '/api',
     scheduleVersion: 'global-dhaka-day4-v4',
   });
+});
+
+app.use('/api', (req, res) => res.status(404).json({ error: 'API route not found' }));
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+  if (error?.type === 'entity.too.large') return res.status(413).json({ error: 'Request body is too large' });
+  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+  console.error(`Unhandled request error: ${error?.message || 'Unknown error'}`);
+  return res.status(500).json({ error: 'Internal server error' });
 });
 
 // Start server

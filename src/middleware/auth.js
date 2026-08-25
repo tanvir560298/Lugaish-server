@@ -3,14 +3,22 @@ import config from '../config.js';
 import { User } from '../models/User.js';
 import { hasPermission } from '../utils/roles.js';
 
+function getBearerToken(req) {
+  const authorization = req.headers.authorization;
+  if (typeof authorization !== 'string') return '';
+  const match = /^Bearer\s+([^\s]+)$/i.exec(authorization.trim());
+  return match?.[1] ?? '';
+}
+
 export const authMiddleware = (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = getBearerToken(req);
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_SECRET, { algorithms: ['HS256'] });
+    if (!decoded?.userId) return res.status(401).json({ error: 'Invalid token' });
     req.userId = decoded.userId;
     next();
   } catch (error) {
@@ -20,8 +28,8 @@ export const authMiddleware = (req, res, next) => {
 
 export const optionalAuthMiddleware = (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (token) req.userId = jwt.verify(token, config.JWT_SECRET).userId;
+    const token = getBearerToken(req);
+    if (token) req.userId = jwt.verify(token, config.JWT_SECRET, { algorithms: ['HS256'] }).userId;
   } catch {
     // Public lesson reads remain public when a token is absent or stale.
   }
