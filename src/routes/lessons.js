@@ -38,6 +38,12 @@ async function getRequesterRole(userId, req = null) {
     : role;
 }
 
+function getScheduleUser(user, role) {
+  return role === ROLES.learner && normalizeRole(user?.role) !== ROLES.learner
+    ? { ...user.toObject(), role: ROLES.learner }
+    : user;
+}
+
 function modulePayload(lesson) {
   return {
     moduleType: lesson?.moduleType ?? 'video',
@@ -146,9 +152,7 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
     const user = await User.findById(req.userId);
     
     let courseDay = 365;
-    const scheduleUser = role === ROLES.learner && normalizeRole(user.role) !== ROLES.learner
-      ? { ...user.toObject(), role: ROLES.learner }
-      : user;
+    const scheduleUser = getScheduleUser(user, role);
     if (language === 'arabic') {
       courseDay = await getArabicCourseDay(scheduleUser);
     } else if (language === 'english') {
@@ -171,7 +175,7 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
         questionCount: lesson.speakingQuestions?.length ?? 0,
         videoCount: lesson.videos?.length ?? 0,
       };
-    }).filter(module => role !== ROLES.learner || (module.published && module.available))
+    }).filter(module => role !== ROLES.learner || (module.published && module.available && module.day === courseDay))
       .sort((a, b) => a.day - b.day);
     
     res.json({
@@ -227,14 +231,15 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
     const role = await getRequesterRole(req.userId, req);
     if (role === ROLES.learner) {
       const user = await User.findById(req.userId);
+      const scheduleUser = getScheduleUser(user, role);
       let courseDay = 365;
       if (params.language === 'arabic') {
-        courseDay = await getArabicCourseDay(user);
+        courseDay = await getArabicCourseDay(scheduleUser);
       } else if (params.language === 'english') {
-        courseDay = await getEnglishCourseDay(user);
+        courseDay = await getEnglishCourseDay(scheduleUser);
       }
-      if (params.day > courseDay) {
-        return res.status(403).json({ error: 'This practice is not unlocked yet.' });
+      if (params.day !== courseDay) {
+        return res.status(403).json({ error: 'Only today\'s practice can be opened.' });
       }
     }
     const lesson = role === ROLES.tester ? await getTesterContent(req.userId, params) : await Lesson.findOne(params).lean();
@@ -255,14 +260,15 @@ router.get('/:language/:day', optionalAuthMiddleware, async (req, res) => {
     const role = await getRequesterRole(req.userId, req);
     if (role === ROLES.learner) {
       const user = await User.findById(req.userId);
+      const scheduleUser = getScheduleUser(user, role);
       let courseDay = 365;
       if (params.language === 'arabic') {
-        courseDay = await getArabicCourseDay(user);
+        courseDay = await getArabicCourseDay(scheduleUser);
       } else if (params.language === 'english') {
-        courseDay = await getEnglishCourseDay(user);
+        courseDay = await getEnglishCourseDay(scheduleUser);
       }
-      if (params.day > courseDay) {
-        return res.status(403).json({ error: 'This lesson is not unlocked yet.', code: 'LESSON_LOCKED' });
+      if (params.day !== courseDay) {
+        return res.status(403).json({ error: 'Only today\'s lesson can be opened.', code: 'LESSON_LOCKED' });
       }
     }
     const lesson = role === ROLES.tester ? await getTesterContent(req.userId, params) : await Lesson.findOne(params);
@@ -362,35 +368,70 @@ router.delete('/:language/:day/videos/:videoId', authMiddleware, requirePermissi
 // Complete lesson
 router.post('/complete', authMiddleware, async (req, res) => {
   try {
-    const { day, language } = req.body;
+    const day = Number(req.body.day);
+    const { language } = req.body;
+    if (!['english', 'arabic'].includes(language) || !Number.isSafeInteger(day) || day < 1) {
+      return res.status(400).json({ error: 'A valid language and day are required.' });
+    }
     const user = await User.findById(req.userId);
 
     if (!isEnrolled(user, language)) {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
+    const role = await getRequesterRole(req.userId, req);
+    const scheduleUser = getScheduleUser(user, role);
     let courseDay = 365;
     if (language === 'arabic') {
-      courseDay = await getArabicCourseDay(user);
+      courseDay = await getArabicCourseDay(scheduleUser);
     } else if (language === 'english') {
-      courseDay = await getEnglishCourseDay(user);
+      courseDay = await getEnglishCourseDay(scheduleUser);
+    }
+    if (role === ROLES.learner && day !== courseDay) {
+      return res.status(403).json({ error: 'Only today\'s lesson can be completed.' });
     }
     if (day > courseDay) {
       return res.status(403).json({ error: 'Cannot complete a locked lesson.' });
     }
 
-    if (!user.completedLessons.includes(day)) {
-      user.completedLessons.push(day);
-      user.totalXP += 100;
+    const progress = await Progress.findOne({ userId: req.userId, language });
+    const previouslyCompleted = Boolean(progress?.completedDays?.some(item => Number(item.day) === day));
+    const rewardKey = `${language}:${day}`;
+    const rewardedUser = previouslyCompleted ? null : await User.findOneAndUpdate(
+      { _id: req.userId, completionRewards: { $ne: rewardKey } },
+      {
+        $addToSet: { completionRewards: rewardKey, completedLessons: day },
+        $inc: { totalXP: 500 },
+        $set: { lastActiveDate: new Date() },
+      },
+      { new: true },
+    );
+    const xpAwarded = rewardedUser ? 500 : 0;
+    const alreadyCompleted = xpAwarded === 0;
 
-      if (day === user.currentDay) {
-        user.currentDay += 1;
-      }
+    if (xpAwarded) {
+      await Progress.findOneAndUpdate(
+        { userId: req.userId, language },
+        {
+          $push: { completedDays: { day, completedAt: new Date() } },
+          $inc: { totalXP: xpAwarded },
+          $set: { lastActiveDate: new Date() },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      );
+      await User.updateOne(
+        { _id: req.userId, currentDay: day },
+        { $inc: { currentDay: 1 } },
+      );
     }
 
-    await user.save();
-
-    res.json({ message: 'Lesson completed', user });
+    res.json({
+      message: alreadyCompleted ? 'Lesson was already completed' : 'Lesson completed',
+      xpAwarded,
+      totalXP: rewardedUser?.totalXP ?? user.totalXP,
+      streak: rewardedUser?.streak ?? user.streak,
+      alreadyCompleted,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

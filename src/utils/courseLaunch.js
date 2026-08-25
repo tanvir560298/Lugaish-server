@@ -4,6 +4,9 @@ const COURSE_TIME_ZONE = 'Asia/Dhaka';
 // All Arabic learners follow the same website-wide calendar. In Bangladesh,
 // 18 August 2026 is Day 1, so 21 August is Day 4.
 const ARABIC_COURSE_START_DATE = '2026-08-18';
+// English is a shared daily cohort as well. Using the account creation date
+// here used to expose the whole course to older accounts.
+export const ENGLISH_COURSE_START_DATE = '2026-08-24';
 const dhakaDateFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: COURSE_TIME_ZONE,
   year: 'numeric',
@@ -42,7 +45,7 @@ export function getArabicCourseDay(user, now = new Date()) {
   return Math.max(1, currentCalendarDay - startCalendarDay + 1);
 }
 
-export function getEnglishCourseDay(user) {
+export function getEnglishCourseDay(user, now = new Date()) {
   if (!user) return 365;
 
   const role = normalizeRole(user.role);
@@ -50,8 +53,9 @@ export function getEnglishCourseDay(user) {
     return 365;
   }
 
-  const startDate = user.englishStartDate || user.createdAt || new Date();
-  const msDiff = Date.now() - new Date(startDate).getTime();
-  const daysDiff = Math.floor(msDiff / (24 * 60 * 60 * 1000));
-  return Math.max(1, daysDiff + 1);
+  const startCalendarDay = getDhakaCalendarDayNumber(ENGLISH_COURSE_START_DATE);
+  const currentCalendarDay = getDhakaCalendarDayNumber(now);
+  if (startCalendarDay === null || currentCalendarDay === null) return 1;
+
+  return Math.max(1, currentCalendarDay - startCalendarDay + 1);
 }

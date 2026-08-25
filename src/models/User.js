@@ -47,6 +47,7 @@ const userSchema = new mongoose.Schema(
     totalXP: { type: Number, default: 0 },
     isPremium: { type: Boolean, default: false },
     completedLessons: [{ type: Number }],
+    completionRewards: [{ type: String }],
     badges: [{ type: String }],
     lastActiveDate: { type: Date, default: Date.now },
     arabicStartDate: { type: Date },

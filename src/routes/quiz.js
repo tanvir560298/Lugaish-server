@@ -5,6 +5,7 @@ import { User } from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
 import { getPublishedQuizAnswers } from '../data/publishedQuizAnswers.js';
+import { ROLES, normalizeRole } from '../utils/roles.js';
 
 const router = express.Router();
 
@@ -33,21 +34,25 @@ router.post('/submit', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
+    const learnerPreview = normalizeRole(user.role) === ROLES.webDeveloper
+      && req.get('X-Lugaish-Learner-Preview') === '1';
+    const scheduleUser = learnerPreview ? { ...user.toObject(), role: ROLES.learner } : user;
+    const effectiveRole = learnerPreview ? ROLES.learner : normalizeRole(user.role);
     let courseDay = 365;
     if (language === 'arabic') {
-      courseDay = await getArabicCourseDay(user);
+      courseDay = await getArabicCourseDay(scheduleUser);
     } else if (language === 'english') {
-      courseDay = await getEnglishCourseDay(user);
+      courseDay = await getEnglishCourseDay(scheduleUser);
     }
 
-    if (day > courseDay) {
+    if (effectiveRole === ROLES.learner && Number(day) !== courseDay) {
+      return res.status(403).json({ error: 'Only today\'s quiz can be submitted.' });
+    }
+    if (Number(day) > courseDay) {
       return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
     }
 
-    if (!lesson) {
-      return res.status(404).json({ error: 'Lesson not found' });
-    }
-    const storedAnswers = Array.isArray(lesson.quiz)
+    const storedAnswers = Array.isArray(lesson?.quiz)
       ? lesson.quiz.map(question => question.correctAnswer)
       : [];
     const answerKey = storedAnswers.length
