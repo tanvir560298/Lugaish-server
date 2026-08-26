@@ -44,6 +44,22 @@ function getScheduleUser(user, role) {
     : user;
 }
 
+async function getCompletedCourseDays(user, language) {
+  const [progress, submittedQuizDays] = await Promise.all([
+    Progress.findOne({ userId: user._id, language }).select('completedDays').lean(),
+    Quiz.distinct('day', { userId: user._id, language }),
+  ]);
+  const rewardPrefix = `${language}:`;
+  const rewardedDays = (user.completionRewards ?? [])
+    .filter(key => typeof key === 'string' && key.startsWith(rewardPrefix))
+    .map(key => Number(key.slice(rewardPrefix.length)));
+  const progressDays = (progress?.completedDays ?? []).map(item => Number(item.day));
+
+  return [...new Set([...rewardedDays, ...progressDays, ...submittedQuizDays.map(Number)])]
+    .filter(day => Number.isSafeInteger(day) && day > 0)
+    .sort((a, b) => a - b);
+}
+
 function modulePayload(lesson) {
   return {
     moduleType: lesson?.moduleType ?? 'video',
@@ -150,6 +166,8 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
     
     const role = await getRequesterRole(req.userId, req);
     const user = await User.findById(req.userId);
+    if (!user) return res.status(401).json({ error: 'User not found' });
+    const completedDays = await getCompletedCourseDays(user, language);
     
     let courseDay = 365;
     const scheduleUser = getScheduleUser(user, role);
@@ -175,7 +193,11 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
         questionCount: lesson.speakingQuestions?.length ?? 0,
         videoCount: lesson.videos?.length ?? 0,
       };
-    }).filter(module => role !== ROLES.learner || (module.published && module.available && module.day === courseDay))
+    }).filter(module => role !== ROLES.learner || (
+      module.published
+      && module.available
+      && (module.day === courseDay || completedDays.includes(module.day))
+    ))
       .sort((a, b) => a.day - b.day);
     
     res.json({
@@ -183,6 +205,7 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
       courseSchedule: { courseStarted: true, calendarDay: courseDay },
       courseStarted: true,
       courseDay: courseDay,
+      completedDays,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -231,14 +254,16 @@ router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res)
     const role = await getRequesterRole(req.userId, req);
     if (role === ROLES.learner) {
       const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ error: 'User not found' });
       const scheduleUser = getScheduleUser(user, role);
+      const completedDays = await getCompletedCourseDays(user, params.language);
       let courseDay = 365;
       if (params.language === 'arabic') {
         courseDay = await getArabicCourseDay(scheduleUser);
       } else if (params.language === 'english') {
         courseDay = await getEnglishCourseDay(scheduleUser);
       }
-      if (params.day !== courseDay) {
+      if (params.day !== courseDay && !completedDays.includes(params.day)) {
         return res.status(403).json({ error: 'Only today\'s practice can be opened.' });
       }
     }
@@ -260,14 +285,16 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
     const role = await getRequesterRole(req.userId, req);
     if (role === ROLES.learner) {
       const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ error: 'User not found' });
       const scheduleUser = getScheduleUser(user, role);
+      const completedDays = await getCompletedCourseDays(user, params.language);
       let courseDay = 365;
       if (params.language === 'arabic') {
         courseDay = await getArabicCourseDay(scheduleUser);
       } else if (params.language === 'english') {
         courseDay = await getEnglishCourseDay(scheduleUser);
       }
-      if (params.day !== courseDay) {
+      if (params.day !== courseDay && !completedDays.includes(params.day)) {
         return res.status(403).json({ error: 'Only today\'s lesson can be opened.', code: 'LESSON_LOCKED' });
       }
     }

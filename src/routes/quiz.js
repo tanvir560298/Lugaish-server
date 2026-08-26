@@ -51,7 +51,9 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
       courseDay = await getEnglishCourseDay(scheduleUser);
     }
 
-    if (effectiveRole === ROLES.learner && Number(day) !== courseDay) {
+    const previouslyCompleted = Boolean(previousSubmission)
+      || (user.completionRewards ?? []).includes(`${language}:${Number(day)}`);
+    if (effectiveRole === ROLES.learner && Number(day) !== courseDay && !previouslyCompleted) {
       return res.status(403).json({ error: 'Only today\'s quiz can be submitted.' });
     }
     if (Number(day) > courseDay) {
