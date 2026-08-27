@@ -53,8 +53,8 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
 
     const previouslyCompleted = Boolean(previousSubmission)
       || (user.completionRewards ?? []).includes(`${language}:${Number(day)}`);
-    if (effectiveRole === ROLES.learner && Number(day) !== courseDay && !previouslyCompleted) {
-      return res.status(403).json({ error: 'Only today\'s quiz can be submitted.' });
+    if (effectiveRole === ROLES.learner && Number(day) > courseDay && !previouslyCompleted) {
+      return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
     }
     if (Number(day) > courseDay) {
       return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
