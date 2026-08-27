@@ -3,8 +3,7 @@ import express from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { Certificate } from '../models/Certificate.js';
 import { User } from '../models/User.js';
-import { calculateDailyStreak, getCompletedCourseDays, getEligibleMilestones, getLearningActivityDates, getReachedMilestones } from '../services/learningAchievements.js';
-import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
+import { calculateDailyStreak, getCompletedCourseDays, getEligibleMilestones, getLearningActivityDates } from '../services/learningAchievements.js';
 
 const router = express.Router();
 
@@ -16,14 +15,6 @@ function publicCertificate(certificate) {
     milestone: certificate.milestone,
     issuedAt: certificate.issuedAt,
   };
-}
-
-function getCourseDay(user, language) {
-  return language === 'arabic' ? getArabicCourseDay(user) : getEnglishCourseDay(user);
-}
-
-function getAvailableMilestones(completedDays, courseDay) {
-  return [...new Set([...getEligibleMilestones(completedDays), ...getReachedMilestones(courseDay)])].sort((a, b) => a - b);
 }
 
 router.get('/summary', authMiddleware, async (req, res) => {
@@ -39,8 +30,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
     const [courseProgress, certificates, referralCount, activityDates] = await Promise.all([
       Promise.all(languages.map(async language => {
         const completedDays = await getCompletedCourseDays(user, language);
-        const calendarDay = getCourseDay(user, language);
-        return { language, completedDays, calendarDay, eligibleMilestones: getAvailableMilestones(completedDays, calendarDay) };
+        return { language, completedDays, eligibleMilestones: getEligibleMilestones(completedDays) };
       })),
       Certificate.find({ userId: user._id }).sort({ milestone: 1 }).lean(),
       User.countDocuments({ referredBy: user._id }),
@@ -73,9 +63,8 @@ router.post('/certificates/:language/:milestone', authMiddleware, async (req, re
     if (!(user.enrolledPathways ?? []).includes(language)) return res.status(403).json({ error: 'Not enrolled in this language' });
 
     const completedDays = await getCompletedCourseDays(user, language);
-    const calendarDay = getCourseDay(user, language);
-    if (!getAvailableMilestones(completedDays, calendarDay).includes(milestone)) {
-      return res.status(409).json({ error: `The Day ${milestone} course achievement has not unlocked yet.` });
+    if (!getEligibleMilestones(completedDays).includes(milestone)) {
+      return res.status(409).json({ error: `Complete Days 1–${milestone} to unlock this certificate.` });
     }
 
     const existing = await Certificate.findOne({ userId: user._id, language, milestone });

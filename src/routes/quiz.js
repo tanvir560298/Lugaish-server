@@ -2,11 +2,13 @@ import express from 'express';
 import { Quiz } from '../models/Quiz.js';
 import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
+import { Progress } from '../models/Progress.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
 import { getPublishedQuizAnswers } from '../data/publishedQuizAnswers.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
 import { createRateLimit } from '../middleware/rateLimit.js';
+import { getLearnerProgressState, getNextDhakaMidnight } from '../services/courseProgression.js';
 
 const router = express.Router();
 const quizSubmissionLimit = createRateLimit({
@@ -53,11 +55,17 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
 
     const previouslyCompleted = Boolean(previousSubmission)
       || (user.completionRewards ?? []).includes(`${language}:${Number(day)}`);
-    if (effectiveRole === ROLES.learner && Number(day) > courseDay && !previouslyCompleted) {
-      return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
+    const learnerProgress = effectiveRole === ROLES.learner
+      ? await getLearnerProgressState(user, language, courseDay)
+      : null;
+    if (effectiveRole === ROLES.learner && Number(day) !== learnerProgress.currentDay && !previouslyCompleted) {
+      return res.status(403).json({ error: `Complete Day ${learnerProgress.currentDay} first.` });
     }
     if (Number(day) > courseDay) {
       return res.status(403).json({ error: 'This quiz is not unlocked yet.' });
+    }
+    if (effectiveRole === ROLES.learner && ['arabic', 'english'].includes(language) && Number(day) % 2 !== 0) {
+      return res.status(409).json({ error: 'Mark this PDF day complete from the lesson page.' });
     }
 
     const storedAnswers = Array.isArray(lesson?.quiz)
@@ -115,9 +123,14 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
 
     await quiz.save();
     if (xpAwarded) {
-      await User.updateOne(
-        { _id: req.userId, currentDay: Number(day) },
-        { $inc: { currentDay: 1 } },
+      await Progress.findOneAndUpdate(
+        { userId: req.userId, language },
+        {
+          $push: { completedDays: { day: Number(day), completedAt: new Date(), score } },
+          $inc: { totalXP: xpAwarded },
+          $set: { lastActiveDate: new Date(), currentDay: Number(day), nextUnlockAt: getNextDhakaMidnight() },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
       );
     }
 

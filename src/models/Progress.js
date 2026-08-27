@@ -11,6 +11,8 @@ const progressSchema = new mongoose.Schema(
         score: Number,
       },
     ],
+    currentDay: { type: Number, default: 1, min: 1 },
+    nextUnlockAt: { type: Date, default: null },
     totalXP: { type: Number, default: 0 },
     streak: { type: Number, default: 0 },
     lastActiveDate: { type: Date, default: Date.now },

@@ -37,11 +37,6 @@ export function getEligibleMilestones(completedDays) {
   ));
 }
 
-export function getReachedMilestones(courseDay) {
-  const reachedDay = Number(courseDay) || 0;
-  return CERTIFICATE_MILESTONES.filter(milestone => reachedDay >= milestone);
-}
-
 export async function getLearningActivityDates(userId, languages) {
   const [progressEntries, quizEntries] = await Promise.all([
     Progress.find({ userId, language: { $in: languages } }).select('completedDays.completedAt').lean(),
