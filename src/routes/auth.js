@@ -4,6 +4,8 @@ import crypto from 'crypto';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
+import { Progress } from '../models/Progress.js';
+import { Quiz } from '../models/Quiz.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimit.js';
@@ -360,6 +362,38 @@ router.get('/users', authMiddleware, async (req, res) => {
     const users = await User.find({})
       .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications createdAt')
       .sort({ createdAt: -1 });
+    const userIds = users.map(user => user._id);
+    const [progressEntries, quizEntries] = await Promise.all([
+      Progress.find({ userId: { $in: userIds } }).select('userId language completedDays currentDay nextUnlockAt').lean(),
+      Quiz.find({ userId: { $in: userIds } }).select('userId language day score completedAt').sort({ completedAt: -1 }).lean(),
+    ]);
+    const progressByUser = new Map();
+    for (const progress of progressEntries) {
+      const key = String(progress.userId);
+      const completedDays = (progress.completedDays ?? [])
+        .map(item => Number(item.day))
+        .filter(day => Number.isSafeInteger(day) && day > 0)
+        .sort((a, b) => a - b);
+      const contiguousCompleted = completedDays.reduce((last, day) => day === last + 1 ? day : last, 0);
+      if (!progressByUser.has(key)) progressByUser.set(key, {});
+      progressByUser.get(key)[progress.language] = {
+        currentDay: Number(progress.currentDay) || contiguousCompleted + 1,
+        completedDays,
+        nextUnlockAt: progress.nextUnlockAt ?? null,
+        quizzes: [],
+      };
+    }
+    const seenQuizzes = new Set();
+    for (const quiz of quizEntries) {
+      const userKey = String(quiz.userId);
+      const quizKey = `${userKey}:${quiz.language}:${quiz.day}`;
+      if (seenQuizzes.has(quizKey)) continue;
+      seenQuizzes.add(quizKey);
+      if (!progressByUser.has(userKey)) progressByUser.set(userKey, {});
+      const userProgress = progressByUser.get(userKey);
+      if (!userProgress[quiz.language]) userProgress[quiz.language] = { currentDay: 1, completedDays: [], nextUnlockAt: null, quizzes: [] };
+      userProgress[quiz.language].quizzes.push({ day: Number(quiz.day), score: Number(quiz.score) || 0, completedAt: quiz.completedAt });
+    }
 
     res.json({
       courseSeatLimit: config.COURSE_SEAT_LIMIT,
@@ -369,7 +403,7 @@ router.get('/users', authMiddleware, async (req, res) => {
         label: ROLE_LABELS[role],
         permissions: getRolePermissions(role),
       })),
-      users: users.map(toPublicUser),
+      users: users.map(user => ({ ...toPublicUser(user), learningProgress: progressByUser.get(String(user._id)) ?? {} })),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
