@@ -21,6 +21,7 @@ const lessonSchema = new mongoose.Schema(
     videos: { type: [lessonVideoSchema], default: [] },
     moduleType: { type: String, enum: ['video', 'ai_practice', 'interview'], default: 'video' },
     modulePublished: { type: Boolean, default: false },
+    accessTier: { type: String, enum: ['free', 'premium'], default: 'free' },
     moduleIntroTitle: { type: String, default: '', maxlength: 160 },
     moduleIntroText: { type: String, default: '', maxlength: 2000 },
     speakingQuestions: [{

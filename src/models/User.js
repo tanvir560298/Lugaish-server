@@ -46,6 +46,8 @@ const userSchema = new mongoose.Schema(
     streak: { type: Number, default: 0 },
     totalXP: { type: Number, default: 0 },
     isPremium: { type: Boolean, default: false },
+    referralCode: { type: String, unique: true, sparse: true, uppercase: true, trim: true },
+    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     completedLessons: [{ type: Number }],
     completionRewards: [{ type: String }],
     badges: [{ type: String }],

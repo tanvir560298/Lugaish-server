@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
@@ -86,7 +87,13 @@ function toPublicUser(user) {
     avatarUrl: user.avatarUrl,
     learnerProfile: user.learnerProfile ?? {},
     seatApplications: user.seatApplications ?? [],
+    isPremium: Boolean(user.isPremium),
+    referralCode: user.referralCode || '',
   };
+}
+
+function createReferralCode(firebaseUid) {
+  return `LUG${crypto.createHash('sha256').update(String(firebaseUid)).digest('hex').slice(0, 8).toUpperCase()}`;
 }
 
 function cleanLearnerProfile(profile = {}) {
@@ -128,7 +135,7 @@ router.post('/login', (req, res) => {
 // Firebase Google-only signup/signin
 router.post('/firebase', firebaseLoginLimit, async (req, res) => {
   try {
-    const { idToken, languageSelected, displayName, learnerProfile } = req.body;
+    const { idToken, languageSelected, displayName, learnerProfile, referralCode } = req.body;
     if (!idToken) {
       return res.status(400).json({ error: 'Missing Firebase token' });
     }
@@ -154,6 +161,10 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
     });
 
     if (!user) {
+      const normalizedReferralCode = String(referralCode || '').trim().toUpperCase().slice(0, 20);
+      const referrer = normalizedReferralCode
+        ? await User.findOne({ referralCode: normalizedReferralCode }).select('_id')
+        : null;
       user = new User({
         name: preferredName || firebaseUser.name || firebaseUser.email.split('@')[0],
         email: firebaseUser.email,
@@ -166,6 +177,8 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
         arabicStartDate: (selectedLanguage === 'arabic' && selectedLanguageHasSeat) ? new Date() : undefined,
         englishStartDate: (selectedLanguage === 'english' && selectedLanguageHasSeat) ? new Date() : undefined,
         learnerProfile: cleanedProfile,
+        referralCode: createReferralCode(firebaseUser.uid),
+        referredBy: referrer?._id ?? null,
       });
     } else {
       user.authProvider = 'firebase';
@@ -182,6 +195,7 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
         ...cleanedProfile,
       };
       user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+      user.referralCode = user.referralCode || createReferralCode(firebaseUser.uid);
     }
 
     await user.save();

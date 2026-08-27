@@ -12,6 +12,7 @@ import progressRoutes from './routes/progress.js';
 import quizRoutes from './routes/quiz.js';
 import interviewRoutes from './routes/interviews.js';
 import emailRoutes from './routes/email.js';
+import achievementRoutes from './routes/achievements.js';
 
 const app = express();
 validateProductionConfig(config);
@@ -79,6 +80,7 @@ app.use('/api/progress', requireDatabase, progressRoutes);
 app.use('/api/quiz', requireDatabase, quizRoutes);
 app.use('/api/interviews', requireDatabase, interviewRoutes);
 app.use('/api/email', requireDatabase, emailRoutes);
+app.use('/api/achievements', requireDatabase, achievementRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

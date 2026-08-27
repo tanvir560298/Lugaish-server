@@ -2,13 +2,13 @@ import express from 'express';
 import { Lesson } from '../models/Lesson.js';
 import { User } from '../models/User.js';
 import { Progress } from '../models/Progress.js';
-import { Quiz } from '../models/Quiz.js';
 import mongoose from 'mongoose';
 import { TesterLesson } from '../models/TesterLesson.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { getYouTubeId } from '../utils/youtube.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
 import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
+import { getCompletedCourseDays } from '../services/learningAchievements.js';
 
 const router = express.Router();
 
@@ -44,22 +44,6 @@ function getScheduleUser(user, role) {
     : user;
 }
 
-async function getCompletedCourseDays(user, language) {
-  const [progress, submittedQuizDays] = await Promise.all([
-    Progress.findOne({ userId: user._id, language }).select('completedDays').lean(),
-    Quiz.distinct('day', { userId: user._id, language }),
-  ]);
-  const rewardPrefix = `${language}:`;
-  const rewardedDays = (user.completionRewards ?? [])
-    .filter(key => typeof key === 'string' && key.startsWith(rewardPrefix))
-    .map(key => Number(key.slice(rewardPrefix.length)));
-  const progressDays = (progress?.completedDays ?? []).map(item => Number(item.day));
-
-  return [...new Set([...rewardedDays, ...progressDays, ...submittedQuizDays.map(Number)])]
-    .filter(day => Number.isSafeInteger(day) && day > 0)
-    .sort((a, b) => a - b);
-}
-
 function modulePayload(lesson) {
   return {
     moduleType: lesson?.moduleType ?? 'video',
@@ -69,6 +53,7 @@ function modulePayload(lesson) {
     introTitle: lesson?.moduleIntroTitle ?? '',
     introText: lesson?.moduleIntroText ?? '',
     questions: Array.isArray(lesson?.speakingQuestions) ? lesson.speakingQuestions : [],
+    accessTier: lesson?.accessTier === 'premium' ? 'premium' : 'free',
   };
 }
 
@@ -190,6 +175,7 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
         ...modulePayload(lesson),
         configured: true,
         available: isAvailable,
+        premiumLocked: role === ROLES.learner && lesson.accessTier === 'premium' && !user.isPremium,
         questionCount: lesson.speakingQuestions?.length ?? 0,
         videoCount: lesson.videos?.length ?? 0,
       };
@@ -221,6 +207,7 @@ router.put('/:language/:day/module', authMiddleware, requirePermission('manage_l
     const description = String(req.body.description || '').trim().slice(0, 2000);
     const introTitle = String(req.body.introTitle || '').trim().slice(0, 160);
     const introText = String(req.body.introText || '').trim().slice(0, 2000);
+    const accessTier = req.body.accessTier === 'premium' ? 'premium' : 'free';
     if (!moduleType || !title) return res.status(400).json({ error: 'Invalid day setup' });
 
     if (req.userRole === ROLES.tester) {
@@ -228,7 +215,7 @@ router.put('/:language/:day/module', authMiddleware, requirePermission('manage_l
       const questions = cleanQuestions(req.body.questions ?? content.speakingQuestions ?? [], params.language);
       if (questions === null) return res.status(400).json({ error: 'Invalid question set' });
       if (moduleType === 'ai_practice' && req.body.published === true && questions.length === 0) return res.status(400).json({ error: 'Add at least one question before publishing AI practice' });
-      Object.assign(content, { ...params, title, description, moduleType, modulePublished: req.body.published === true, moduleIntroTitle: introTitle, moduleIntroText: introText, speakingQuestions: questions });
+      Object.assign(content, { ...params, title, description, moduleType, modulePublished: req.body.published === true, accessTier, moduleIntroTitle: introTitle, moduleIntroText: introText, speakingQuestions: questions });
       await saveTesterContent(req.userId, params, content);
       return res.json({ message: 'Saved only in your tester sandbox. Live content was not changed.', module: modulePayload(content), sandbox: true });
     }
@@ -238,7 +225,7 @@ router.put('/:language/:day/module', authMiddleware, requirePermission('manage_l
     if (questions === null) return res.status(400).json({ error: 'Invalid question set' });
     if (moduleType === 'ai_practice' && req.body.published === true && questions.length === 0) return res.status(400).json({ error: 'Add at least one question before publishing AI practice' });
     const lesson = await Lesson.findOneAndUpdate(params, {
-      $set: { title, description, moduleType, modulePublished: req.body.published === true, moduleIntroTitle: introTitle, moduleIntroText: introText, speakingQuestions: questions },
+      $set: { title, description, moduleType, modulePublished: req.body.published === true, accessTier, moduleIntroTitle: introTitle, moduleIntroText: introText, speakingQuestions: questions },
       $setOnInsert: params,
     }, { upsert: true, new: true, runValidators: true });
     res.json({ message: 'Day settings saved.', module: modulePayload(lesson) });
@@ -304,6 +291,15 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
     }
 
     const lessonData = lesson.toObject ? lesson.toObject() : lesson;
+    if (role === ROLES.learner && lessonData.accessTier === 'premium') {
+      const learner = await User.findById(req.userId).select('isPremium');
+      if (!learner?.isPremium) {
+        return res.status(403).json({
+          error: 'This premium lesson is not included in your current plan.',
+          code: 'PREMIUM_REQUIRED',
+        });
+      }
+    }
     if (role === ROLES.learner && Array.isArray(lessonData.quiz)) {
       lessonData.quiz = lessonData.quiz.map(question => ({
         question: question.question,
