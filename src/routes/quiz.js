@@ -69,15 +69,17 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
     }
 
     const storedAnswers = Array.isArray(lesson?.quiz)
-      ? lesson.quiz.map(question => question.correctAnswer)
+      ? lesson.quiz.map(question => question.correctAnswer ?? question.answer).filter(answer => Number.isInteger(answer) && answer >= 0 && answer <= 3)
       : [];
-    const answerKey = storedAnswers.length
-      ? storedAnswers
-      : getPublishedQuizAnswers(language, day);
+    const publishedAnswers = getPublishedQuizAnswers(language, day);
+    const answerKey = publishedAnswers.length >= storedAnswers.length
+      ? publishedAnswers
+      : (storedAnswers.length ? storedAnswers : publishedAnswers);
+
     if (answerKey.length === 0) {
       return res.status(409).json({ error: 'This lesson does not have a quiz yet' });
     }
-    if (responses.length !== answerKey.length || responses.some(response => (
+    if (responses.length === 0 || responses.some(response => (
       !Number.isSafeInteger(response?.selectedAnswer)
       || response.selectedAnswer < 0
       || response.selectedAnswer > 3
@@ -87,13 +89,15 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
 
     // Calculate score
     let correctCount = 0;
-    responses.forEach((response, idx) => {
-      if (answerKey[idx] === response.selectedAnswer) {
+    const questionsToScore = Math.min(responses.length, answerKey.length);
+    for (let idx = 0; idx < questionsToScore; idx += 1) {
+      if (answerKey[idx] === responses[idx].selectedAnswer) {
         correctCount += 1;
       }
-    });
+    }
 
-    const score = Math.round((correctCount / answerKey.length) * 100);
+    const totalQuestions = Math.max(responses.length, answerKey.length);
+    const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
     // Save quiz result
     const quiz = new Quiz({
