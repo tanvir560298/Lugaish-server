@@ -275,8 +275,8 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
         courseDay = await getEnglishCourseDay(scheduleUser);
       }
       const learnerProgress = await getLearnerProgressState(user, params.language, courseDay);
-      if (params.day > learnerProgress.currentDay) {
-        return res.status(403).json({ error: 'Only today\'s lesson can be opened.', code: 'LESSON_LOCKED' });
+      if (params.day > courseDay) {
+        return res.status(403).json({ error: 'This lesson is not yet available.', code: 'LESSON_LOCKED' });
       }
     }
     const lesson = role === ROLES.tester ? await getTesterContent(req.userId, params) : await Lesson.findOne(params);
@@ -421,9 +421,6 @@ router.post('/complete', authMiddleware, async (req, res) => {
     const learnerProgress = role === ROLES.learner
       ? await getLearnerProgressState(user, language, courseDay)
       : null;
-    if (role === ROLES.learner && day !== learnerProgress.currentDay && !learnerProgress.completedDays.includes(day)) {
-      return res.status(403).json({ error: `Complete Day ${learnerProgress.currentDay} first.` });
-    }
     if (role === ROLES.learner && ['arabic', 'english'].includes(language) && day % 2 === 0 && !previouslyCompleted) {
       return res.status(409).json({ error: 'Submit this day\'s quiz to complete it.' });
     }
