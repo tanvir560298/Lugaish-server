@@ -109,11 +109,20 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
       totalQuestions: answerKey.length,
     });
 
-    const rewardKey = `${language}:${Number(day)}`;
+    const dayNum = Number(day);
+    const rewardKey = `${language}:${dayNum}`;
+    const prevDay = dayNum > 1 && dayNum % 2 === 0 ? dayNum - 1 : null;
+    const prevRewardKey = prevDay ? `${language}:${prevDay}` : null;
+    const completionLessonsToAdd = prevDay ? [dayNum, prevDay] : [dayNum];
+    const completionRewardsToAdd = prevRewardKey ? [rewardKey, prevRewardKey] : [rewardKey];
+
     const rewardedUser = previousSubmission ? null : await User.findOneAndUpdate(
       { _id: req.userId, completionRewards: { $ne: rewardKey } },
       {
-        $addToSet: { completionRewards: rewardKey, completedLessons: Number(day) },
+        $addToSet: {
+          completionRewards: { $each: completionRewardsToAdd },
+          completedLessons: { $each: completionLessonsToAdd },
+        },
         $inc: { totalXP: 500 },
         $set: { lastActiveDate: new Date() },
       },
@@ -123,12 +132,16 @@ router.post('/submit', authMiddleware, quizSubmissionLimit, async (req, res) => 
 
     await quiz.save();
     if (xpAwarded) {
+      const daysToPush = [{ day: dayNum, completedAt: new Date(), score }];
+      if (prevDay) {
+        daysToPush.unshift({ day: prevDay, completedAt: new Date() });
+      }
       await Progress.findOneAndUpdate(
         { userId: req.userId, language },
         {
-          $push: { completedDays: { day: Number(day), completedAt: new Date(), score } },
+          $push: { completedDays: { $each: daysToPush } },
           $inc: { totalXP: xpAwarded },
-          $set: { lastActiveDate: new Date(), currentDay: Number(day), nextUnlockAt: getNextDhakaMidnight() },
+          $set: { lastActiveDate: new Date(), currentDay: dayNum, nextUnlockAt: getNextDhakaMidnight() },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true },
       );

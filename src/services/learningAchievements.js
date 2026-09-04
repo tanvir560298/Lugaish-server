@@ -24,8 +24,10 @@ export async function getCompletedCourseDays(user, language) {
     .filter(key => typeof key === 'string' && key.startsWith(rewardPrefix))
     .map(key => Number(key.slice(rewardPrefix.length)));
   const progressDays = (progress?.completedDays ?? []).map(item => Number(item.day));
+  const quizDays = quizEntries.map(item => Number(item.day));
+  const impliedPdfDays = quizDays.filter(day => Number.isSafeInteger(day) && day > 1 && day % 2 === 0).map(day => day - 1);
 
-  return [...new Set([...rewardedDays, ...progressDays, ...quizEntries.map(item => Number(item.day))])]
+  return [...new Set([...rewardedDays, ...progressDays, ...quizDays, ...impliedPdfDays])]
     .filter(day => Number.isSafeInteger(day) && day > 0)
     .sort((a, b) => a - b);
 }

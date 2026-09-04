@@ -41,6 +41,9 @@ export async function getLearnerProgressState(user, language, calendarDay, now =
   for (const item of quizzes) {
     const day = Number(item.day);
     if (Number.isSafeInteger(day) && day > 0 && !completionByDay.has(day)) completionByDay.set(day, item.completedAt || null);
+    if (Number.isSafeInteger(day) && day > 1 && day % 2 === 0 && !completionByDay.has(day - 1)) {
+      completionByDay.set(day - 1, item.completedAt || null);
+    }
   }
   for (const key of user.completionRewards ?? []) {
     const [rewardLanguage, rawDay] = String(key).split(':');
