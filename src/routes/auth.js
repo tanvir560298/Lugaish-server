@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { User } from '../models/User.js';
+import { InPersonApplication } from '../models/InPersonApplication.js';
 import { Progress } from '../models/Progress.js';
 import { Quiz } from '../models/Quiz.js';
 import config from '../config.js';
@@ -89,6 +90,7 @@ function toPublicUser(user) {
     avatarUrl: user.avatarUrl,
     learnerProfile: user.learnerProfile ?? {},
     seatApplications: user.seatApplications ?? [],
+    inPersonBatch: user.inPersonBatch ?? null,
     isPremium: Boolean(user.isPremium),
     referralCode: user.referralCode || '',
   };
@@ -339,6 +341,253 @@ router.post('/seat-applications', authMiddleware, async (req, res) => {
   }
 });
 
+// Apply / Express interest for private in-person batch
+router.post('/in-person-batch/apply', async (req, res) => {
+  try {
+    const {
+      fullName,
+      email,
+      phone,
+      whatsapp = '',
+      city = 'Dhaka',
+      area = '',
+      preferredTrack = 'english',
+      preferredSchedule = 'weekend_morning',
+      occupation = '',
+      learningGoal = '',
+    } = req.body;
+
+    if (!fullName || !email || !phone) {
+      return res.status(400).json({ error: 'Full name, email, and phone number are required.' });
+    }
+
+    const authUser = await getUserFromOptionalToken(req);
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    let application = await InPersonApplication.findOne({ email: normalizedEmail }).sort({ createdAt: -1 });
+
+    if (application) {
+      application.fullName = String(fullName).trim();
+      application.phone = String(phone).trim();
+      application.whatsapp = String(whatsapp).trim() || String(phone).trim();
+      application.city = String(city).trim() || 'Dhaka';
+      application.area = String(area).trim();
+      application.preferredTrack = ['english', 'arabic', 'both'].includes(preferredTrack) ? preferredTrack : 'english';
+      application.preferredSchedule = ['weekend_morning', 'weekend_evening', 'weekday_evening'].includes(preferredSchedule) ? preferredSchedule : 'weekend_morning';
+      application.occupation = String(occupation).trim().slice(0, 150);
+      application.learningGoal = String(learningGoal).trim().slice(0, 500);
+      if (authUser && !application.userId) {
+        application.userId = authUser._id;
+      }
+      await application.save();
+    } else {
+      application = await InPersonApplication.create({
+        userId: authUser?._id ?? null,
+        fullName: String(fullName).trim(),
+        email: normalizedEmail,
+        phone: String(phone).trim(),
+        whatsapp: String(whatsapp).trim() || String(phone).trim(),
+        city: String(city).trim() || 'Dhaka',
+        area: String(area).trim(),
+        preferredTrack: ['english', 'arabic', 'both'].includes(preferredTrack) ? preferredTrack : 'english',
+        preferredSchedule: ['weekend_morning', 'weekend_evening', 'weekday_evening'].includes(preferredSchedule) ? preferredSchedule : 'weekend_morning',
+        occupation: String(occupation).trim().slice(0, 150),
+        learningGoal: String(learningGoal).trim().slice(0, 500),
+        status: 'pending',
+        paymentStatus: 'unpaid',
+        fee: 4500,
+        paidAmount: 0,
+        submittedAt: new Date(),
+      });
+    }
+
+    const userToUpdate = authUser || await User.findOne({ email: normalizedEmail });
+    if (userToUpdate) {
+      userToUpdate.inPersonBatch = {
+        hasApplied: true,
+        phone: application.phone,
+        whatsapp: application.whatsapp,
+        city: application.city,
+        area: application.area,
+        preferredTrack: application.preferredTrack,
+        preferredSchedule: application.preferredSchedule,
+        occupation: application.occupation,
+        learningGoal: application.learningGoal,
+        status: application.status,
+        paymentStatus: application.paymentStatus,
+        paidAmount: application.paidAmount,
+        submittedAt: application.submittedAt,
+        adminNotes: application.adminNotes || '',
+      };
+      await userToUpdate.save();
+    }
+
+    return res.status(201).json({
+      message: 'Interest registered successfully! Private in-person batch details unlocked.',
+      application,
+      unlocked: true,
+      batchDetails: {
+        batchName: 'Lugaish Executive In-Person Intensive Batch (Private Cohort)',
+        type: 'Paid Physical Cohort',
+        venue: 'Islamic University of Madinah (Madinah Munawwarah, Saudi Arabia)',
+        fee: 'Upcoming',
+        feeNotice: 'Paid batch — tuition will be announced soon directly to shortlisted candidates',
+        schedule: application.preferredSchedule,
+        maxSeats: 12,
+        perks: [
+          'Small group cohort (capped at 12 students)',
+          'Venue at Islamic University of Madinah',
+          'Face-to-face 1-on-1 pronunciation & speaking coaching',
+          'Printed physical workbook & study guides',
+          'Weekly in-person interview prep simulation',
+          'Direct mentorship with Tanvir Ahmad & Ishaat Alhumaidi',
+          'Official physical verified certificate of completion',
+        ],
+        paymentInstructions: {
+          accountNumber: 'Will be announced later',
+          accountType: 'Official Tuition Account (Announced Soon)',
+          referenceNotice: 'Account and payment instructions will be sent directly to accepted applicants.',
+          contactEmail: 'lugaish2026@gmail.com',
+        },
+      },
+      user: userToUpdate ? toPublicUser(userToUpdate) : null,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Check in-person batch status
+router.get('/in-person-batch/status', async (req, res) => {
+  try {
+    const authUser = await getUserFromOptionalToken(req);
+    const queryEmail = req.query.email ? String(req.query.email).trim().toLowerCase() : '';
+    const targetEmail = authUser?.email || queryEmail;
+
+    if (!targetEmail) {
+      return res.json({ hasApplied: false, status: 'unapplied', unlocked: false });
+    }
+
+    const application = await InPersonApplication.findOne({ email: targetEmail }).sort({ createdAt: -1 });
+
+    if (!application && !authUser?.inPersonBatch?.hasApplied) {
+      return res.json({ hasApplied: false, status: 'unapplied', unlocked: false });
+    }
+
+    const appStatus = application?.status || authUser?.inPersonBatch?.status || 'pending';
+    const payStatus = application?.paymentStatus || authUser?.inPersonBatch?.paymentStatus || 'unpaid';
+
+    return res.json({
+      hasApplied: true,
+      unlocked: true,
+      application: application || authUser?.inPersonBatch,
+      status: appStatus,
+      paymentStatus: payStatus,
+      batchDetails: {
+        batchName: 'Lugaish Executive In-Person Intensive Batch (Private Cohort)',
+        type: 'Paid Physical Cohort',
+        venue: 'Islamic University of Madinah (Madinah Munawwarah, Saudi Arabia)',
+        fee: 'Upcoming',
+        feeNotice: 'Paid batch — tuition will be announced soon directly to shortlisted candidates',
+        schedule: application?.preferredSchedule || 'weekend_morning',
+        maxSeats: 12,
+        perks: [
+          'Small group cohort (capped at 12 students)',
+          'Venue at Islamic University of Madinah',
+          'Face-to-face 1-on-1 pronunciation & speaking coaching',
+          'Printed physical workbook & study guides',
+          'Weekly in-person interview prep simulation',
+          'Direct mentorship with Tanvir Ahmad & Ishaat Alhumaidi',
+          'Official physical verified certificate of completion',
+        ],
+        paymentInstructions: {
+          accountNumber: 'Will be announced later',
+          accountType: 'Official Tuition Account (Announced Soon)',
+          referenceNotice: 'Account and payment instructions will be sent directly to accepted applicants.',
+          contactEmail: 'lugaish2026@gmail.com',
+        },
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// List all applications (Web Developer only)
+router.get('/in-person-batch/applications', authMiddleware, async (req, res) => {
+  try {
+    const requester = await User.findById(req.userId).select('role email');
+    const requesterRole = normalizeRole(requester?.role);
+    const isDev = requesterRole === ROLES.webDeveloper || webDeveloperEmails.has(requester?.email?.toLowerCase());
+
+    if (!requester || !isDev) {
+      return res.status(403).json({ error: 'Only the web developer has access to this resource.' });
+    }
+
+    const applications = await InPersonApplication.find({})
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ applications });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update application status & payment (Web Developer only)
+router.patch('/in-person-batch/applications/:id', authMiddleware, async (req, res) => {
+  try {
+    const requester = await User.findById(req.userId).select('role email');
+    const requesterRole = normalizeRole(requester?.role);
+    const isDev = requesterRole === ROLES.webDeveloper || webDeveloperEmails.has(requester?.email?.toLowerCase());
+
+    if (!requester || !isDev) {
+      return res.status(403).json({ error: 'Only the web developer has access to this resource.' });
+    }
+
+    const { status, paymentStatus, paidAmount, adminNotes } = req.body;
+    const application = await InPersonApplication.findById(req.params.id);
+
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    if (status && ['pending', 'contacted', 'approved', 'enrolled', 'declined'].includes(status)) {
+      application.status = status;
+    }
+    if (paymentStatus && ['unpaid', 'partial', 'paid'].includes(paymentStatus)) {
+      application.paymentStatus = paymentStatus;
+    }
+    if (typeof paidAmount === 'number') {
+      application.paidAmount = paidAmount;
+    }
+    if (typeof adminNotes === 'string') {
+      application.adminNotes = adminNotes;
+    }
+
+    await application.save();
+
+    if (application.email) {
+      const user = await User.findOne({ email: application.email });
+      if (user) {
+        user.inPersonBatch = {
+          ...(user.inPersonBatch || {}),
+          hasApplied: true,
+          status: application.status,
+          paymentStatus: application.paymentStatus,
+          paidAmount: application.paidAmount,
+          adminNotes: application.adminNotes,
+        };
+        await user.save();
+      }
+    }
+
+    res.json({ message: 'Application updated successfully', application });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get current user
 router.get('/me', authMiddleware, async (req, res) => {
   try {
@@ -360,7 +609,7 @@ router.get('/users', authMiddleware, async (req, res) => {
     }
 
     const users = await User.find({})
-      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications createdAt')
+      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch createdAt')
       .sort({ createdAt: -1 });
     const userIds = users.map(user => user._id);
     const [progressEntries, quizEntries] = await Promise.all([
