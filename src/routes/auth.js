@@ -29,8 +29,9 @@ const webDeveloperEmails = new Set(
 
 const testerEmails = new Set(['chatgpt.tanvir1@gmail.com']);
 
-function normalizePathways(pathways, fallback = 'english', { includeFallback = true } = {}) {
+function normalizePathways(pathways, fallback = 'english', { includeFallback = true, hasPrivateBatch = false } = {}) {
   const valid = new Set(['english', 'arabic']);
+  if (hasPrivateBatch) valid.add('paid_batch');
   const normalized = Array.isArray(pathways)
     ? pathways.filter(pathway => valid.has(pathway))
     : [];
@@ -77,13 +78,17 @@ function getCapacityPayload(language, user = null) {
 
 function toPublicUser(user) {
   const role = normalizeRole(user.role);
+  const isPrivateBatchLinked = Boolean(user.privateBatchAccess);
 
   return {
     id: user._id,
     name: user.name,
     email: user.email,
     languageSelected: user.languageSelected,
-    enrolledPathways: normalizePathways(user.enrolledPathways, user.languageSelected, { includeFallback: false }),
+    enrolledPathways: normalizePathways(user.enrolledPathways, user.languageSelected, {
+      includeFallback: false,
+      hasPrivateBatch: isPrivateBatchLinked,
+    }),
     role,
     roleLabel: ROLE_LABELS[role],
     permissions: getRolePermissions(role),
@@ -92,6 +97,7 @@ function toPublicUser(user) {
     seatApplications: user.seatApplications ?? [],
     inPersonBatch: user.inPersonBatch ?? null,
     isPremium: Boolean(user.isPremium),
+    privateBatchAccess: isPrivateBatchLinked,
     referralCode: user.referralCode || '',
   };
 }
@@ -609,7 +615,7 @@ router.get('/users', authMiddleware, async (req, res) => {
     }
 
     const users = await User.find({})
-      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch createdAt')
+      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch privateBatchAccess createdAt')
       .sort({ createdAt: -1 });
     const userIds = users.map(user => user._id);
     const [progressEntries, quizEntries] = await Promise.all([
@@ -687,6 +693,44 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
 
     res.json({
       message: 'Role updated',
+      user: toPublicUser(user),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Link / unlink a student with the Private Batch (Paid Batch)
+router.patch('/users/:id/private-batch', authMiddleware, requirePermission('manage_roles'), async (req, res) => {
+  try {
+    const { privateBatchAccess } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (req.userRole === ROLES.tester) {
+      const preview = user.toObject();
+      preview.privateBatchAccess = Boolean(privateBatchAccess);
+      return res.json({
+        message: 'Tester preview only. The live user was not changed.',
+        user: toPublicUser(preview),
+        sandbox: true,
+      });
+    }
+
+    user.privateBatchAccess = Boolean(privateBatchAccess);
+    const pathways = new Set(user.enrolledPathways || []);
+    if (user.privateBatchAccess) {
+      pathways.add('paid_batch');
+    } else {
+      pathways.delete('paid_batch');
+    }
+    user.enrolledPathways = [...pathways];
+    await user.save();
+
+    res.json({
+      message: user.privateBatchAccess ? 'Linked with Private Batch (Paid)' : 'Unlinked from Private Batch',
       user: toPublicUser(user),
     });
   } catch (error) {

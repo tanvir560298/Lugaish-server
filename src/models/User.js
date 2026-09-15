@@ -25,9 +25,10 @@ const userSchema = new mongoose.Schema(
     languageSelected: { type: String, enum: ['english', 'arabic'], default: 'english' },
     enrolledPathways: {
       type: [String],
-      enum: ['english', 'arabic'],
+      enum: ['english', 'arabic', 'paid_batch'],
       default: ['english'],
     },
+    privateBatchAccess: { type: Boolean, default: false },
     seatApplications: [
       {
         language: { type: String, enum: ['english', 'arabic'], required: true },
