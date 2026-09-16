@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const progressSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    language: { type: String, enum: ['english', 'arabic'], required: true },
+    language: { type: String, enum: ['english', 'arabic', 'paid_batch'], required: true },
     completedDays: [
       {
         day: Number,

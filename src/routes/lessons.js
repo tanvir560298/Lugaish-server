@@ -22,7 +22,7 @@ function getLessonParams(req, res) {
   const { language } = req.params;
   const day = Number(req.params.day);
 
-  if (!['english', 'arabic'].includes(language) || !Number.isInteger(day) || day < 1 || day > 365) {
+  if (!['english', 'arabic', 'paid_batch'].includes(language) || !Number.isInteger(day) || day < 1 || day > 365) {
     res.status(400).json({ error: 'Invalid lesson language or day' });
     return null;
   }
@@ -140,6 +140,21 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
 router.get('/:language/day-modules', authMiddleware, async (req, res) => {
   try {
     const { language } = req.params;
+    if (language === 'paid_batch') {
+      return res.json({
+        courseSchedule: {
+          courseStarted: true,
+          calendarDay: 60,
+          courseStartDate: '',
+          courseStartAt: '',
+        },
+        currentDay: 1,
+        courseDay: 60,
+        completedDays: [],
+        modules: [],
+        nextUnlockAt: null,
+      });
+    }
     if (!['english', 'arabic'].includes(language)) return res.status(400).json({ error: 'Invalid language' });
     
     const role = await getRequesterRole(req.userId, req);
@@ -395,7 +410,7 @@ router.post('/complete', authMiddleware, async (req, res) => {
   try {
     const day = Number(req.body.day);
     const { language } = req.body;
-    if (!['english', 'arabic'].includes(language) || !Number.isSafeInteger(day) || day < 1) {
+    if (!['english', 'arabic', 'paid_batch'].includes(language) || !Number.isSafeInteger(day) || day < 1) {
       return res.status(400).json({ error: 'A valid language and day are required.' });
     }
     const user = await User.findById(req.userId);
@@ -411,6 +426,8 @@ router.post('/complete', authMiddleware, async (req, res) => {
       courseDay = await getArabicCourseDay(scheduleUser);
     } else if (language === 'english') {
       courseDay = await getEnglishCourseDay(scheduleUser);
+    } else if (language === 'paid_batch') {
+      courseDay = 60;
     }
     if (day > courseDay) {
       return res.status(403).json({ error: 'Cannot complete a locked lesson.' });
