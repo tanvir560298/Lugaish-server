@@ -7,6 +7,8 @@ import { User } from '../models/User.js';
 import { InPersonApplication } from '../models/InPersonApplication.js';
 import { Progress } from '../models/Progress.js';
 import { Quiz } from '../models/Quiz.js';
+import { Certificate } from '../models/Certificate.js';
+import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
 import config from '../config.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { createRateLimit } from '../middleware/rateLimit.js';
@@ -802,10 +804,44 @@ router.patch('/users/:id/private-batch', authMiddleware, requirePermission('mana
 
 router.delete('/users/:id', authMiddleware, requirePermission('manage_users'), async (req, res) => {
   try {
-    if (req.userRole === ROLES.tester) {
-      return res.json({ message: 'Tester preview only. No user account was removed.', sandbox: true });
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-    return res.status(501).json({ error: 'Live account removal is not enabled on this server' });
+
+    if (String(user._id) === String(req.userId)) {
+      return res.status(400).json({ error: 'You cannot delete your own account from the dashboard' });
+    }
+
+    const emailLower = (user.email || '').toLowerCase();
+    const userRole = normalizeRole(user.role);
+    if (userRole === ROLES.webDeveloper || webDeveloperEmails.has(emailLower)) {
+      return res.status(403).json({ error: 'Web Developer accounts cannot be deleted' });
+    }
+
+    // Attempt Firebase user deletion if uid is available
+    if (user.firebaseUid) {
+      try {
+        await getAuth().deleteUser(user.firebaseUid);
+      } catch (fbErr) {
+        console.warn('Firebase user deletion warning:', fbErr.message);
+      }
+    }
+
+    // Delete associated learning data across all collections
+    await Promise.all([
+      Progress.deleteMany({ userId: user._id }),
+      Quiz.deleteMany({ userId: user._id }),
+      Certificate.deleteMany({ userId: user._id }),
+      InterviewQueueEntry.deleteMany({ $or: [{ userId: user._id }, { email: emailLower }] }),
+      InPersonApplication.deleteMany({ $or: [{ userId: user._id }, { email: emailLower }] }),
+      User.findByIdAndDelete(user._id),
+    ]);
+
+    return res.json({
+      message: `Account for ${user.name || user.email} and all associated records have been removed.`,
+      deletedUserId: user._id,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
