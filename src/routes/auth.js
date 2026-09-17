@@ -257,8 +257,24 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
 router.get('/enrollment-status/:language', async (req, res) => {
   try {
     const { language } = req.params;
-    if (!['english', 'arabic'].includes(language)) {
+    if (!['english', 'arabic', 'paid_batch'].includes(language)) {
       return res.status(400).json({ error: 'Invalid language' });
+    }
+
+    if (language === 'paid_batch') {
+      const user = await getUserFromOptionalToken(req);
+      const isEnrolledInBatch = user ? Boolean(user.privateBatchAccess || (user.enrolledPathways || []).includes('paid_batch')) : false;
+      const enrolledCount = await User.countDocuments({ enrolledPathways: 'paid_batch' });
+      return res.json({
+        language: 'paid_batch',
+        limit: 999999,
+        enrolledCount,
+        seatsAvailable: 999999,
+        isFull: false,
+        isEnrolled: isEnrolledInBatch,
+        hasApplied: false,
+        applicationStatus: null,
+      });
     }
 
     const [enrolledCount, user] = await Promise.all([
