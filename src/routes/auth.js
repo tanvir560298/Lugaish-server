@@ -29,6 +29,18 @@ const webDeveloperEmails = new Set(
 
 const testerEmails = new Set(['chatgpt.tanvir1@gmail.com']);
 
+const PAID_BATCH_PRECONFIGURED_EMAILS = new Set([
+  'salmansadik5440@gmail.com',
+  'taraqhasan454@gmail.com',
+  'shamimhossain112002@gmail.com',
+  'hasanulbannasiam204@gmail.com',
+  'mahmudorrahmannaeim@gmail.com',
+  'nuralam56941@gmail.com',
+  'habiburbd1698@gmail.com',
+  'muaz091792@gmail.com',
+  'abdullahalazad600@gmail.com',
+]);
+
 function normalizePathways(pathways, fallback = 'english', { includeFallback = true, hasPrivateBatch = false } = {}) {
   const valid = new Set(['english', 'arabic']);
   if (hasPrivateBatch) valid.add('paid_batch');
@@ -37,6 +49,9 @@ function normalizePathways(pathways, fallback = 'english', { includeFallback = t
     : [];
 
   if (includeFallback && valid.has(fallback)) normalized.unshift(fallback);
+  if (hasPrivateBatch && !normalized.includes('paid_batch')) {
+    normalized.push('paid_batch');
+  }
   return [...new Set(normalized)];
 }
 
@@ -78,7 +93,10 @@ function getCapacityPayload(language, user = null) {
 
 function toPublicUser(user) {
   const role = normalizeRole(user.role);
-  const isPrivateBatchLinked = Boolean(user.privateBatchAccess);
+  const emailLower = (user.email || '').toLowerCase();
+  const isWebDevOrTester = [ROLES.webDeveloper, ROLES.tester].includes(role) || webDeveloperEmails.has(emailLower);
+  const isPreconfigured = PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
+  const isPrivateBatchLinked = Boolean(user.privateBatchAccess || isPreconfigured || isWebDevOrTester);
 
   return {
     id: user._id,
@@ -204,7 +222,20 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
         ...(user.learnerProfile?.toObject?.() ?? user.learnerProfile ?? {}),
         ...cleanedProfile,
       };
-      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+      const emailLower = (firebaseUser.email || user.email || '').toLowerCase();
+      const isPreconfigured = PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
+      if (isPreconfigured && !user.privateBatchAccess) {
+        user.privateBatchAccess = true;
+      }
+      const isPrivateBatchLinked = Boolean(
+        user.privateBatchAccess
+        || isPreconfigured
+        || [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
+        || webDeveloperEmails.has(emailLower)
+      );
+      user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected, {
+        hasPrivateBatch: isPrivateBatchLinked,
+      });
       user.referralCode = user.referralCode || createReferralCode(firebaseUser.uid);
     }
 
@@ -254,7 +285,7 @@ router.get('/enrollment-status/:language', async (req, res) => {
 router.post('/enroll', authMiddleware, async (req, res) => {
   try {
     const { language } = req.body;
-    if (!['english', 'arabic'].includes(language)) {
+    if (!['english', 'arabic', 'paid_batch'].includes(language)) {
       return res.status(400).json({ error: 'Invalid language' });
     }
 
@@ -263,11 +294,23 @@ router.post('/enroll', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected);
+    const isPrivateBatchLinked = Boolean(
+      user.privateBatchAccess
+      || [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
+      || webDeveloperEmails.has(user.email?.toLowerCase())
+    );
+
+    if (language === 'paid_batch' && !isPrivateBatchLinked) {
+      return res.status(403).json({ error: 'Private Batch enrollment requires an invitation or grant from staff.' });
+    }
+
+    user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected, {
+      hasPrivateBatch: isPrivateBatchLinked,
+    });
     const enrolledCount = await getEnrollmentCount(language);
     const alreadyEnrolled = user.enrolledPathways.includes(language);
 
-    const limit = getCourseSeatLimit(language);
+    const limit = language === 'paid_batch' ? 999999 : getCourseSeatLimit(language);
 
     if (!alreadyEnrolled && enrolledCount >= limit) {
       return res.status(409).json({
@@ -707,16 +750,6 @@ router.patch('/users/:id/private-batch', authMiddleware, requirePermission('mana
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (req.userRole === ROLES.tester) {
-      const preview = user.toObject();
-      preview.privateBatchAccess = Boolean(privateBatchAccess);
-      return res.json({
-        message: 'Tester preview only. The live user was not changed.',
-        user: toPublicUser(preview),
-        sandbox: true,
-      });
     }
 
     user.privateBatchAccess = Boolean(privateBatchAccess);

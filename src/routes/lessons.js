@@ -14,7 +14,13 @@ import { getLearnerProgressState, getNextDhakaMidnight } from '../services/cours
 const router = express.Router();
 
 function isEnrolled(user, language) {
-  const pathways = Array.isArray(user.enrolledPathways) ? user.enrolledPathways : [];
+  if (language === 'paid_batch') {
+    const role = normalizeRole(user?.role);
+    if (user?.privateBatchAccess || [ROLES.webDeveloper, ROLES.tester].includes(role)) {
+      return true;
+    }
+  }
+  const pathways = Array.isArray(user?.enrolledPathways) ? user.enrolledPathways : [];
   return pathways.includes(language);
 }
 
@@ -288,10 +294,14 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
         courseDay = await getArabicCourseDay(scheduleUser);
       } else if (params.language === 'english') {
         courseDay = await getEnglishCourseDay(scheduleUser);
+      } else if (params.language === 'paid_batch') {
+        courseDay = 60;
       }
-      const learnerProgress = await getLearnerProgressState(user, params.language, courseDay);
-      if (params.day > courseDay) {
-        return res.status(403).json({ error: 'This lesson is not yet available.', code: 'LESSON_LOCKED' });
+      if (params.language !== 'paid_batch') {
+        const learnerProgress = await getLearnerProgressState(user, params.language, courseDay);
+        if (params.day > courseDay) {
+          return res.status(403).json({ error: 'This lesson is not yet available.', code: 'LESSON_LOCKED' });
+        }
       }
     }
     const lesson = role === ROLES.tester ? await getTesterContent(req.userId, params) : await Lesson.findOne(params);
