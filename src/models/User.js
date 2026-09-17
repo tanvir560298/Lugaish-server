@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema(
       default: ['english'],
     },
     privateBatchAccess: { type: Boolean, default: false },
+    privateBatchExplicitlyRevoked: { type: Boolean, default: false },
     seatApplications: [
       {
         language: { type: String, enum: ['english', 'arabic'], required: true },

@@ -15,10 +15,14 @@ const router = express.Router();
 
 function isEnrolled(user, language) {
   if (language === 'paid_batch') {
+    if (user?.privateBatchExplicitlyRevoked) {
+      return false;
+    }
     const role = normalizeRole(user?.role);
     if (user?.privateBatchAccess || [ROLES.webDeveloper, ROLES.tester].includes(role)) {
       return true;
     }
+    return false;
   }
   const pathways = Array.isArray(user?.enrolledPathways) ? user.enrolledPathways : [];
   return pathways.includes(language);

@@ -95,8 +95,9 @@ function toPublicUser(user) {
   const role = normalizeRole(user.role);
   const emailLower = (user.email || '').toLowerCase();
   const isWebDevOrTester = [ROLES.webDeveloper, ROLES.tester].includes(role) || webDeveloperEmails.has(emailLower);
-  const isPreconfigured = PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
-  const isPrivateBatchLinked = Boolean(user.privateBatchAccess || isPreconfigured || isWebDevOrTester);
+  const isRevoked = Boolean(user.privateBatchExplicitlyRevoked);
+  const isPreconfigured = !isRevoked && PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
+  const isPrivateBatchLinked = Boolean(isWebDevOrTester || (!isRevoked && (user.privateBatchAccess || isPreconfigured)));
 
   return {
     id: user._id,
@@ -116,6 +117,7 @@ function toPublicUser(user) {
     inPersonBatch: user.inPersonBatch ?? null,
     isPremium: Boolean(user.isPremium),
     privateBatchAccess: isPrivateBatchLinked,
+    privateBatchExplicitlyRevoked: isRevoked,
     referralCode: user.referralCode || '',
   };
 }
@@ -223,15 +225,18 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
         ...cleanedProfile,
       };
       const emailLower = (firebaseUser.email || user.email || '').toLowerCase();
-      const isPreconfigured = PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
-      if (isPreconfigured && !user.privateBatchAccess) {
+      const isRevoked = Boolean(user.privateBatchExplicitlyRevoked);
+      const isPreconfigured = !isRevoked && PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
+      if (isPreconfigured && !user.privateBatchAccess && !isRevoked) {
         user.privateBatchAccess = true;
       }
+      if (isRevoked) {
+        user.privateBatchAccess = false;
+      }
       const isPrivateBatchLinked = Boolean(
-        user.privateBatchAccess
-        || isPreconfigured
-        || [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
+        [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
         || webDeveloperEmails.has(emailLower)
+        || (!isRevoked && (user.privateBatchAccess || isPreconfigured))
       );
       user.enrolledPathways = normalizePathways(user.enrolledPathways, user.languageSelected, {
         hasPrivateBatch: isPrivateBatchLinked,
@@ -263,7 +268,8 @@ router.get('/enrollment-status/:language', async (req, res) => {
 
     if (language === 'paid_batch') {
       const user = await getUserFromOptionalToken(req);
-      const isEnrolledInBatch = user ? Boolean(user.privateBatchAccess || (user.enrolledPathways || []).includes('paid_batch')) : false;
+      const isRevoked = Boolean(user?.privateBatchExplicitlyRevoked);
+      const isEnrolledInBatch = user && !isRevoked ? Boolean(user.privateBatchAccess || (user.enrolledPathways || []).includes('paid_batch')) : false;
       const enrolledCount = await User.countDocuments({ enrolledPathways: 'paid_batch' });
       return res.json({
         language: 'paid_batch',
@@ -310,10 +316,11 @@ router.post('/enroll', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const isRevoked = Boolean(user.privateBatchExplicitlyRevoked);
     const isPrivateBatchLinked = Boolean(
-      user.privateBatchAccess
-      || [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
+      [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
       || webDeveloperEmails.has(user.email?.toLowerCase())
+      || (!isRevoked && user.privateBatchAccess)
     );
 
     if (language === 'paid_batch' && !isPrivateBatchLinked) {
@@ -674,7 +681,7 @@ router.get('/users', authMiddleware, async (req, res) => {
     }
 
     const users = await User.find({})
-      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch privateBatchAccess createdAt')
+      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch privateBatchAccess privateBatchExplicitlyRevoked createdAt')
       .sort({ createdAt: -1 });
     const userIds = users.map(user => user._id);
     const [progressEntries, quizEntries] = await Promise.all([
@@ -768,18 +775,24 @@ router.patch('/users/:id/private-batch', authMiddleware, requirePermission('mana
       return res.status(404).json({ error: 'User not found' });
     }
 
-    user.privateBatchAccess = Boolean(privateBatchAccess);
+    const isGranting = Boolean(privateBatchAccess);
+    user.privateBatchAccess = isGranting;
+    user.privateBatchExplicitlyRevoked = !isGranting;
+
     const pathways = new Set(user.enrolledPathways || []);
-    if (user.privateBatchAccess) {
+    if (isGranting) {
       pathways.add('paid_batch');
     } else {
       pathways.delete('paid_batch');
     }
     user.enrolledPathways = [...pathways];
+    user.markModified('enrolledPathways');
+    user.markModified('privateBatchAccess');
+    user.markModified('privateBatchExplicitlyRevoked');
     await user.save();
 
     res.json({
-      message: user.privateBatchAccess ? 'Linked with Private Batch (Paid)' : 'Unlinked from Private Batch',
+      message: isGranting ? 'Linked with Private Batch (Paid)' : 'Unlinked from Private Batch',
       user: toPublicUser(user),
     });
   } catch (error) {
