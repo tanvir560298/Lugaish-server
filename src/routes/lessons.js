@@ -13,13 +13,30 @@ import { getLearnerProgressState, getNextDhakaMidnight } from '../services/cours
 
 const router = express.Router();
 
+const PAID_BATCH_PRECONFIGURED_EMAILS = new Set([
+  'salmansadik5440@gmail.com',
+  'taraqhasan454@gmail.com',
+  'taraqhasan.iu@gmail.com',
+  'shamimhossain112002@gmail.com',
+  'hasanulbannasiam204@gmail.com',
+  'mahmudorrahmannaeim@gmail.com',
+  'nuralam56941@gmail.com',
+  'habiburbd1698@gmail.com',
+  'muaz091792@gmail.com',
+  'abdullahalazad600@gmail.com',
+  'md907648@gmail.com',
+  'chatgpt.tanvir1@gmail.com',
+  'emdad.pmbd.oic@gmail.com',
+]);
+
 function isEnrolled(user, language) {
   if (language === 'paid_batch') {
     if (user?.privateBatchExplicitlyRevoked) {
       return false;
     }
     const role = normalizeRole(user?.role);
-    if (user?.privateBatchAccess || [ROLES.webDeveloper, ROLES.tester].includes(role)) {
+    const emailLower = (user?.email || '').toLowerCase();
+    if (user?.privateBatchAccess || [ROLES.webDeveloper, ROLES.tester].includes(role) || PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower)) {
       return true;
     }
     return false;
@@ -299,7 +316,25 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
       } else if (params.language === 'english') {
         courseDay = await getEnglishCourseDay(scheduleUser);
       } else if (params.language === 'paid_batch') {
-        courseDay = 60;
+        if (!isEnrolled(user, 'paid_batch')) {
+          return res.status(403).json({
+            error: 'You are not enrolled in the Private Batch.',
+            code: 'PRIVATE_BATCH_REQUIRED',
+          });
+        }
+        const studentMonths = Math.max(Number(user.paidBatchMonths) || 1, 1);
+        const maxAllowedDay = studentMonths * 12;
+        if (params.day > maxAllowedDay) {
+          const requiredMonth = Math.ceil(params.day / 12);
+          return res.status(403).json({
+            error: `Class ${params.day} requires Month ${requiredMonth} enrollment. Your current enrollment covers up to Day ${maxAllowedDay}.`,
+            code: 'MONTH_TIER_LOCKED',
+            requiredMonth,
+            currentMonth: studentMonths,
+            maxAllowedDay,
+          });
+        }
+        courseDay = maxAllowedDay;
       }
       if (params.language !== 'paid_batch') {
         const learnerProgress = await getLearnerProgressState(user, params.language, courseDay);

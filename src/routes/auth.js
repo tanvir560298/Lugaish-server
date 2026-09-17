@@ -124,6 +124,7 @@ function toPublicUser(user) {
     isPremium: Boolean(user.isPremium),
     privateBatchAccess: isPrivateBatchLinked,
     privateBatchExplicitlyRevoked: isRevoked,
+    paidBatchMonths: isWebDevOrTester ? 5 : Math.max(Number(user.paidBatchMonths) || 1, 1),
     referralCode: user.referralCode || '',
   };
 }
@@ -201,6 +202,8 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
       const referrer = normalizedReferralCode
         ? await User.findOne({ referralCode: normalizedReferralCode }).select('_id')
         : null;
+      const emailLower = (firebaseUser.email || '').toLowerCase();
+      const isPreconfigured = PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower);
       user = new User({
         name: preferredName || firebaseUser.name || firebaseUser.email.split('@')[0],
         email: firebaseUser.email,
@@ -213,6 +216,8 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
         arabicStartDate: (selectedLanguage === 'arabic' && selectedLanguageHasSeat) ? new Date() : undefined,
         englishStartDate: (selectedLanguage === 'english' && selectedLanguageHasSeat) ? new Date() : undefined,
         learnerProfile: cleanedProfile,
+        privateBatchAccess: isPreconfigured,
+        paidBatchMonths: 1,
         referralCode: createReferralCode(firebaseUser.uid),
         referredBy: referrer?._id ?? null,
       });
@@ -238,6 +243,9 @@ router.post('/firebase', firebaseLoginLimit, async (req, res) => {
       }
       if (isRevoked) {
         user.privateBatchAccess = false;
+      }
+      if (!user.paidBatchMonths) {
+        user.paidBatchMonths = 1;
       }
       const isPrivateBatchLinked = Boolean(
         [ROLES.webDeveloper, ROLES.tester].includes(normalizeRole(user.role))
@@ -687,7 +695,7 @@ router.get('/users', authMiddleware, async (req, res) => {
     }
 
     const users = await User.find({})
-      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch privateBatchAccess privateBatchExplicitlyRevoked createdAt')
+      .select('name email avatarUrl role languageSelected enrolledPathways learnerProfile seatApplications inPersonBatch privateBatchAccess privateBatchExplicitlyRevoked paidBatchMonths createdAt')
       .sort({ createdAt: -1 });
     const userIds = users.map(user => user._id);
     const [progressEntries, quizEntries] = await Promise.all([
@@ -772,33 +780,47 @@ router.patch('/users/:id/role', authMiddleware, requirePermission('manage_roles'
   }
 });
 
-// Link / unlink a student with the Private Batch (Paid Batch)
+// Link / unlink a student with the Private Batch (Paid Batch) or update their month tier
 router.patch('/users/:id/private-batch', authMiddleware, requirePermission('manage_roles'), async (req, res) => {
   try {
-    const { privateBatchAccess } = req.body;
+    const { privateBatchAccess, paidBatchMonths } = req.body;
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const isGranting = Boolean(privateBatchAccess);
-    user.privateBatchAccess = isGranting;
-    user.privateBatchExplicitlyRevoked = !isGranting;
+    if (privateBatchAccess !== undefined) {
+      const isGranting = Boolean(privateBatchAccess);
+      user.privateBatchAccess = isGranting;
+      user.privateBatchExplicitlyRevoked = !isGranting;
 
-    const pathways = new Set(user.enrolledPathways || []);
-    if (isGranting) {
-      pathways.add('paid_batch');
-    } else {
-      pathways.delete('paid_batch');
+      const pathways = new Set(user.enrolledPathways || []);
+      if (isGranting) {
+        pathways.add('paid_batch');
+      } else {
+        pathways.delete('paid_batch');
+      }
+      user.enrolledPathways = [...pathways];
+      user.markModified('enrolledPathways');
+      user.markModified('privateBatchAccess');
+      user.markModified('privateBatchExplicitlyRevoked');
     }
-    user.enrolledPathways = [...pathways];
-    user.markModified('enrolledPathways');
-    user.markModified('privateBatchAccess');
-    user.markModified('privateBatchExplicitlyRevoked');
+
+    if (paidBatchMonths !== undefined) {
+      const parsed = Number(paidBatchMonths);
+      user.paidBatchMonths = Math.min(Math.max(Number.isSafeInteger(parsed) ? parsed : 1, 1), 5);
+      user.markModified('paidBatchMonths');
+    } else if (!user.paidBatchMonths) {
+      user.paidBatchMonths = 1;
+      user.markModified('paidBatchMonths');
+    }
+
     await user.save();
 
     res.json({
-      message: isGranting ? 'Linked with Private Batch (Paid)' : 'Unlinked from Private Batch',
+      message: user.privateBatchAccess
+        ? `Private Batch updated: Month ${user.paidBatchMonths || 1} (Days 1–${(user.paidBatchMonths || 1) * 12})`
+        : 'Unlinked from Private Batch',
       user: toPublicUser(user),
     });
   } catch (error) {

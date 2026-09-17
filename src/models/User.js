@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
     },
     privateBatchAccess: { type: Boolean, default: false },
     privateBatchExplicitlyRevoked: { type: Boolean, default: false },
+    paidBatchMonths: { type: Number, default: 1, min: 1 },
     seatApplications: [
       {
         language: { type: String, enum: ['english', 'arabic'], required: true },
