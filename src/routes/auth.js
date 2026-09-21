@@ -44,6 +44,7 @@ const PAID_BATCH_PRECONFIGURED_EMAILS = new Set([
   'abdullahalazad600@gmail.com',
   'chatgpt.tanvir1@gmail.com',
   'emdad.pmbd.oic@gmail.com',
+  'hmhuraira@gmail.com',
 ]);
 
 function normalizePathways(pathways, fallback = 'english', { includeFallback = true, hasPrivateBatch = false } = {}) {
