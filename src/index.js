@@ -13,6 +13,7 @@ import quizRoutes from './routes/quiz.js';
 import interviewRoutes from './routes/interviews.js';
 import emailRoutes from './routes/email.js';
 import achievementRoutes from './routes/achievements.js';
+import paymentRoutes from './routes/payment.js';
 
 const app = express();
 validateProductionConfig(config);
@@ -41,7 +42,7 @@ app.use((req, res, next) => {
   });
   next();
 });
-app.use(express.json({ limit: '256kb' }));
+app.use(express.json({ limit: '10mb' }));
 
 app.use((error, req, res, next) => {
   if (error?.message === 'Origin not allowed by CORS') {
@@ -81,6 +82,7 @@ app.use('/api/quiz', requireDatabase, quizRoutes);
 app.use('/api/interviews', requireDatabase, interviewRoutes);
 app.use('/api/email', requireDatabase, emailRoutes);
 app.use('/api/achievements', requireDatabase, achievementRoutes);
+app.use('/api/payment', requireDatabase, paymentRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
