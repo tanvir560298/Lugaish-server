@@ -86,8 +86,8 @@ router.get('/status', authMiddleware, async (req, res) => {
       const defaultStatus = monthNum <= paidMonths ? 'received' : 'due';
       return {
         month: monthNum,
-        fee: 3000,
-        currency: 'BDT',
+        fee: 50,
+        currency: 'SAR',
         status: defaultStatus,
         userEmail: email,
         userName: user.name,
@@ -133,8 +133,8 @@ router.post('/submit', authMiddleware, async (req, res) => {
         userEmail: email,
         userName: user.name,
         month: monthNum,
-        fee: 3000,
-        currency: 'BDT',
+        fee: 50,
+        currency: 'SAR',
       });
     }
 
@@ -193,8 +193,8 @@ router.post('/admin/confirm', authMiddleware, requirePermission('manage_roles'),
         userEmail: email,
         userName: user.name,
         month: monthNum,
-        fee: 3000,
-        currency: 'BDT',
+        fee: 50,
+        currency: 'SAR',
       });
     }
 

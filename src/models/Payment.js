@@ -25,8 +25,8 @@ const paymentRecordSchema = new mongoose.Schema(
     userEmail: { type: String, required: true, lowercase: true, trim: true },
     userName: { type: String, required: true },
     month: { type: Number, required: true, min: 1, max: 5 },
-    fee: { type: Number, default: 3000 },
-    currency: { type: String, default: 'BDT' },
+    fee: { type: Number, default: 50 },
+    currency: { type: String, default: 'SAR' },
     status: {
       type: String,
       enum: ['due', 'pending', 'received'],
