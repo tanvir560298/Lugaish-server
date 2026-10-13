@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const progressSchema = new mongoose.Schema(
   {
+    courseGeneration: {type:String},
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     language: { type: String, enum: ['english', 'arabic', 'paid_batch'], required: true },
     completedDays: [

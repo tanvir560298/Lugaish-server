@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{permitsLivePermission}from'./livePermission.js';
+test('tester privileges cannot mutate live users, private access, site settings or mail',()=>{for(const permission of['manage_roles','manage_users','manage_site','manage_email'])assert.equal(permitsLivePermission('tester',permission),false);assert.equal(permitsLivePermission('tester','manage_lessons'),true);assert.equal(permitsLivePermission('web_developer','manage_roles'),true);});

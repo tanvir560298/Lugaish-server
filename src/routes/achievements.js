@@ -46,7 +46,7 @@ router.get('/summary', authMiddleware, async (req, res) => {
       currentStreak: calculateDailyStreak(activityDates),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Achievements could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -80,7 +80,7 @@ router.post('/certificates/:language/:milestone', authMiddleware, async (req, re
     return res.status(201).json({ certificate: publicCertificate(certificate), alreadyIssued: false });
   } catch (error) {
     if (error?.code === 11000) return res.status(409).json({ error: 'Certificate already issued. Refresh your profile.' });
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Achievements could not be loaded or updated. Please retry.' });
   }
 });
 

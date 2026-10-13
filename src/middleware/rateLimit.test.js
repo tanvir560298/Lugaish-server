@@ -28,3 +28,5 @@ test('rate limiter blocks requests above the configured maximum', () => {
 
   assert.equal(allowed, 2);
 });
+
+test('rate limiter bounds live bucket cardinality without resetting existing clients',()=>{const limit=createRateLimit({windowMs:60000,max:1,maxBuckets:2});let allowed=0;for(const ip of ['a','b','c','a']){const res=response();limit({ip},res,()=>allowed++);if(ip==='c')assert.equal(res.statusCode,429);}assert.equal(allowed,2);});

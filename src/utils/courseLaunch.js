@@ -35,7 +35,7 @@ export function getArabicCourseDay(user, now = new Date()) {
     return 365;
   }
 
-  const startDate = ARABIC_COURSE_START_DATE;
+  const startDate = user.activeCourseStartDate || ARABIC_COURSE_START_DATE;
   const startCalendarDay = getDhakaCalendarDayNumber(startDate);
   const currentCalendarDay = getDhakaCalendarDayNumber(now);
   if (startCalendarDay === null || currentCalendarDay === null) return 1;
@@ -53,7 +53,7 @@ export function getEnglishCourseDay(user, now = new Date()) {
     return 365;
   }
 
-  const startCalendarDay = getDhakaCalendarDayNumber(ENGLISH_COURSE_START_DATE);
+  const startCalendarDay = getDhakaCalendarDayNumber(user.activeCourseStartDate || ENGLISH_COURSE_START_DATE);
   const currentCalendarDay = getDhakaCalendarDayNumber(now);
   if (startCalendarDay === null || currentCalendarDay === null) return 1;
 

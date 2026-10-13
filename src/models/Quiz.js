@@ -1,10 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const quizSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    courseGeneration: { type: String },
+    contentKey: { type: String },
+    requestId: { type: String, maxlength: 80 },
+    completionEligible: { type: Boolean, default: false },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     day: { type: Number, required: true },
-    language: { type: String, enum: ['english', 'arabic'], required: true },
+    language: { type: String, enum: ["english", "arabic"], required: true },
     responses: [
       {
         questionIndex: Number,
@@ -16,9 +24,22 @@ const quizSchema = new mongoose.Schema(
     totalQuestions: { type: Number },
     completedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 quizSchema.index({ userId: 1, language: 1, day: 1, createdAt: -1 });
 
-export const Quiz = mongoose.model('Quiz', quizSchema);
+quizSchema.index({
+  userId: 1,
+  language: 1,
+  courseGeneration: 1,
+  completedAt: -1,
+  _id: -1,
+});
+// Old attempts have no requestId; keep all historical rows unchanged.
+quizSchema.index(
+  { userId: 1, requestId: 1 },
+  { unique: true, partialFilterExpression: { requestId: { $type: "string" } } },
+);
+
+export const Quiz = mongoose.model("Quiz", quizSchema);

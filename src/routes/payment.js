@@ -33,7 +33,7 @@ router.get('/bank-details', async (req, res) => {
 
     res.json({ bankDetails: settings });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -62,7 +62,7 @@ router.put('/bank-details', authMiddleware, requirePermission('manage_roles'), a
 
     res.json({ message: 'Bank details updated successfully.', bankDetails: settings });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -112,7 +112,7 @@ router.get('/status', authMiddleware, async (req, res) => {
       notifications,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -152,7 +152,7 @@ router.post('/submit', authMiddleware, async (req, res) => {
       record,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -167,7 +167,7 @@ router.get('/admin/records', authMiddleware, requirePermission('manage_roles'), 
 
     res.json({ records, users });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -243,7 +243,7 @@ router.post('/admin/confirm', authMiddleware, requirePermission('manage_roles'),
       },
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -269,20 +269,26 @@ router.post('/admin/remind', authMiddleware, requirePermission('manage_roles'), 
 
     res.json({ message: `Reminder sent to ${user.name} for Month ${monthNum}.`, notification });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 
 // 8. Dismiss notification
 router.post('/notifications/:id/dismiss', authMiddleware, async (req, res) => {
   try {
-    const notification = await PaymentNotification.findById(req.params.id);
+    if (!/^[a-fA-F0-9]{24}$/.test(req.params.id)) return res.status(400).json({ error: 'Invalid notification identifier.' });
+    const user = await User.findById(req.userId).select('email');
+    if (!user) return res.status(401).json({ error: 'Account unavailable.' });
+    const notification = await PaymentNotification.findOne({
+      _id: req.params.id,
+      $or: [{ userId: req.userId }, { userId: null, userEmail: user.email.toLowerCase() }],
+    });
     if (!notification) return res.status(404).json({ error: 'Notification not found' });
     notification.isRead = true;
     await notification.save();
     res.json({ message: 'Notification dismissed.' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Payment information could not be loaded or updated. Please retry.' });
   }
 });
 

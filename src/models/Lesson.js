@@ -13,7 +13,9 @@ const lessonVideoSchema = new mongoose.Schema(
 const lessonSchema = new mongoose.Schema(
   {
     day: { type: Number, required: true },
-    language: { type: String, enum: ['english', 'arabic'], required: true },
+    language: { type: String, enum: ['english', 'arabic', 'paid_batch'], required: true },
+    courseGeneration: {type:String},
+    publicationStatus: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     title: { type: String, required: true },
     description: { type: String },
     videoUrl: { type: String },
@@ -33,6 +35,7 @@ const lessonSchema = new mongoose.Schema(
       maxMarks: { type: Number, required: true, min: 1, max: 100 },
       audioUrl: { type: String, maxlength: 2048 },
     }],
+    materials: [{ id: {type:String,required:true,maxlength:100}, title:{type:String,required:true,maxlength:160}, url:{type:String,required:true,validate:value=>{try{return new URL(value).protocol==='https:';}catch{return false;}}}, type:{type:String,enum:['PDF','link'],default:'PDF'} }],
     vocabulary: [
       {
         word: String,
@@ -64,6 +67,6 @@ const lessonSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-lessonSchema.index({ language: 1, day: 1 }, { unique: true });
+lessonSchema.index({ language: 1, day: 1, courseGeneration: 1 }, { unique: true });
 
 export const Lesson = mongoose.model('Lesson', lessonSchema);

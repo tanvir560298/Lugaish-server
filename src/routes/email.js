@@ -26,7 +26,7 @@ async function requireEmailManager(req, res, next) {
     req.isTester = normalizeRole(user.role) === ROLES.tester;
     return next();
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Email service is unavailable. Please retry or contact support.' });
   }
 }
 
@@ -98,7 +98,7 @@ router.get('/status', ...manageEmail, async (req, res) => {
       recentCampaigns,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Email service is unavailable. Please retry or contact support.' });
   }
 });
 
@@ -116,7 +116,7 @@ router.get('/oauth/url', ...manageEmail, (req, res) => {
     });
     res.json({ url });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Email service is unavailable. Please retry or contact support.' });
   }
 });
 
@@ -148,7 +148,7 @@ router.get('/oauth/callback', async (req, res) => {
     );
     res.redirect(`${config.FRONTEND_URL.replace(/\/$/, '')}/dashboard?mail=connected`);
   } catch (error) {
-    const message = encodeURIComponent(error.message || 'Gmail connection failed');
+    const message = encodeURIComponent('Gmail connection failed. Reconnect or contact support.');
     res.redirect(`${config.FRONTEND_URL.replace(/\/$/, '')}/dashboard?mailError=${message}`);
   }
 });
@@ -166,7 +166,7 @@ router.post('/send-test', ...manageEmail, async (req, res) => {
     await gmail.users.messages.send({ userId: 'me', requestBody: { raw: createRawMessage({ to: recipient, name: 'Test recipient', subject, message }) } });
     return res.json({ message: `Test email sent to ${recipient}` });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Email service is unavailable. Please retry or contact support.' });
   }
 });
 
@@ -215,7 +215,7 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
         })));
         results.forEach((result, resultIndex) => {
           if (result.status === 'fulfilled') sentCount += 1;
-          else failures.push({ email: batch[resultIndex].email, error: String(result.reason?.message || 'Send failed').slice(0, 300) });
+          else failures.push({ email: batch[resultIndex].email, error: 'Email delivery failed. Retry from campaign results.' });
         });
       }
 
@@ -229,7 +229,7 @@ router.post('/campaigns', ...manageEmail, async (req, res) => {
       campaignLocks.delete(lockKey);
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: 'Email service is unavailable. Please retry or contact support.' });
   }
 });
 

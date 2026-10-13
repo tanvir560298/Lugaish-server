@@ -1,3 +1,4 @@
+import { Course } from '../models/Course.js';
 import express from 'express';
 import { InterviewQueueEntry } from '../models/InterviewQueueEntry.js';
 import { User } from '../models/User.js';
@@ -80,9 +81,11 @@ router.get('/weekly', authMiddleware, async (req, res) => {
       User.findById(req.userId).select('role'),
       getSessionEntries(sessionKey),
     ]);
+    if (!user) return res.status(401).json({ error: 'Account unavailable.' });
     const rooms = getRooms();
     const ownEntry = entries.find(entry => String(entry.userId) === String(req.userId));
-    const staff = isStaff(user);
+    // A sandbox tester can preview joining, but cannot inspect live students.
+    const staff = isStaff(user) && normalizeRole(user.role) !== ROLES.tester;
 
     res.json({
       sessionKey,
@@ -95,7 +98,7 @@ router.get('/weekly', authMiddleware, async (req, res) => {
       canManageQueue: staff,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'The interview queue could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -109,6 +112,7 @@ router.post('/join', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    if (!isStaff(user) && !await Course.exists({language:user.languageSelected,status:'published'})) return res.status(404).json({error:'No published course interview is available yet.'});
     if (normalizeRole(user.role) === ROLES.tester) {
       return res.json({
         message: 'Tester preview only. You were not added to the live interview queue.',
@@ -195,7 +199,7 @@ router.post('/join', authMiddleware, async (req, res) => {
       }
     }
 
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'The interview queue could not be loaded or updated. Please retry.' });
   }
 });
 
@@ -224,7 +228,7 @@ router.patch('/entries/:id/status', authMiddleware, requirePermission('manage_le
       entry: toEntryPayload(entry),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'The interview queue could not be loaded or updated. Please retry.' });
   }
 });
 

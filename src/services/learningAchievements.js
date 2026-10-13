@@ -1,3 +1,4 @@
+import {Course} from '../models/Course.js';
 import { Progress } from '../models/Progress.js';
 import { Quiz } from '../models/Quiz.js';
 
@@ -15,17 +16,20 @@ function calendarDay(value) {
 }
 
 export async function getCompletedCourseDays(user, language) {
+  const course=await Course.findOne({language,status:'published'}).select('generation').lean();
+  if(!course)return [];
+  const courseGeneration=course.generation;
   const [progress, quizEntries] = await Promise.all([
-    Progress.findOne({ userId: user._id, language }).select('completedDays').lean(),
-    Quiz.find({ userId: user._id, language }).select('day completedAt').lean(),
+    Progress.findOne({ userId: user._id, language, courseGeneration }).select('completedDays').lean(),
+    Quiz.find({ userId: user._id, language, courseGeneration }).select('day completedAt').lean(),
   ]);
-  const rewardPrefix = `${language}:`;
+  const rewardPrefix = `${courseGeneration}:${language}:`;
   const rewardedDays = (user.completionRewards ?? [])
     .filter(key => typeof key === 'string' && key.startsWith(rewardPrefix))
     .map(key => Number(key.slice(rewardPrefix.length)));
   const progressDays = (progress?.completedDays ?? []).map(item => Number(item.day));
   const quizDays = quizEntries.map(item => Number(item.day));
-  const impliedPdfDays = quizDays.filter(day => Number.isSafeInteger(day) && day > 1 && day % 2 === 0).map(day => day - 1);
+  const impliedPdfDays = []; // Legacy paired-PDF rules do not apply to a new course generation.
 
   return [...new Set([...rewardedDays, ...progressDays, ...quizDays, ...impliedPdfDays])]
     .filter(day => Number.isSafeInteger(day) && day > 0)

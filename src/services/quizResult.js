@@ -1,0 +1,2 @@
+export function validQuizResponses(responses,total){return Array.isArray(responses)&&responses.length===total&&total>0&&responses.every(r=>Number.isSafeInteger(r?.selectedAnswer)&&r.selectedAnswer>=0&&r.selectedAnswer<=3);}
+export function serializeQuizResult(quiz){return {score:quiz.score,totalQuestions:quiz.totalQuestions,correctAnswers:quiz.responses.filter(r=>r.isCorrect).length,completedAt:quiz.completedAt,confirmed:true};}

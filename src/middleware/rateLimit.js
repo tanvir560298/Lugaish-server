@@ -1,9 +1,13 @@
-export function createRateLimit({ windowMs, max, key = req => req.ip }) {
+export function createRateLimit({ windowMs, max, maxBuckets = 5000, key = req => req.ip }) {
   const buckets = new Map();
 
   return (req, res, next) => {
     const now = Date.now();
     const bucketKey = String(key(req) || 'unknown');
+    if (!buckets.has(bucketKey) && buckets.size >= maxBuckets) {
+      for(const [storedKey,bucket] of buckets)if(bucket.resetAt<=now)buckets.delete(storedKey);
+      if(buckets.size>=maxBuckets){res.set('Retry-After',String(Math.ceil(windowMs/1000)));return res.status(429).json({error:'Too many requests. Please try again shortly.'});}
+    }
     const current = buckets.get(bucketKey);
     const bucket = !current || current.resetAt <= now
       ? { count: 0, resetAt: now + windowMs }

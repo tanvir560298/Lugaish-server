@@ -1,0 +1,31 @@
+import {Progress} from '../models/Progress.js';
+import {Quiz} from '../models/Quiz.js';
+import {getLearnerProgressState} from '../services/courseProgression.js';
+import authRoutes from './auth.js';
+import test from 'node:test';import assert from 'node:assert/strict';import mongoose from 'mongoose';import express from 'express';import jwt from 'jsonwebtoken';
+import courseRoutes from './courses.js';import lessonRoutes from './lessons.js';import quizRoutes from './quiz.js';import {User}from'../models/User.js';import {Lesson}from'../models/Lesson.js';import {Course}from'../models/Course.js';import config from'../config.js';
+test('empty catalog, authorized future publication and archive deny stale direct requests without changing independent records',{skip:process.env.RUN_CATALOG_INTEGRATION!=='1'},async()=>{
+ const database=`lugaish_catalog_test_${process.pid}_${Date.now()}`;let server;await mongoose.connect(`mongodb://127.0.0.1:27017/${database}`);
+ try{const app=express();app.use(express.json());app.use('/api/courses',courseRoutes);app.use('/api/lessons',lessonRoutes);app.use('/api/quiz',quizRoutes);app.use('/api/auth',authRoutes);server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ const [staff,student,tester]=await User.create([{name:'Staff',email:'staff@catalog-test.invalid',role:'web_developer'},{name:'Student',email:'student@catalog-test.invalid',enrolledPathways:['english']},{name:'Sandbox',email:'tester@catalog-test.invalid',role:'tester'}]);
+ const old=await Lesson.create({language:'english',day:1,title:'Archived content',publicationStatus:'archived'});await mongoose.connection.db.collection('studyrooms').insertOne({fixture:'independent'});
+ const request=(user,path,body)=>fetch(`http://127.0.0.1:${server.address().port}/api/${path}`,{method:body?'PUT':'GET',headers:{'Content-Type':'application/json',...(user?{Authorization:`Bearer ${jwt.sign({userId:String(user._id)},config.JWT_SECRET,{expiresIn:'5m'})}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const token=user=>jwt.sign({userId:String(user._id)},config.JWT_SECRET,{expiresIn:'5m'});
+ const grant=await fetch(`http://127.0.0.1:${server.address().port}/api/auth/users/${student._id}/private-batch`,{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token(tester)},body:JSON.stringify({privateBatchAccess:true})});assert.equal(grant.status,403);assert.equal((await User.findById(student._id)).privateBatchAccess,false);
+ const deletion=await fetch(`http://127.0.0.1:${server.address().port}/api/auth/users/${student._id}`,{method:'DELETE',headers:{Authorization:'Bearer '+token(tester)}});assert.equal(deletion.status,403);assert.ok(await User.findById(student._id));
+ const expired=await fetch(`http://127.0.0.1:${server.address().port}/api/courses/manage`,{headers:{Authorization:'Bearer '+jwt.sign({userId:String(staff._id)},config.JWT_SECRET,{expiresIn:-1})}});assert.equal(expired.status,401);
+ assert.deepEqual(await(await request(null,'courses')).json(),[]);assert.equal((await request(student,'lessons/english/1')).status,404);assert.equal((await request(student,'quiz/access/english/1')).status,404);
+ const draft={title:'Future course',status:'draft'};assert.equal((await request(student,'courses/manage/english',draft)).status,403);assert.equal((await request(tester,'courses/manage/english',draft)).status,403);assert.equal((await request(staff,'courses/manage/english',draft)).status,200);assert.deepEqual(await(await request(null,'courses')).json(),[]);assert.equal((await request(staff,'courses/manage/english',{...draft,status:'published'})).status,409);
+ const draftCourse=await Course.findOne({language:'english'});await Lesson.init();
+ await Lesson.create({courseGeneration:draftCourse.generation,language:'english',day:1,title:'Reviewed new lesson',publicationStatus:'draft',modulePublished:true,quiz:[{question:'A or B?',options:['A','B'],correctAnswer:0}]});
+ assert.equal((await request(staff,'courses/manage/english/lessons/1/content',{quiz:[{question:'Choose a greeting',options:['Hello','Goodbye'],correctAnswer:0,explanation:'Hello welcomes someone.'}],materials:[{id:'reading',title:'Reviewed reading',url:'https://example.invalid/reading.pdf',type:'PDF'}]})).status,200);
+ assert.equal((await request(staff,'courses/manage/english/lessons/1/publication',{status:'published'})).status,200);assert.equal((await request(staff,'courses/manage/english',{...draft,status:'published'})).status,200);assert.equal((await(await request(null,'courses')).json()).length,1);
+ await Progress.create({userId:student._id,language:'english',completedDays:[{day:1},{day:2}],currentDay:3});
+ await Quiz.create({userId:student._id,language:'english',day:2,responses:[],score:100,totalQuestions:1});
+ const freshProgress=await getLearnerProgressState(student,'english',365);assert.deepEqual(freshProgress.completedDays,[]);assert.equal(freshProgress.currentDay,1);assert.equal(await Progress.countDocuments({userId:student._id}),2);
+ assert.equal((await request(student,'lessons/english/1')).status,200);assert.equal((await request(student,'quiz/access/english/1')).status,200);
+ const submit=await fetch(`http://127.0.0.1:${server.address().port}/api/quiz/submit`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token(student)},body:JSON.stringify({language:'english',day:1,responses:[{selectedAnswer:0}]})});assert.equal(submit.status,200);assert.equal((await submit.json()).correctAnswers,1);assert.equal(await Quiz.countDocuments({userId:student._id}),2);
+ assert.equal((await request(staff,'courses/manage/english',{...draft,status:'archived'})).status,200);assert.deepEqual(await(await request(null,'courses')).json(),[]);assert.equal((await request(student,'lessons/english/1')).status,404);
+ assert.equal(await User.countDocuments(),3);assert.equal(await mongoose.connection.db.collection('studyrooms').countDocuments(),1);assert.equal((await Lesson.findById(old._id)).title,'Archived content');
+ }finally{if(server)await new Promise(r=>server.close(r));if(mongoose.connection.name===database)await mongoose.connection.dropDatabase();await mongoose.disconnect();}
+});

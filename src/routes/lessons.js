@@ -1,47 +1,63 @@
-import express from 'express';
-import { Lesson } from '../models/Lesson.js';
-import { User } from '../models/User.js';
-import { Progress } from '../models/Progress.js';
-import mongoose from 'mongoose';
-import { TesterLesson } from '../models/TesterLesson.js';
-import { authMiddleware, requirePermission } from '../middleware/auth.js';
-import { getYouTubeId } from '../utils/youtube.js';
-import { ROLES, normalizeRole } from '../utils/roles.js';
-import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.js';
-import { getCompletedCourseDays } from '../services/learningAchievements.js';
-import { getLearnerProgressState, getNextDhakaMidnight } from '../services/courseProgression.js';
+import { coursePublication } from "../middleware/coursePublication.js";
+import express from "express";
+import { Lesson } from "../models/Lesson.js";
+import { objectBody } from "../middleware/requestShape.js";
+import { User } from "../models/User.js";
+import { Progress } from "../models/Progress.js";
+import mongoose from "mongoose";
+import { TesterLesson } from "../models/TesterLesson.js";
+import { authMiddleware, requirePermission } from "../middleware/auth.js";
+import { getYouTubeId } from "../utils/youtube.js";
+import { ROLES, normalizeRole } from "../utils/roles.js";
+import {
+  getArabicCourseDay,
+  getEnglishCourseDay,
+} from "../utils/courseLaunch.js";
+import { getCompletedCourseDays } from "../services/learningAchievements.js";
+import {
+  getLearnerProgressState,
+  getNextDhakaMidnight,
+} from "../services/courseProgression.js";
 
 const router = express.Router();
+router.use(objectBody);
+router.use(coursePublication);
 
 const PAID_BATCH_PRECONFIGURED_EMAILS = new Set([
-  'salmansadik5440@gmail.com',
-  'taraqhasan454@gmail.com',
-  'taraqhasan.iu@gmail.com',
-  'shamimhossain112002@gmail.com',
-  'hasanulbannasiam204@gmail.com',
-  'mahmudorrahmannaeim@gmail.com',
-  'nuralam56941@gmail.com',
-  'habiburbd1698@gmail.com',
-  'muaz091792@gmail.com',
-  'abdullahalazad600@gmail.com',
-  'chatgpt.tanvir1@gmail.com',
-  'emdad.pmbd.oic@gmail.com',
-  'hmhuraira@gmail.com',
+  "salmansadik5440@gmail.com",
+  "taraqhasan454@gmail.com",
+  "taraqhasan.iu@gmail.com",
+  "shamimhossain112002@gmail.com",
+  "hasanulbannasiam204@gmail.com",
+  "mahmudorrahmannaeim@gmail.com",
+  "nuralam56941@gmail.com",
+  "habiburbd1698@gmail.com",
+  "muaz091792@gmail.com",
+  "abdullahalazad600@gmail.com",
+  "chatgpt.tanvir1@gmail.com",
+  "emdad.pmbd.oic@gmail.com",
+  "hmhuraira@gmail.com",
 ]);
 
 function isEnrolled(user, language) {
-  if (language === 'paid_batch') {
+  if (language === "paid_batch") {
     if (user?.privateBatchExplicitlyRevoked) {
       return false;
     }
     const role = normalizeRole(user?.role);
-    const emailLower = (user?.email || '').toLowerCase();
-    if (user?.privateBatchAccess || [ROLES.webDeveloper, ROLES.tester].includes(role) || PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower)) {
+    const emailLower = (user?.email || "").toLowerCase();
+    if (
+      user?.privateBatchAccess ||
+      [ROLES.webDeveloper, ROLES.tester].includes(role) ||
+      PAID_BATCH_PRECONFIGURED_EMAILS.has(emailLower)
+    ) {
       return true;
     }
     return false;
   }
-  const pathways = Array.isArray(user?.enrolledPathways) ? user.enrolledPathways : [];
+  const pathways = Array.isArray(user?.enrolledPathways)
+    ? user.enrolledPathways
+    : [];
   return pathways.includes(language);
 }
 
@@ -49,8 +65,13 @@ function getLessonParams(req, res) {
   const { language } = req.params;
   const day = Number(req.params.day);
 
-  if (!['english', 'arabic', 'paid_batch'].includes(language) || !Number.isInteger(day) || day < 1 || day > 365) {
-    res.status(400).json({ error: 'Invalid lesson language or day' });
+  if (
+    !["english", "arabic", "paid_batch"].includes(language) ||
+    !Number.isInteger(day) ||
+    day < 1 ||
+    day > 365
+  ) {
+    res.status(400).json({ error: "Invalid lesson language or day" });
     return null;
   }
 
@@ -59,9 +80,10 @@ function getLessonParams(req, res) {
 
 async function getRequesterRole(userId, req = null) {
   if (!userId) return ROLES.learner;
-  const user = await User.findById(userId).select('role');
+  const user = await User.findById(userId).select("role");
   const role = normalizeRole(user?.role);
-  return role === ROLES.webDeveloper && req?.get('X-Lugaish-Learner-Preview') === '1'
+  return role === ROLES.webDeveloper &&
+    req?.get("X-Lugaish-Learner-Preview") === "1"
     ? ROLES.learner
     : role;
 }
@@ -74,14 +96,16 @@ function getScheduleUser(user, role) {
 
 function modulePayload(lesson) {
   return {
-    moduleType: lesson?.moduleType ?? 'video',
+    moduleType: lesson?.moduleType ?? "video",
     published: lesson?.modulePublished === true,
-    title: lesson?.title ?? '',
-    description: lesson?.description ?? '',
-    introTitle: lesson?.moduleIntroTitle ?? '',
-    introText: lesson?.moduleIntroText ?? '',
-    questions: Array.isArray(lesson?.speakingQuestions) ? lesson.speakingQuestions : [],
-    accessTier: lesson?.accessTier === 'premium' ? 'premium' : 'free',
+    title: lesson?.title ?? "",
+    description: lesson?.description ?? "",
+    introTitle: lesson?.moduleIntroTitle ?? "",
+    introText: lesson?.moduleIntroText ?? "",
+    questions: Array.isArray(lesson?.speakingQuestions)
+      ? lesson.speakingQuestions
+      : [],
+    accessTier: lesson?.accessTier === "premium" ? "premium" : "free",
   };
 }
 
@@ -89,14 +113,21 @@ async function getTesterContent(testerId, params) {
   const sandbox = await TesterLesson.findOne({ testerId, ...params });
   if (sandbox?.content) return sandbox.content;
   const lesson = await Lesson.findOne(params).lean();
-  return lesson ?? { ...params, title: `Day ${params.day} lesson`, description: '', videos: [] };
+  return (
+    lesson ?? {
+      ...params,
+      title: `Day ${params.day} lesson`,
+      description: "",
+      videos: [],
+    }
+  );
 }
 
 async function saveTesterContent(testerId, params, content) {
   await TesterLesson.findOneAndUpdate(
     { testerId, ...params },
     { $set: { content } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, new: true, setDefaultsOnInsert: true },
   );
   return content;
 }
@@ -106,48 +137,97 @@ function cleanQuestions(value, language) {
   const ids = new Set();
   const questions = [];
   for (const raw of value) {
-    const id = String(raw.id || '').trim();
-    const question = String(raw.question || '').trim();
-    const sampleAnswer = String(raw.sampleAnswer || '').trim();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const id = String(raw.id || "").trim();
+    const question = String(raw.question || "").trim();
+    const sampleAnswer = String(raw.sampleAnswer || "").trim();
     const expectedKeywords = Array.isArray(raw.expectedKeywords)
-      ? raw.expectedKeywords.map(item => String(item).trim()).filter(Boolean)
+      ? raw.expectedKeywords.map((item) => String(item).trim()).filter(Boolean)
       : [];
     const maxMarks = Number(raw.maxMarks);
-    const audioUrl = raw.audioUrl ? String(raw.audioUrl).trim() : '';
-    if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || ids.has(id.toLowerCase()) || !question || question.length > 500
-      || !sampleAnswer || sampleAnswer.length > 2000 || !expectedKeywords.length || expectedKeywords.length > 30
-      || expectedKeywords.some(item => item.length > 100) || !Number.isFinite(maxMarks) || maxMarks < 1 || maxMarks > 100) return null;
+    const audioUrl = raw.audioUrl ? String(raw.audioUrl).trim() : "";
+    if (
+      !/^[A-Za-z0-9_-]{1,80}$/.test(id) ||
+      ids.has(id.toLowerCase()) ||
+      !question ||
+      question.length > 500 ||
+      !sampleAnswer ||
+      sampleAnswer.length > 2000 ||
+      !expectedKeywords.length ||
+      expectedKeywords.length > 30 ||
+      expectedKeywords.some((item) => item.length > 100) ||
+      !Number.isFinite(maxMarks) ||
+      maxMarks < 1 ||
+      maxMarks > 100
+    )
+      return null;
     ids.add(id.toLowerCase());
-    questions.push({ id, question, language, expectedKeywords, sampleAnswer, maxMarks, ...(audioUrl ? { audioUrl } : {}) });
+    questions.push({
+      id,
+      question,
+      language,
+      expectedKeywords,
+      sampleAnswer,
+      maxMarks,
+      ...(audioUrl ? { audioUrl } : {}),
+    });
   }
   return questions;
 }
 
 // Get today's lesson (based on user progress)
-router.get('/today/:language', authMiddleware, async (req, res) => {
+router.get("/today/:language", authMiddleware, async (req, res) => {
   try {
     const { language } = req.params;
+    if (!["english", "arabic", "paid_batch"].includes(language))
+      return res.status(400).json({ error: "Invalid language" });
     const user = await User.findById(req.userId);
+    if (!user) return res.status(401).json({ error: "Account unavailable." });
+    const role = await getRequesterRole(req.userId, req);
 
     if (!isEnrolled(user, language)) {
-      return res.status(403).json({ error: 'Not enrolled in this language' });
+      return res.status(403).json({ error: "Not enrolled in this language" });
     }
 
     let calendarDay = 365;
-    if (language === 'arabic') {
-      calendarDay = await getArabicCourseDay(user);
-    } else if (language === 'english') {
-      calendarDay = await getEnglishCourseDay(user);
+    if (language === "arabic") {
+      calendarDay = await getArabicCourseDay({
+        role,
+        activeCourseStartDate: req.publishedCourse?.startAt,
+      });
+    } else if (language === "english") {
+      calendarDay = await getEnglishCourseDay({
+        role,
+        activeCourseStartDate: req.publishedCourse?.startAt,
+      });
     }
-    const learnerProgress = await getLearnerProgressState(user, language, calendarDay);
-    const lesson = await Lesson.findOne({ language, day: learnerProgress.currentDay });
+    const learnerProgress = await getLearnerProgressState(
+      user,
+      language,
+      calendarDay,
+    );
+    const lesson = await Lesson.findOne({
+      language,
+      day: learnerProgress.currentDay,
+      ...req.publicationFilter,
+    });
     if (!lesson) {
-      return res.status(404).json({ error: 'Lesson not found' });
+      return res.status(404).json({ error: "Lesson not found" });
+    }
+    if (
+      role === ROLES.learner &&
+      lesson.accessTier === "premium" &&
+      !user.isPremium
+    ) {
+      return res.status(403).json({
+        error: "This premium lesson is not included in your current plan.",
+        code: "PREMIUM_REQUIRED",
+      });
     }
 
     // Remove answers from quiz for security
     const lessonData = lesson.toObject();
-    lessonData.quiz = lesson.quiz.map(q => ({
+    lessonData.quiz = lesson.quiz.map((q) => ({
       question: q.question,
       options: q.options,
     }));
@@ -155,74 +235,111 @@ router.get('/today/:language', authMiddleware, async (req, res) => {
     res.json({
       ...lessonData,
       userDay: learnerProgress.currentDay,
-      alreadyCompleted: learnerProgress.completedDays.includes(learnerProgress.currentDay),
+      alreadyCompleted: learnerProgress.completedDays.includes(
+        learnerProgress.currentDay,
+      ),
       nextUnlockAt: learnerProgress.nextUnlockAt,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(503)
+      .json({ error: "This request could not be completed. Please retry." });
   }
 });
 
 // Get lesson by day and language
-router.get('/:language/day-modules', authMiddleware, async (req, res) => {
+router.get("/:language/day-modules", authMiddleware, async (req, res) => {
   try {
     const { language } = req.params;
-    if (language === 'paid_batch') {
-      return res.json({
-        courseSchedule: {
-          courseStarted: true,
-          calendarDay: 60,
-          courseStartDate: '',
-          courseStartAt: '',
-        },
-        currentDay: 1,
-        courseDay: 60,
-        completedDays: [],
-        modules: [],
-        nextUnlockAt: null,
-      });
-    }
-    if (!['english', 'arabic'].includes(language)) return res.status(400).json({ error: 'Invalid language' });
-    
+    if (!["english", "arabic", "paid_batch"].includes(language))
+      return res.status(400).json({ error: "Invalid language" });
     const role = await getRequesterRole(req.userId, req);
     const user = await User.findById(req.userId);
-    if (!user) return res.status(401).json({ error: 'User not found' });
+    if (!user) return res.status(401).json({ error: "User not found" });
+    if (role === ROLES.learner && !isEnrolled(user, language))
+      return res
+        .status(403)
+        .json({ error: "Private Batch enrollment required" });
     let calendarDay = 365;
     const scheduleUser = getScheduleUser(user, role);
-    if (language === 'arabic') {
-      calendarDay = await getArabicCourseDay(scheduleUser);
-    } else if (language === 'english') {
-      calendarDay = await getEnglishCourseDay(scheduleUser);
+    if (language === "arabic") {
+      calendarDay = await getArabicCourseDay({
+        role: scheduleUser.role,
+        activeCourseStartDate: req.publishedCourse?.startAt,
+      });
+    } else if (language === "english") {
+      calendarDay = await getEnglishCourseDay({
+        role: scheduleUser.role,
+        activeCourseStartDate: req.publishedCourse?.startAt,
+      });
     }
-    const learnerProgress = role === ROLES.learner
-      ? await getLearnerProgressState(user, language, calendarDay)
-      : null;
-    const completedDays = learnerProgress?.completedDays ?? await getCompletedCourseDays(user, language);
+    if (language === "paid_batch")
+      calendarDay = Math.max(Number(user.paidBatchMonths) || 1, 1) * 12;
+    const learnerProgress =
+      role === ROLES.learner
+        ? await getLearnerProgressState(user, language, calendarDay)
+        : null;
+    const completedDays =
+      learnerProgress?.completedDays ??
+      (await getCompletedCourseDays(user, language));
     const courseDay = learnerProgress?.currentDay ?? calendarDay;
-    
-    const liveLessons = await Lesson.find({ language }).lean();
-    const sandboxLessons = role === ROLES.tester ? await TesterLesson.find({ testerId: req.userId, language }).lean() : [];
-    const byDay = new Map(liveLessons.map(lesson => [Number(lesson.day), lesson]));
-    sandboxLessons.forEach(item => byDay.set(Number(item.day), item.content));
-    
-    const modules = [...byDay.entries()].map(([day, lesson]) => {
-      const dayNum = Number(day);
-      const isAvailable = dayNum <= courseDay;
-      return {
-        day: dayNum,
-        ...modulePayload(lesson),
-        configured: true,
-        available: isAvailable,
-        premiumLocked: role === ROLES.learner && lesson.accessTier === 'premium' && !user.isPremium,
-        questionCount: lesson.speakingQuestions?.length ?? 0,
-        videoCount: lesson.videos?.length ?? 0,
-      };
-    }).filter(module => role !== ROLES.learner || (module.published && module.available))
+
+    const liveLessons = await Lesson.find({
+      language,
+      ...req.publicationFilter,
+    }).lean();
+    const sandboxLessons =
+      role === ROLES.tester
+        ? await TesterLesson.find({ testerId: req.userId, language }).lean()
+        : [];
+    const byDay = new Map(
+      liveLessons.map((lesson) => [Number(lesson.day), lesson]),
+    );
+    sandboxLessons.forEach((item) => byDay.set(Number(item.day), item.content));
+
+    const modules = [...byDay.entries()]
+      .map(([day, lesson]) => {
+        const dayNum = Number(day);
+        const isAvailable = dayNum <= courseDay;
+        return {
+          day: dayNum,
+          ...modulePayload(
+            role === ROLES.learner &&
+              lesson.accessTier === "premium" &&
+              !user.isPremium
+              ? {
+                  ...lesson,
+                  description: "",
+                  moduleIntroTitle: "",
+                  moduleIntroText: "",
+                  speakingQuestions: [],
+                }
+              : lesson,
+          ),
+          publicationStatus: lesson.publicationStatus,
+          configured: true,
+          available: isAvailable,
+          premiumLocked:
+            role === ROLES.learner &&
+            lesson.accessTier === "premium" &&
+            !user.isPremium,
+          questionCount: lesson.speakingQuestions?.length ?? 0,
+          videoCount: lesson.videos?.length ?? 0,
+        };
+      })
+      .filter(
+        (module) =>
+          role !== ROLES.learner || (module.published && module.available),
+      )
       .sort((a, b) => a.day - b.day);
-    
+
     res.json({
       modules,
-      courseSchedule: { courseStarted: true, calendarDay, learnerDay: courseDay },
+      courseSchedule: {
+        courseStarted: true,
+        calendarDay,
+        learnerDay: courseDay,
+      },
       courseStarted: true,
       courseDay,
       currentDay: courseDay,
@@ -230,96 +347,232 @@ router.get('/:language/day-modules', authMiddleware, async (req, res) => {
       completedDays,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(503)
+      .json({ error: "This request could not be completed. Please retry." });
   }
 });
 
-router.put('/:language/:day/module', authMiddleware, requirePermission('manage_lessons'), async (req, res) => {
-  try {
-    const params = getLessonParams(req, res);
-    if (!params) return;
-    const moduleType = ['video', 'ai_practice', 'interview'].includes(req.body.moduleType) ? req.body.moduleType : null;
-    const title = String(req.body.title || '').trim().slice(0, 160);
-    const description = String(req.body.description || '').trim().slice(0, 2000);
-    const introTitle = String(req.body.introTitle || '').trim().slice(0, 160);
-    const introText = String(req.body.introText || '').trim().slice(0, 2000);
-    const accessTier = req.body.accessTier === 'premium' ? 'premium' : 'free';
-    if (!moduleType || !title) return res.status(400).json({ error: 'Invalid day setup' });
+router.put(
+  "/:language/:day/module",
+  authMiddleware,
+  requirePermission("manage_lessons"),
+  async (req, res) => {
+    try {
+      const params = getLessonParams(req, res);
+      if (!params) return;
+      const moduleType = ["video", "ai_practice", "interview"].includes(
+        req.body.moduleType,
+      )
+        ? req.body.moduleType
+        : null;
+      const title = String(req.body.title || "")
+        .trim()
+        .slice(0, 160);
+      const description = String(req.body.description || "")
+        .trim()
+        .slice(0, 2000);
+      const introTitle = String(req.body.introTitle || "")
+        .trim()
+        .slice(0, 160);
+      const introText = String(req.body.introText || "")
+        .trim()
+        .slice(0, 2000);
+      const accessTier = req.body.accessTier === "premium" ? "premium" : "free";
+      if (!moduleType || !title)
+        return res.status(400).json({ error: "Invalid day setup" });
 
-    if (req.userRole === ROLES.tester) {
-      const content = await getTesterContent(req.userId, params);
-      const questions = cleanQuestions(req.body.questions ?? content.speakingQuestions ?? [], params.language);
-      if (questions === null) return res.status(400).json({ error: 'Invalid question set' });
-      if (moduleType === 'ai_practice' && req.body.published === true && questions.length === 0) return res.status(400).json({ error: 'Add at least one question before publishing AI practice' });
-      Object.assign(content, { ...params, title, description, moduleType, modulePublished: req.body.published === true, accessTier, moduleIntroTitle: introTitle, moduleIntroText: introText, speakingQuestions: questions });
-      await saveTesterContent(req.userId, params, content);
-      return res.json({ message: 'Saved only in your tester sandbox. Live content was not changed.', module: modulePayload(content), sandbox: true });
-    }
-
-    const existingLesson = await Lesson.findOne(params).lean();
-    const questions = cleanQuestions(req.body.questions ?? existingLesson?.speakingQuestions ?? [], params.language);
-    if (questions === null) return res.status(400).json({ error: 'Invalid question set' });
-    if (moduleType === 'ai_practice' && req.body.published === true && questions.length === 0) return res.status(400).json({ error: 'Add at least one question before publishing AI practice' });
-    const lesson = await Lesson.findOneAndUpdate(params, {
-      $set: { title, description, moduleType, modulePublished: req.body.published === true, accessTier, moduleIntroTitle: introTitle, moduleIntroText: introText, speakingQuestions: questions },
-      $setOnInsert: params,
-    }, { upsert: true, new: true, runValidators: true });
-    res.json({ message: 'Day settings saved.', module: modulePayload(lesson) });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.get('/:language/:day/speaking-practice', authMiddleware, async (req, res) => {
-  try {
-    const params = getLessonParams(req, res);
-    if (!params) return;
-    const role = await getRequesterRole(req.userId, req);
-    if (role === ROLES.learner) {
-      const user = await User.findById(req.userId);
-      if (!user) return res.status(401).json({ error: 'User not found' });
-      const scheduleUser = getScheduleUser(user, role);
-      let courseDay = 365;
-      if (params.language === 'arabic') {
-        courseDay = await getArabicCourseDay(scheduleUser);
-      } else if (params.language === 'english') {
-        courseDay = await getEnglishCourseDay(scheduleUser);
+      if (req.userRole === ROLES.tester) {
+        const content = await getTesterContent(req.userId, params);
+        const questions = cleanQuestions(
+          req.body.questions ?? content.speakingQuestions ?? [],
+          params.language,
+        );
+        if (questions === null)
+          return res.status(400).json({ error: "Invalid question set" });
+        if (
+          moduleType === "ai_practice" &&
+          req.body.published === true &&
+          questions.length === 0
+        )
+          return res.status(400).json({
+            error: "Add at least one question before publishing AI practice",
+          });
+        Object.assign(content, {
+          ...params,
+          title,
+          description,
+          moduleType,
+          modulePublished: req.body.published === true,
+          accessTier,
+          moduleIntroTitle: introTitle,
+          moduleIntroText: introText,
+          speakingQuestions: questions,
+        });
+        await saveTesterContent(req.userId, params, content);
+        return res.json({
+          message:
+            "Saved only in your tester sandbox. Live content was not changed.",
+          module: modulePayload(content),
+          sandbox: true,
+        });
       }
-      const learnerProgress = await getLearnerProgressState(user, params.language, courseDay);
-      if (params.day > learnerProgress.currentDay) {
-        return res.status(403).json({ error: 'Only today\'s practice can be opened.' });
-      }
+
+      const existingLesson = await Lesson.findOne({
+        ...params,
+        ...req.authoringFilter,
+      }).lean();
+      const questions = cleanQuestions(
+        req.body.questions ?? existingLesson?.speakingQuestions ?? [],
+        params.language,
+      );
+      if (questions === null)
+        return res.status(400).json({ error: "Invalid question set" });
+      if (
+        moduleType === "ai_practice" &&
+        req.body.published === true &&
+        questions.length === 0
+      )
+        return res.status(400).json({
+          error: "Add at least one question before publishing AI practice",
+        });
+      const lesson = await Lesson.findOneAndUpdate(
+        { ...params, ...req.authoringFilter },
+        {
+          $set: {
+            title,
+            description,
+            moduleType,
+            modulePublished: req.body.published === true,
+            accessTier,
+            moduleIntroTitle: introTitle,
+            moduleIntroText: introText,
+            speakingQuestions: questions,
+          },
+          $setOnInsert: { ...params, ...req.authoringFilter },
+        },
+        { upsert: true, new: true, runValidators: true },
+      );
+      res.json({
+        message: "Day settings saved.",
+        module: modulePayload(lesson),
+      });
+    } catch (error) {
+      res
+        .status(503)
+        .json({ error: "This request could not be completed. Please retry." });
     }
-    const lesson = role === ROLES.tester ? await getTesterContent(req.userId, params) : await Lesson.findOne(params).lean();
-    if (!lesson) return res.status(404).json({ error: 'Practice day not found' });
-    const payload = modulePayload(lesson);
-    if (role === ROLES.learner && (payload.moduleType !== 'ai_practice' || !payload.published)) return res.status(403).json({ error: 'This practice is not published' });
-    res.json(payload);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  },
+);
 
-router.get('/:language/:day', authMiddleware, async (req, res) => {
-  try {
-    const params = getLessonParams(req, res);
-    if (!params) return;
-
-    const role = await getRequesterRole(req.userId, req);
-    if (role === ROLES.learner) {
-      const user = await User.findById(req.userId);
-      if (!user) return res.status(401).json({ error: 'User not found' });
-      const scheduleUser = getScheduleUser(user, role);
-      let courseDay = 365;
-      if (params.language === 'arabic') {
-        courseDay = await getArabicCourseDay(scheduleUser);
-      } else if (params.language === 'english') {
-        courseDay = await getEnglishCourseDay(scheduleUser);
-      } else if (params.language === 'paid_batch') {
-        if (!isEnrolled(user, 'paid_batch')) {
+router.get(
+  "/:language/:day/speaking-practice",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const params = getLessonParams(req, res);
+      if (!params) return;
+      const role = await getRequesterRole(req.userId, req);
+      if (role === ROLES.learner) {
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(401).json({ error: "User not found" });
+        if (!isEnrolled(user, params.language))
+          return res
+            .status(403)
+            .json({ error: "Not enrolled in this language" });
+        const scheduleUser = getScheduleUser(user, role);
+        let courseDay = 365;
+        if (params.language === "arabic") {
+          courseDay = await getArabicCourseDay({
+            role: scheduleUser.role,
+            activeCourseStartDate: req.publishedCourse?.startAt,
+          });
+        } else if (params.language === "english") {
+          courseDay = await getEnglishCourseDay({
+            role: scheduleUser.role,
+            activeCourseStartDate: req.publishedCourse?.startAt,
+          });
+        }
+        if (params.language === "paid_batch")
+          courseDay =
+            Math.min(5, Math.max(Number(user.paidBatchMonths) || 1, 1)) * 12;
+        const learnerProgress = await getLearnerProgressState(
+          user,
+          params.language,
+          courseDay,
+        );
+        if (
+          params.day > courseDay ||
+          (params.language !== "paid_batch" &&
+            params.day > learnerProgress.currentDay)
+        ) {
+          return res
+            .status(403)
+            .json({ error: "Only today's practice can be opened." });
+        }
+      }
+      const lesson =
+        role === ROLES.tester
+          ? await getTesterContent(req.userId, params)
+          : await Lesson.findOne({
+              ...params,
+              ...req.publicationFilter,
+            }).lean();
+      if (!lesson)
+        return res.status(404).json({ error: "Practice day not found" });
+      const payload = modulePayload(lesson);
+      if (role === ROLES.learner && payload.accessTier === "premium") {
+        const learner = await User.findById(req.userId).select("isPremium");
+        if (!learner?.isPremium)
           return res.status(403).json({
-            error: 'You are not enrolled in the Private Batch.',
-            code: 'PRIVATE_BATCH_REQUIRED',
+            error: "This premium lesson is not included in your current plan.",
+            code: "PREMIUM_REQUIRED",
+          });
+      }
+      if (
+        role === ROLES.learner &&
+        (payload.moduleType !== "ai_practice" || !payload.published)
+      )
+        return res
+          .status(403)
+          .json({ error: "This practice is not published" });
+      res.json(payload);
+    } catch (error) {
+      res
+        .status(503)
+        .json({ error: "This request could not be completed. Please retry." });
+    }
+  },
+);
+
+router.get("/:language/:day", authMiddleware, async (req, res) => {
+  try {
+    const params = getLessonParams(req, res);
+    if (!params) return;
+
+    const role = await getRequesterRole(req.userId, req);
+    if (role === ROLES.learner) {
+      const user = await User.findById(req.userId);
+      if (!user) return res.status(401).json({ error: "User not found" });
+      if (!isEnrolled(user, params.language))
+        return res.status(403).json({ error: "Not enrolled in this language" });
+      const scheduleUser = getScheduleUser(user, role);
+      let courseDay = 365;
+      if (params.language === "arabic") {
+        courseDay = await getArabicCourseDay({
+          role: scheduleUser.role,
+          activeCourseStartDate: req.publishedCourse?.startAt,
+        });
+      } else if (params.language === "english") {
+        courseDay = await getEnglishCourseDay({
+          role: scheduleUser.role,
+          activeCourseStartDate: req.publishedCourse?.startAt,
+        });
+      } else if (params.language === "paid_batch") {
+        if (!isEnrolled(user, "paid_batch")) {
+          return res.status(403).json({
+            error: "You are not enrolled in the Private Batch.",
+            code: "PRIVATE_BATCH_REQUIRED",
           });
         }
         const studentMonths = Math.max(Number(user.paidBatchMonths) || 1, 1);
@@ -328,7 +581,7 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
           const requiredMonth = Math.ceil(params.day / 12);
           return res.status(403).json({
             error: `Class ${params.day} requires Month ${requiredMonth} enrollment. Your current enrollment covers up to Day ${maxAllowedDay}.`,
-            code: 'MONTH_TIER_LOCKED',
+            code: "MONTH_TIER_LOCKED",
             requiredMonth,
             currentMonth: studentMonths,
             maxAllowedDay,
@@ -336,30 +589,40 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
         }
         courseDay = maxAllowedDay;
       }
-      if (params.language !== 'paid_batch') {
-        const learnerProgress = await getLearnerProgressState(user, params.language, courseDay);
-        if (params.day > courseDay) {
-          return res.status(403).json({ error: 'This lesson is not yet available.', code: 'LESSON_LOCKED' });
+      if (params.language !== "paid_batch") {
+        const learnerProgress = await getLearnerProgressState(
+          user,
+          params.language,
+          courseDay,
+        );
+        if (params.day > courseDay || params.day > learnerProgress.currentDay) {
+          return res.status(403).json({
+            error: "This lesson is not yet available.",
+            code: "LESSON_LOCKED",
+          });
         }
       }
     }
-    const lesson = role === ROLES.tester ? await getTesterContent(req.userId, params) : await Lesson.findOne(params);
+    const lesson =
+      role === ROLES.tester
+        ? await getTesterContent(req.userId, params)
+        : await Lesson.findOne({ ...params, ...req.publicationFilter });
     if (!lesson) {
-      return res.json({ ...params, videos: [] });
+      return res.status(404).json({ error: "This lesson is unavailable." });
     }
 
     const lessonData = lesson.toObject ? lesson.toObject() : lesson;
-    if (role === ROLES.learner && lessonData.accessTier === 'premium') {
-      const learner = await User.findById(req.userId).select('isPremium');
+    if (role === ROLES.learner && lessonData.accessTier === "premium") {
+      const learner = await User.findById(req.userId).select("isPremium");
       if (!learner?.isPremium) {
         return res.status(403).json({
-          error: 'This premium lesson is not included in your current plan.',
-          code: 'PREMIUM_REQUIRED',
+          error: "This premium lesson is not included in your current plan.",
+          code: "PREMIUM_REQUIRED",
         });
       }
     }
     if (role === ROLES.learner && Array.isArray(lessonData.quiz)) {
-      lessonData.quiz = lessonData.quiz.map(question => ({
+      lessonData.quiz = lessonData.quiz.map((question) => ({
         question: question.question,
         options: question.options,
         explanation: question.explanation,
@@ -367,163 +630,292 @@ router.get('/:language/:day', authMiddleware, async (req, res) => {
     }
     res.json(lessonData);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(503)
+      .json({ error: "This request could not be completed. Please retry." });
   }
 });
 
-router.post('/:language/:day/videos', authMiddleware, requirePermission('manage_lessons'), async (req, res) => {
-  try {
-    const params = getLessonParams(req, res);
-    if (!params) return;
+router.post(
+  "/:language/:day/videos",
+  authMiddleware,
+  requirePermission("manage_lessons"),
+  async (req, res) => {
+    try {
+      const params = getLessonParams(req, res);
+      if (!params) return;
 
-    const title = typeof req.body.title === 'string' ? req.body.title.trim() : '';
-    const youtubeId = getYouTubeId(req.body.youtubeUrl);
-    const durationMinutes = Number(req.body.durationMinutes);
+      const title =
+        typeof req.body.title === "string" ? req.body.title.trim() : "";
+      const youtubeId = getYouTubeId(req.body.youtubeUrl);
+      const durationMinutes = Number(req.body.durationMinutes);
 
-    if (!title || title.length > 120) {
-      return res.status(400).json({ error: 'Add a video topic with 120 characters or fewer' });
-    }
-    if (!youtubeId) {
-      return res.status(400).json({ error: 'Add a valid YouTube video, share, shorts, or embed link' });
-    }
-    if (!Number.isFinite(durationMinutes) || durationMinutes < 1 || durationMinutes > 600) {
-      return res.status(400).json({ error: 'Duration must be between 1 and 600 minutes' });
-    }
+      if (!title || title.length > 120) {
+        return res
+          .status(400)
+          .json({ error: "Add a video topic with 120 characters or fewer" });
+      }
+      if (!youtubeId) {
+        return res.status(400).json({
+          error: "Add a valid YouTube video, share, shorts, or embed link",
+        });
+      }
+      if (
+        !Number.isFinite(durationMinutes) ||
+        durationMinutes < 1 ||
+        durationMinutes > 600
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Duration must be between 1 and 600 minutes" });
+      }
 
-    if (req.userRole === ROLES.tester) {
-      const lesson = await getTesterContent(req.userId, params);
-      lesson.videos = Array.isArray(lesson.videos) ? lesson.videos : [];
-      if (lesson.videos.some(video => video.youtubeId === youtubeId)) return res.status(409).json({ error: 'This YouTube video is already in your sandbox lesson' });
-      lesson.videos.push({ _id: new mongoose.Types.ObjectId().toString(), title, youtubeId, durationMinutes, createdBy: req.userId });
-      await saveTesterContent(req.userId, params, lesson);
-      return res.status(201).json({ message: 'Video added only to your tester sandbox', lesson, sandbox: true });
-    }
+      if (req.userRole === ROLES.tester) {
+        const lesson = await getTesterContent(req.userId, params);
+        lesson.videos = Array.isArray(lesson.videos) ? lesson.videos : [];
+        if (lesson.videos.some((video) => video.youtubeId === youtubeId))
+          return res.status(409).json({
+            error: "This YouTube video is already in your sandbox lesson",
+          });
+        lesson.videos.push({
+          _id: new mongoose.Types.ObjectId().toString(),
+          title,
+          youtubeId,
+          durationMinutes,
+          createdBy: req.userId,
+        });
+        await saveTesterContent(req.userId, params, lesson);
+        return res.status(201).json({
+          message: "Video added only to your tester sandbox",
+          lesson,
+          sandbox: true,
+        });
+      }
 
-    let lesson = await Lesson.findOne(params);
-    if (!lesson) {
-      lesson = new Lesson({
-        ...params,
-        title: typeof req.body.lessonTitle === 'string' && req.body.lessonTitle.trim()
-          ? req.body.lessonTitle.trim().slice(0, 120)
-          : `Day ${params.day} lesson`,
-        description: typeof req.body.lessonDescription === 'string'
-          ? req.body.lessonDescription.trim().slice(0, 500)
-          : '',
+      let lesson = await Lesson.findOne({ ...params, ...req.authoringFilter });
+      if (!lesson) {
+        lesson = new Lesson({
+          ...req.authoringFilter,
+          ...params,
+          title:
+            typeof req.body.lessonTitle === "string" &&
+            req.body.lessonTitle.trim()
+              ? req.body.lessonTitle.trim().slice(0, 120)
+              : `Day ${params.day} lesson`,
+          description:
+            typeof req.body.lessonDescription === "string"
+              ? req.body.lessonDescription.trim().slice(0, 500)
+              : "",
+        });
+      }
+
+      if (lesson.videos.some((video) => video.youtubeId === youtubeId)) {
+        return res
+          .status(409)
+          .json({ error: "This YouTube video is already in the lesson" });
+      }
+
+      lesson.videos.push({
+        title,
+        youtubeId,
+        durationMinutes,
+        createdBy: req.userId,
       });
+      await lesson.save();
+
+      res.status(201).json({ message: "Video added to the lesson", lesson });
+    } catch (error) {
+      res
+        .status(503)
+        .json({ error: "This request could not be completed. Please retry." });
     }
+  },
+);
 
-    if (lesson.videos.some(video => video.youtubeId === youtubeId)) {
-      return res.status(409).json({ error: 'This YouTube video is already in the lesson' });
+router.delete(
+  "/:language/:day/videos/:videoId",
+  authMiddleware,
+  requirePermission("manage_lessons"),
+  async (req, res) => {
+    try {
+      const params = getLessonParams(req, res);
+      if (!params) return;
+
+      if (req.userRole === ROLES.tester) {
+        const lesson = await getTesterContent(req.userId, params);
+        const before = Array.isArray(lesson.videos) ? lesson.videos.length : 0;
+        lesson.videos = (lesson.videos ?? []).filter(
+          (video) => String(video._id) !== req.params.videoId,
+        );
+        if (lesson.videos.length === before)
+          return res.status(404).json({ error: "Sandbox video not found" });
+        await saveTesterContent(req.userId, params, lesson);
+        return res.json({
+          message: "Video removed from your tester sandbox",
+          lesson,
+          sandbox: true,
+        });
+      }
+
+      const lesson = await Lesson.findOne({
+        ...params,
+        ...req.authoringFilter,
+      });
+      if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+
+      const video = lesson.videos.id(req.params.videoId);
+      if (!video) return res.status(404).json({ error: "Video not found" });
+
+      video.deleteOne();
+      await lesson.save();
+
+      res.json({ message: "Video removed", lesson });
+    } catch (error) {
+      res
+        .status(503)
+        .json({ error: "This request could not be completed. Please retry." });
     }
-
-    lesson.videos.push({ title, youtubeId, durationMinutes, createdBy: req.userId });
-    await lesson.save();
-
-    res.status(201).json({ message: 'Video added to the lesson', lesson });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.delete('/:language/:day/videos/:videoId', authMiddleware, requirePermission('manage_lessons'), async (req, res) => {
-  try {
-    const params = getLessonParams(req, res);
-    if (!params) return;
-
-    if (req.userRole === ROLES.tester) {
-      const lesson = await getTesterContent(req.userId, params);
-      const before = Array.isArray(lesson.videos) ? lesson.videos.length : 0;
-      lesson.videos = (lesson.videos ?? []).filter(video => String(video._id) !== req.params.videoId);
-      if (lesson.videos.length === before) return res.status(404).json({ error: 'Sandbox video not found' });
-      await saveTesterContent(req.userId, params, lesson);
-      return res.json({ message: 'Video removed from your tester sandbox', lesson, sandbox: true });
-    }
-
-    const lesson = await Lesson.findOne(params);
-    if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
-
-    const video = lesson.videos.id(req.params.videoId);
-    if (!video) return res.status(404).json({ error: 'Video not found' });
-
-    video.deleteOne();
-    await lesson.save();
-
-    res.json({ message: 'Video removed', lesson });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  },
+);
 
 // Complete lesson
-router.post('/complete', authMiddleware, async (req, res) => {
+router.post("/complete", authMiddleware, async (req, res) => {
   try {
     const day = Number(req.body.day);
     const { language } = req.body;
-    if (!['english', 'arabic', 'paid_batch'].includes(language) || !Number.isSafeInteger(day) || day < 1) {
-      return res.status(400).json({ error: 'A valid language and day are required.' });
+    if (
+      !["english", "arabic", "paid_batch"].includes(language) ||
+      !["number", "string"].includes(typeof req.body.day) ||
+      !Number.isSafeInteger(day) ||
+      day < 1 ||
+      day > 365
+    ) {
+      return res
+        .status(400)
+        .json({ error: "A valid language and day are required." });
     }
     const user = await User.findById(req.userId);
+    if (!user) return res.status(401).json({ error: "Account unavailable." });
 
     if (!isEnrolled(user, language)) {
-      return res.status(403).json({ error: 'Not enrolled in this language' });
+      return res.status(403).json({ error: "Not enrolled in this language" });
     }
 
     const role = await getRequesterRole(req.userId, req);
     const scheduleUser = getScheduleUser(user, role);
     let courseDay = 365;
-    if (language === 'arabic') {
-      courseDay = await getArabicCourseDay(scheduleUser);
-    } else if (language === 'english') {
-      courseDay = await getEnglishCourseDay(scheduleUser);
-    } else if (language === 'paid_batch') {
-      courseDay = 60;
+    if (language === "arabic") {
+      courseDay = await getArabicCourseDay({
+        role: scheduleUser.role,
+        activeCourseStartDate: req.publishedCourse?.startAt,
+      });
+    } else if (language === "english") {
+      courseDay = await getEnglishCourseDay({
+        role: scheduleUser.role,
+        activeCourseStartDate: req.publishedCourse?.startAt,
+      });
+    } else if (language === "paid_batch") {
+      courseDay =
+        role === ROLES.learner
+          ? Math.min(5, Math.max(Number(user.paidBatchMonths) || 1, 1)) * 12
+          : 60;
     }
     if (day > courseDay) {
-      return res.status(403).json({ error: 'Cannot complete a locked lesson.' });
+      return res
+        .status(403)
+        .json({ error: "Cannot complete a locked lesson." });
     }
 
-    const progress = await Progress.findOne({ userId: req.userId, language });
-    const previouslyCompleted = Boolean(progress?.completedDays?.some(item => Number(item.day) === day));
-    const learnerProgress = role === ROLES.learner
-      ? await getLearnerProgressState(user, language, courseDay)
-      : null;
-    if (role === ROLES.learner && ['arabic', 'english'].includes(language) && day % 2 === 0 && !previouslyCompleted) {
-      return res.status(409).json({ error: 'Submit this day\'s quiz to complete it.' });
-    }
-    const rewardKey = `${language}:${day}`;
-    const rewardedUser = previouslyCompleted ? null : await User.findOneAndUpdate(
-      { _id: req.userId, completionRewards: { $ne: rewardKey } },
-      {
-        $addToSet: { completionRewards: rewardKey, completedLessons: day },
-        $inc: { totalXP: 500 },
-        $set: { lastActiveDate: new Date() },
-      },
-      { new: true },
+    const progress = await Progress.findOne({
+      userId: req.userId,
+      language,
+      courseGeneration: req.courseGeneration,
+    });
+    const previouslyCompleted = Boolean(
+      progress?.completedDays?.some((item) => Number(item.day) === day),
     );
+    const learnerProgress =
+      role === ROLES.learner
+        ? await getLearnerProgressState(user, language, courseDay)
+        : null;
+    const currentLesson = await Lesson.findOne({
+      language,
+      day,
+      ...req.publicationFilter,
+    });
+    if (!currentLesson)
+      return res.status(404).json({ error: "This lesson is unavailable." });
+    if (
+      role === ROLES.learner &&
+      currentLesson.accessTier === "premium" &&
+      !user.isPremium
+    )
+      return res.status(403).json({ error: "Premium enrollment is required." });
+    if (currentLesson.quiz?.length)
+      return res
+        .status(409)
+        .json({ error: "Submit the published quiz to complete this lesson." });
+    if (
+      role === ROLES.learner &&
+      day !== learnerProgress.currentDay &&
+      !previouslyCompleted
+    )
+      return res
+        .status(403)
+        .json({ error: "Complete the currently unlocked lesson first." });
+    const rewardKey = `${req.courseGeneration}:${language}:${day}`;
+    const rewardedUser = previouslyCompleted
+      ? null
+      : await User.findOneAndUpdate(
+          { _id: req.userId, completionRewards: { $ne: rewardKey } },
+          {
+            $addToSet: { completionRewards: rewardKey, completedLessons: day },
+            $inc: { totalXP: 500 },
+            $set: { lastActiveDate: new Date() },
+          },
+          { new: true },
+        );
     const xpAwarded = rewardedUser ? 500 : 0;
     const alreadyCompleted = xpAwarded === 0;
 
     if (xpAwarded) {
       await Progress.findOneAndUpdate(
-        { userId: req.userId, language },
+        {
+          userId: req.userId,
+          language,
+          courseGeneration: req.courseGeneration,
+        },
         {
           $push: { completedDays: { day, completedAt: new Date() } },
           $inc: { totalXP: xpAwarded },
-          $set: { lastActiveDate: new Date(), currentDay: day, nextUnlockAt: getNextDhakaMidnight() },
+          $set: {
+            lastActiveDate: new Date(),
+            currentDay: day,
+            nextUnlockAt: getNextDhakaMidnight(),
+          },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true },
       );
     }
 
     res.json({
-      message: alreadyCompleted ? 'Lesson was already completed' : 'Lesson completed',
+      confirmed: true,
+      completedAt: alreadyCompleted
+        ? progress?.completedDays?.find((item) => Number(item.day) === day)
+            ?.completedAt
+        : new Date(),
+      message: alreadyCompleted
+        ? "Lesson was already completed"
+        : "Lesson completed",
       xpAwarded,
       totalXP: rewardedUser?.totalXP ?? user.totalXP,
       streak: rewardedUser?.streak ?? user.streak,
       alreadyCompleted,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res
+      .status(503)
+      .json({ error: "This request could not be completed. Please retry." });
   }
 });
 

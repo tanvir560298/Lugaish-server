@@ -1,3 +1,4 @@
+import {coursePublication} from '../middleware/coursePublication.js';
 import express from 'express';
 import { User } from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
@@ -5,6 +6,7 @@ import { getArabicCourseDay, getEnglishCourseDay } from '../utils/courseLaunch.j
 import { getLearnerProgressState } from '../services/courseProgression.js';
 
 const router = express.Router();
+router.use(coursePublication);
 
 function isEnrolled(user, language) {
   const pathways = Array.isArray(user.enrolledPathways) ? user.enrolledPathways : [];
@@ -21,7 +23,7 @@ router.get('/:language', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Not enrolled in this language' });
     }
 
-    const calendarDay = language === 'arabic' ? getArabicCourseDay(user) : getEnglishCourseDay(user);
+    const calendarDay = language === 'arabic' ? getArabicCourseDay({role:user.role,activeCourseStartDate:req.publishedCourse?.startAt}) : getEnglishCourseDay({role:user.role,activeCourseStartDate:req.publishedCourse?.startAt});
     const learnerProgress = await getLearnerProgressState(user, language, calendarDay);
 
     res.json({
@@ -34,7 +36,7 @@ router.get('/:language', authMiddleware, async (req, res) => {
       lastActiveDate: user.lastActiveDate,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Progress could not be loaded. Please retry.' });
   }
 });
 
