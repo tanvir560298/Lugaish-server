@@ -24,6 +24,7 @@ import emailRoutes from "./routes/email.js";
 import achievementRoutes from "./routes/achievements.js";
 import paymentRoutes from "./routes/payment.js";
 import studyRoutes from "../study/routes.js";
+import novyraRoutes from "./routes/novyra.js";
 
 const app = express();
 validateProductionConfig(config);
@@ -136,6 +137,7 @@ app.use("/api/email", requireDatabase, emailRoutes);
 app.use("/api/achievements", requireDatabase, achievementRoutes);
 app.use("/api/payment", requireDatabase, paymentRoutes);
 app.use("/api/study", requireDatabase, studyRoutes);
+app.use("/api/novyra", requireDatabase, novyraRoutes);
 
 app.get("/livez", (_req, res) => res.json({ alive: true }));
 app.get("/readyz", (_req, res) => {
