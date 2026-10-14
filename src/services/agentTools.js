@@ -111,6 +111,13 @@ export async function createStudyPlan(userId, { subject = "english", topic = "Ge
     completed: false,
   }));
 
+  const ids = new Set(sanitizedBlocks.map(block => block.id));
+  if (!sanitizedBlocks.length || sanitizedBlocks.length > 30 || ids.size !== sanitizedBlocks.length
+    || sanitizedBlocks.some(block => !Number.isInteger(block.durationMinutes) || block.durationMinutes > duration)
+    || sanitizedBlocks.reduce((sum, block) => sum + block.durationMinutes, 0) > duration) {
+    throw new Error('Generated study plan exceeds available time or contains invalid blocks');
+  }
+
   if (sanitizedBlocks.length === 0) {
     sanitizedBlocks.push({
       id: "block-1",
@@ -145,6 +152,7 @@ export async function createStudyPlan(userId, { subject = "english", topic = "Ge
 export async function updateStudyPlan(userId, planId, updates = {}) {
   const plan = await NovyraStudyPlan.findOne({ _id: planId, userId });
   if (!plan) throw new Error("Study plan not found or unauthorized");
+  const wasCompleted = plan.status === 'completed';
 
   if (updates.status && ["active", "paused", "completed", "abandoned"].includes(updates.status)) {
     plan.status = updates.status;
@@ -180,17 +188,6 @@ export async function updateStudyPlan(userId, planId, updates = {}) {
         plan.status = "completed";
         plan.completedAt = new Date();
 
-        // Increment student's completed sessions in NovyraProfile
-        await NovyraProfile.findOneAndUpdate(
-          { userId },
-          {
-            $inc: {
-              completedSessionsCount: 1,
-              totalStudyMinutes: plan.actualDurationMinutes,
-            },
-            $set: { lastActiveDate: new Date() },
-          }
-        );
       }
     }
   }
@@ -203,6 +200,9 @@ export async function updateStudyPlan(userId, planId, updates = {}) {
   }
 
   await plan.save();
+  if (!wasCompleted && plan.status === 'completed') {
+    await NovyraProfile.findOneAndUpdate({userId}, {$inc:{completedSessionsCount:1}, $set:{lastActiveDate:new Date()}});
+  }
   return plan;
 }
 

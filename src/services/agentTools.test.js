@@ -1,4 +1,4 @@
-import test from "node:test";
+import test, {before, after} from "node:test";
 import assert from "node:assert/strict";
 import {
   getStudentProfile,
@@ -15,6 +15,20 @@ import { Progress } from "../models/Progress.js";
 import { Quiz } from "../models/Quiz.js";
 import { ReviewAttempt } from "../models/ReviewAttempt.js";
 import { NovyraStudyPlan } from "../models/NovyraStudyPlan.js";
+import { NovyraUsage } from '../models/NovyraUsage.js';
+const usageRead = NovyraUsage.findOne, usageWrite = NovyraUsage.findOneAndUpdate;
+const originalProvider = process.env.NOVYRA_AI_PROVIDER;
+before(() => {
+  // Unit fixtures never contact a provider or rely on fail-open database errors.
+  process.env.NOVYRA_AI_PROVIDER = 'offline';
+  NovyraUsage.findOne = async () => null;
+  NovyraUsage.findOneAndUpdate = async () => ({});
+});
+after(() => {
+  NovyraUsage.findOne = usageRead; NovyraUsage.findOneAndUpdate = usageWrite;
+  if (originalProvider === undefined) delete process.env.NOVYRA_AI_PROVIDER;
+  else process.env.NOVYRA_AI_PROVIDER = originalProvider;
+});
 
 test("getStudentProfile returns sanitized profile with default Novyra values", async () => {
   // Stub User.findById and NovyraProfile.findOne
@@ -205,6 +219,19 @@ test("generatePracticeQuiz returns structured questions with explanations", asyn
   assert.ok(quiz.questions[0].options.length >= 2);
   assert.ok(typeof quiz.questions[0].correctIndex === "number");
   assert.ok(quiz.questions[0].explanation);
+});
+
+test('completing the same session again never increments session count twice', async () => {
+  const oldFind = NovyraStudyPlan.findOne, oldUpdate = NovyraProfile.findOneAndUpdate;
+  let count = 0;
+  const plan = {status:'active',currentBlockIndex:0,blocks:[{id:'one',durationMinutes:15,completed:false}],save:async()=>{}};
+  try {
+    NovyraStudyPlan.findOne = async () => plan;
+    NovyraProfile.findOneAndUpdate = async () => {count++;};
+    await updateStudyPlan('fixture','fixture',{completedBlockIndex:0});
+    await updateStudyPlan('fixture','fixture',{completedBlockIndex:0});
+    assert.equal(count,1);
+  } finally {NovyraStudyPlan.findOne=oldFind; NovyraProfile.findOneAndUpdate=oldUpdate;}
 });
 
 test("recommendNextActivity recommends lesson if no progress, or targeting weak areas", async () => {

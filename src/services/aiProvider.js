@@ -9,7 +9,7 @@ export function getTodayKey() {
 }
 
 export async function checkUserQuota(userId) {
-  if (!userId) return { allowed: true, currentTokens: 0, currentRequests: 0 };
+  if (!userId) return { allowed: false, reason: 'Authenticated student required.' };
   const date = getTodayKey();
   try {
     const usage = await NovyraUsage.findOne({ userId, date });
@@ -39,7 +39,7 @@ export async function checkUserQuota(userId) {
       currentRequests: usage.requestCount,
     };
   } catch {
-    return { allowed: true, currentTokens: 0, currentRequests: 0 };
+    return { allowed: false, reason: 'Usage allowance could not be verified. Please retry.' };
   }
 }
 
@@ -354,7 +354,7 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
     }
 
     // Default JSON response: Structured Study Plan
-    const duration = Number(lowerMsg.match(/(\d+)\s*min/)?.[1]) || 60;
+    const duration = Number(lowerMsg.match(/(\d+)[-\s]*min/)?.[1]) || 60;
     const topic = lowerMsg.includes("loop")
       ? "Loops & Iterations"
       : lowerMsg.includes("function")
@@ -408,6 +408,13 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
         materials: [],
       },
     ];
+
+    // Reserve one minute per block, then distribute the remainder exactly.
+    const weights = [0.35, 0.35, 0.10, 0.15, 0.05];
+    let remaining = Math.max(5, Math.round(duration)) - blocks.length;
+    blocks.forEach((block, index) => {block.durationMinutes = 1 + Math.floor(remaining * weights[index]);});
+    let remainder = Math.max(5, Math.round(duration)) - blocks.reduce((sum, block) => sum + block.durationMinutes, 0);
+    for (let index = 0; remainder > 0; index++, remainder--) blocks[index % blocks.length].durationMinutes++;
 
     return {
       text: JSON.stringify({
@@ -497,8 +504,14 @@ export async function generateAiCompletion({
   }
 
   const provider = (process.env.NOVYRA_AI_PROVIDER || "auto").toLowerCase();
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const openAiKey = process.env.OPENAI_API_KEY;
+  // Credentials alone must not trigger spending. Atomic monetary budgeting is
+  // still a release blocker; paid providers require a deliberate opt-in.
+  const paidEnabled = process.env.NOVYRA_PAID_ENABLED === 'true'
+    && Number(process.env.NOVYRA_DAILY_BUDGET_USD) > 0
+    && Number(process.env.NOVYRA_MONTHLY_BUDGET_USD) > 0
+    && Boolean(process.env.NOVYRA_MODEL_NAME);
+  const geminiKey = paidEnabled ? process.env.GEMINI_API_KEY : null;
+  const openAiKey = paidEnabled ? process.env.OPENAI_API_KEY : null;
 
   let result = null;
 
@@ -507,7 +520,7 @@ export async function generateAiCompletion({
     try {
       result = await callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens, apiKey: geminiKey });
     } catch (err) {
-      console.warn("Gemini API call failed, attempting fallback:", err.message);
+      console.warn("Gemini request failed; using limited fallback.");
     }
   }
 
@@ -516,13 +529,14 @@ export async function generateAiCompletion({
     try {
       result = await callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens, apiKey: openAiKey });
     } catch (err) {
-      console.warn("OpenAI API call failed, attempting fallback:", err.message);
+      console.warn("OpenAI request failed; using limited fallback.");
     }
   }
 
   // 3. Resilient Pedagogical Fallback Engine
   if (!result) {
     result = runPedagogicalEngine({ messages, systemPrompt, jsonMode });
+    result.text = jsonMode ? result.text : '[Offline template mode — not an AI-generated answer.]\n\n' + result.text;
   }
 
   // Record usage

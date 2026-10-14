@@ -2,6 +2,8 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { authMiddleware } from "../middleware/auth.js";
 import { objectBody } from "../middleware/requestShape.js";
+import { User } from "../models/User.js";
+import { createRateLimit } from "../middleware/rateLimit.js";
 import { NovyraProfile, NOVYRA_SUBJECTS, NOVYRA_LEVELS, NOVYRA_GOALS, NOVYRA_LANGUAGES } from "../models/NovyraProfile.js";
 import { NovyraStudyPlan } from "../models/NovyraStudyPlan.js";
 import { NovyraConversation } from "../models/NovyraConversation.js";
@@ -19,6 +21,23 @@ import {
 
 const router = express.Router();
 router.use(authMiddleware);
+router.use(async (req, res, next) => {
+  try {
+    if (!await User.exists({_id:req.userId})) return res.status(401).json({error:'Account unavailable'});
+    next();
+  } catch {res.status(503).json({error:'Account access could not be verified'});}
+});
+router.use(createRateLimit({windowMs:60000, max:30, key:req=>req.userId}));
+router.use((req, res, next) => {
+  for (const key of ['sessionId','subject','topic','language','question','code','message']) {
+    const value = req.body?.[key] ?? req.query?.[key];
+    if (value !== undefined && (typeof value !== 'string' || value.length > (key === 'code' ? 4000 : key === 'message' ? 12000 : 500)))
+      return res.status(400).json({error:`Invalid ${key}`});
+  }
+  if (req.body?.contextType !== undefined && !['general','workspace','daily_planner','classroom','study_room','speaking','programming'].includes(req.body.contextType))
+    return res.status(400).json({error:'Invalid conversation context'});
+  next();
+});
 
 // --------------------------------------------------------------------------
 // 1. STUDENT ONBOARDING & PROFILE MEMORY
@@ -202,6 +221,7 @@ router.post("/chat", objectBody, async (req, res) => {
       tokenCount: completion.completionTokens,
     };
     conversation.messages.push(novyraMsg);
+    conversation.messages = conversation.messages.slice(-64);
     conversation.lastActivity = new Date();
     await conversation.save();
 
@@ -212,7 +232,7 @@ router.post("/chat", objectBody, async (req, res) => {
       avatarState,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || "Failed to process message" });
+    res.status(503).json({ error: "Novyra is temporarily unavailable. Please retry." });
   }
 });
 
@@ -291,7 +311,7 @@ router.post("/practice/generate", objectBody, async (req, res) => {
     const quiz = await generatePracticeQuiz(req.userId, subject, topic);
     res.json(quiz);
   } catch (err) {
-    res.status(500).json({ error: err.message || "Failed to generate practice quiz" });
+    res.status(503).json({ error: "Practice generation is temporarily unavailable." });
   }
 });
 
@@ -325,7 +345,7 @@ router.post("/code/analyze", objectBody, async (req, res) => {
       provider: completion.provider,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || "Failed to analyze code" });
+    res.status(503).json({ error: "Code analysis is temporarily unavailable." });
   }
 });
 

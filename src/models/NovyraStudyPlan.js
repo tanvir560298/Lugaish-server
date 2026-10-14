@@ -96,7 +96,7 @@ const novyraStudyPlanSchema = new mongoose.Schema(
       default: "",
     },
   },
-  { timestamps: true }
+  { timestamps: true, optimisticConcurrency: true }
 );
 
 novyraStudyPlanSchema.index({ userId: 1, status: 1, createdAt: -1 });

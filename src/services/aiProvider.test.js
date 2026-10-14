@@ -3,7 +3,42 @@ import assert from "node:assert/strict";
 import {
   runPedagogicalEngine,
   getTodayKey,
+  checkUserQuota,
+  generateAiCompletion,
 } from "./aiProvider.js";
+import {NovyraUsage} from '../models/NovyraUsage.js';
+
+test('quota fails closed when its database cannot be read', async () => {
+  const original = NovyraUsage.findOne;
+  try {
+    NovyraUsage.findOne = async () => {throw Error('private database detail');};
+    assert.equal((await checkUserQuota('0123456789abcdef01234567')).allowed, false);
+    await assert.rejects(generateAiCompletion({userId:'0123456789abcdef01234567'}), /could not be verified/);
+  } finally {NovyraUsage.findOne = original;}
+});
+
+test('offline plans fit every supported time budget exactly', () => {
+  for (let minutes = 15; minutes <= 360; minutes++) {
+    const plan = JSON.parse(runPedagogicalEngine({messages:[{content:`Create a ${minutes}-minute Java study plan`}],jsonMode:true}).text);
+    assert.equal(plan.blocks.reduce((sum, block) => sum + block.durationMinutes,0), minutes);
+  }
+});
+
+test('credentials without explicit spending controls never trigger paid fetch', async () => {
+  const keys = ['NOVYRA_PAID_ENABLED','GEMINI_API_KEY','OPENAI_API_KEY'];
+  const saved = keys.map(key => process.env[key]); const oldFetch = globalThis.fetch;
+  try {
+    delete process.env.NOVYRA_PAID_ENABLED;
+    process.env.GEMINI_API_KEY = 'test-only'; process.env.OPENAI_API_KEY = 'test-only';
+    globalThis.fetch = () => {throw Error('Paid network request forbidden in this test');};
+    const result = await generateAiCompletion({messages:[{content:'hello'}]});
+    assert.equal(result.provider,'pedagogical_engine');
+    assert.match(result.text,/Offline template mode/);
+  } finally {
+    globalThis.fetch = oldFetch;
+    keys.forEach((key,index) => {if(saved[index] === undefined) delete process.env[key]; else process.env[key] = saved[index];});
+  }
+});
 
 test("pedagogical engine returns structured study plan for Java loops in JSON mode", () => {
   const res = runPedagogicalEngine({

@@ -54,6 +54,7 @@ const novyraConversationSchema = new mongoose.Schema(
       type: String,
       enum: [
         "general",
+        "workspace",
         "daily_planner",
         "classroom",
         "study_room",
@@ -73,6 +74,7 @@ const novyraConversationSchema = new mongoose.Schema(
     messages: {
       type: [messageSchema],
       default: [],
+      validate: value => value.length <= 64,
     },
     active: {
       type: Boolean,
