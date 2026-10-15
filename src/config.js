@@ -7,7 +7,9 @@ export default {
   API_BIND_HOST:
     process.env.API_BIND_HOST ||
     (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1"),
-  APP_ENV: process.env.APP_ENV || "development",
+  APP_ENV:
+    process.env.APP_ENV ||
+    (process.env.NODE_ENV === "production" ? "production" : "development"),
   MONGODB_URI: process.env.MONGODB_URI || "mongodb://localhost:27017/lugaish",
   JWT_SECRET:
     process.env.JWT_SECRET || "your_jwt_secret_key_change_in_production",
