@@ -61,7 +61,7 @@ router.get("/profile", async (req, res) => {
     const fullProfile = await getStudentProfile(req.userId);
     res.json({ profile, fullProfile });
   } catch (err) {
-    res.status(500).json({ error: "Failed to retrieve Novyra profile" });
+    res.status(500).json({ error: "Failed to retrieve Tanu AI profile" });
   }
 });
 
@@ -117,7 +117,7 @@ router.put("/profile", objectBody, async (req, res) => {
 
     res.json(profile);
   } catch (err) {
-    res.status(500).json({ error: "Failed to update Novyra profile" });
+    res.status(500).json({ error: "Failed to update Tanu AI profile" });
   }
 });
 
@@ -189,7 +189,7 @@ router.post("/chat", objectBody, async (req, res) => {
 
     // System prompt with pedagogical instructions
     const systemPrompt =
-      "You are NOVYRA, the intelligent, personalized learning companion on Lugaish. " +
+      "You are Tanu AI, the intelligent, personalized learning companion on Lugaish. " +
       "You teach concepts step by step, adjust depth to the student's ability, provide code examples with proper formatting, " +
       "use hints before complete solutions, and guide students to mastery. " +
       "Subjects supported: English, Arabic, C, Java, Python, JavaScript, Web Development, Computer Science. " +
@@ -232,7 +232,7 @@ router.post("/chat", objectBody, async (req, res) => {
       avatarState,
     });
   } catch (err) {
-    res.status(503).json({ error: "Novyra is temporarily unavailable. Please retry." });
+    res.status(503).json({ error: "Tanu AI is temporarily unavailable. Please retry." });
   }
 });
 
@@ -335,7 +335,7 @@ router.post("/code/analyze", objectBody, async (req, res) => {
       userId: req.userId,
       messages: [{ sender: "student", content: prompt }],
       systemPrompt:
-        "You are the Novyra Programming Mentor. Explain code clearly, point out syntax traps or algorithmic flaws, " +
+        "You are the Tanu AI Programming Mentor. Explain code clearly, point out syntax traps or algorithmic flaws, " +
         "and suggest step-by-step improvements. Provide hints before complete solutions.",
     });
 
@@ -361,6 +361,12 @@ router.get("/usage", async (req, res) => {
 
     res.json({
       date,
+      engineMode: process.env.NOVYRA_PAID_ENABLED === 'true'
+        && Number(process.env.NOVYRA_DAILY_BUDGET_USD) > 0
+        && Number(process.env.NOVYRA_MONTHLY_BUDGET_USD) > 0
+        && process.env.NOVYRA_MODEL_NAME
+        && (process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY)
+        ? 'online-configured' : 'offline-template',
       tokensUsedToday: usage?.totalTokens || 0,
       requestsToday: usage?.requestCount || 0,
       dailyTokenLimit: Number(process.env.NOVYRA_DAILY_TOKEN_LIMIT || 150000),

@@ -68,7 +68,7 @@ export async function recordTokenUsage(userId, promptTokens = 0, completionToken
     );
   } catch (err) {
     // Non-fatal logging for telemetry
-    console.warn("Failed to record Novyra usage:", err?.message);
+    console.warn("Failed to record Tanu AI usage:", err?.message);
   }
 }
 
@@ -377,7 +377,7 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
         type: subject.includes("c") || subject.includes("java") || subject.includes("python") || subject.includes("javascript") ? "coding_exercise" : "practice",
         durationMinutes: Math.round(duration * 0.35),
         objectives: ["Solve 3 progressive challenge problems", "Identify and fix common syntax/logical traps"],
-        instructions: "Implement the required logic independently. Request hints from Novyra before viewing complete solutions.",
+        instructions: "Implement the required logic independently. Request hints from Tanu AI before viewing complete solutions.",
         materials: ["Interactive exercise prompt"],
       },
       {
@@ -396,7 +396,7 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
         durationMinutes: Math.round(duration * 0.15),
         objectives: ["Verify mastery under timed conditions", "Pinpoint remaining weak areas"],
         instructions: "Answer the practice questions without referencing outside notes.",
-        materials: ["Novyra adaptive quiz"],
+        materials: ["Tanu AI adaptive quiz"],
       },
       {
         id: "block-5",
@@ -436,9 +436,9 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
   if (lowerMsg.includes("loop") && (subject === "java" || lowerMsg.includes("java"))) {
     return {
       text:
-        "Hello! I am **NOVYRA**, your learning companion. Let's master Java loops step-by-step!\n\n" +
+        "Hello! I am **Tanu AI**, your learning companion. Let's master Java loops step-by-step!\n\n" +
         SUBJECT_KNOWLEDGE.java.loopConcept +
-        "\n\n### 💡 Novyra's Golden Rule for Loops:\n" +
+        "\n\n### 💡 Tanu AI's Golden Rule for Loops:\n" +
         "1. Always verify your **loop termination condition** to prevent infinite loops.\n" +
         "2. Ensure the **iterator update** (`i++` or `count += 1`) moves toward the termination state.\n\n" +
         "Would you like to try a quick challenge, or would you like me to build a **personalized 60-minute study session** for you right now?",
@@ -453,7 +453,7 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
   if (lowerMsg.includes("error") || lowerMsg.includes("exception") || lowerMsg.includes("fix my code")) {
     return {
       text:
-        "### 🔍 Novyra Guided Code Diagnosis\n\n" +
+        "### 🔍 Tanu AI Guided Code Diagnosis\n\n" +
         "Let's debug this together systematically without simply giving away the final answer:\n\n" +
         "1. **Check the Line of Occurrence**: Look at the line number reported in the stack trace.\n" +
         "2. **Identify Variable State**: Is any object reference `null` before you invoke a method on it (NullPointerException / TypeError)?\n" +
@@ -469,7 +469,7 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
   // 4. Default pedagogical assistant greeting / response
   return {
     text:
-      "Hello! I am **NOVYRA**, your intelligent learning agent on Lugaish.\n\n" +
+      "Hello! I am **Tanu AI**, your intelligent learning agent on Lugaish.\n\n" +
       "I can help you:\n" +
       "- 🎯 **Plan your study routine** (e.g. *\"Create a 60-minute Java loops study plan\"*)\n" +
       "- 💻 **Learn Programming** in C, Java, Python, JavaScript, or Web Development\n" +

@@ -89,7 +89,7 @@ test("pedagogical engine provides deep Java loop explanation with code syntax", 
   assert.match(res.text, /for \(int i = 0/);
   assert.match(res.text, /do-while/);
   assert.match(res.text, /while \(count < 3\)/);
-  assert.match(res.text, /Novyra's Golden Rule/);
+  assert.match(res.text, /Tanu AI's Golden Rule/);
 });
 
 test("pedagogical engine provides guided code debugging with hints before giving answers", () => {
@@ -99,7 +99,7 @@ test("pedagogical engine provides guided code debugging with hints before giving
   });
 
   assert.equal(res.provider, "pedagogical_engine");
-  assert.match(res.text, /Novyra Guided Code Diagnosis/);
+  assert.match(res.text, /Tanu AI Guided Code Diagnosis/);
   assert.match(res.text, /Line of Occurrence/);
   assert.match(res.text, /NullPointerException/);
 });
