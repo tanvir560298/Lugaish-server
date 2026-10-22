@@ -132,3 +132,11 @@ test("todayKey returns valid YYYY-MM-DD date string", () => {
   const key = getTodayKey();
   assert.match(key, /^\d{4}-\d{2}-\d{2}$/);
 });
+
+test('offline general help offers concrete next steps without claiming general AI abilities', () => {
+  const result=runPedagogicalEngine({messages:[{sender:'student',content:'help m'}]});
+  assert.match(result.text,/prepared learning guides/);
+  assert.match(result.text,/h1 and h2/);
+  assert.match(result.text,/Practise a topic/);
+  assert.doesNotMatch(result.text,/intelligent learning agent|Practice Languages/);
+});

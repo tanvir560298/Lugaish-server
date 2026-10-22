@@ -31,6 +31,10 @@ test('Novyra workspace chat persists, history is bounded and owner-isolated, del
     response = await request(other,'/chat/history?sessionId=review'); assert.deepEqual(await response.json(),[]);
     response = await request(owner,'/chat',{sessionId:{$ne:null},message:'hello'}); assert.equal(response.status,400);
     response = await request(owner,'/chat',{contextType:'invalid',message:'hello'}); assert.equal(response.status,400);
+    response=await request(owner,'/chat',{sessionId:'stream-fixture',contextType:'workspace',subject:'web_dev',message:'What is h1?',stream:true});
+    assert.equal(response.status,200);assert.match(response.headers.get('Content-Type'),/text\/event-stream/);
+    const streamed=await response.text();assert.match(streamed,/event: done/);assert.match(streamed,/Offline template mode/);
+    const stored=await NovyraConversation.findOne({userId:owner._id,sessionId:'stream-fixture'}).lean();assert.equal(stored.messages.length,2);assert.match(stored.messages[1].content,/h1/);
     await User.deleteOne({_id:other._id}); response = await request(other,'/usage'); assert.equal(response.status,401);
   } finally {
     if (server) await new Promise(resolve=>server.close(resolve));

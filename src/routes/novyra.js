@@ -1,3 +1,5 @@
+import {aiConfiguration} from '../services/aiConfig.js';
+import {createAiCapacity} from '../services/aiCapacity.js';
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { authMiddleware } from "../middleware/auth.js";
@@ -21,6 +23,7 @@ import {
 import { HTML_COURSE_CONTEXT, HTML_COURSE_LESSONS } from "../services/lugaishCurriculum.js";
 
 const router = express.Router();
+const acquireAi=createAiCapacity(Math.max(1,Math.min(16,Number(process.env.NOVYRA_MAX_CONCURRENT_REQUESTS)||4)));
 router.use(authMiddleware);
 router.use(async (req, res, next) => {
   try {
@@ -127,6 +130,12 @@ router.put("/profile", objectBody, async (req, res) => {
 // --------------------------------------------------------------------------
 
 router.post("/chat", objectBody, async (req, res) => {
+  const release=acquireAi(req.userId);
+  if(!release)return res.status(429).json({error:'Tanu is busy. Wait for your current reply, or try again shortly.'});
+  const controller=new AbortController();let heartbeat;
+  const disconnect=()=>{if(!res.writableEnded)controller.abort();};
+  res.on('close',disconnect);
+  const event=(type,data)=>{if(!res.destroyed)res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);};
   try {
     const {
       sessionId = "default",
@@ -208,6 +217,7 @@ router.post("/chat", objectBody, async (req, res) => {
     const systemPrompt =
       "You are Tanu AI, the learning companion on Lugaish. Teach one idea at a time, use plain language and small examples, " +
       "adjust depth to the student's level, ask a short check-for-understanding question, and offer a hint before a full solution. " +
+      "Reply in Bengali when the student writes Bengali, including informal romanized Bengali. Answer the actual question before suggesting tools. Never repeat your introduction on follow-up questions. Keep the first answer short and useful. " +
       "Do not claim a student has mastered something without evidence. If you do not know, say so and ask a helpful follow-up. " +
       `The current student-selected subject is \"${focusSubject}\". ` +
       `The student is at ${studentProfile.experienceLevel} level, working toward ${studentProfile.primaryGoal}, ` +
@@ -216,12 +226,19 @@ router.post("/chat", objectBody, async (req, res) => {
       (focusSubject === "web_dev" ? `\nLugaish's published Web Development course currently teaches HTML only. Use this verified course outline and do not claim CSS, React, or full-stack lessons are available:\n${HTML_COURSE_CONTEXT}` : "") +
       (executedTools.length > 0 ? `\nContext data from platform tools: ${JSON.stringify(executedTools)}` : "");
 
+    // Stream only on explicit opt-in; old clients still receive JSON.
+    const streaming=req.body.stream===true;
+    if(streaming){res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','X-Accel-Buffering':'no'});res.flushHeaders();heartbeat=setInterval(()=>{if(!res.destroyed)res.write(': keep-alive\n\n');},10000);}
     // Generate AI response
     const completion = await generateAiCompletion({
       userId: req.userId,
       messages: contextMessages,
       systemPrompt,
+      maxTokens:1024,
+      signal:controller.signal,
+      ...(streaming?{onDelta:text=>event('delta',{text})}:{}),
     });
+    if(controller.signal.aborted)return;
 
     // Determine avatar state
     let avatarState = "responding";
@@ -246,15 +263,11 @@ router.post("/chat", objectBody, async (req, res) => {
     conversation.lastActivity = new Date();
     await conversation.save();
 
-    res.json({
-      message: novyraMsg,
-      provider: completion.provider,
-      model: completion.model,
-      avatarState,
-    });
+    const result={message:novyraMsg,provider:completion.provider,model:completion.model,avatarState};
+    if(streaming){event('done',result);res.end();}else res.json(result);
   } catch (err) {
-    res.status(503).json({ error: "Tanu AI is temporarily unavailable. Please retry." });
-  }
+    if(!res.destroyed){const error={error:'Tanu could not finish this reply. Please retry. If this continues, the server’s AI connection or usage allowance needs attention.'};if(res.headersSent){event('error',error);res.end();}else res.status(503).json(error);}
+  } finally {clearInterval(heartbeat);res.off('close',disconnect);release();}
 });
 
 router.get("/chat/history", async (req, res) => {
@@ -394,12 +407,7 @@ router.get("/usage", async (req, res) => {
 
     res.json({
       date,
-      engineMode: process.env.NOVYRA_PAID_ENABLED === 'true'
-        && Number(process.env.NOVYRA_DAILY_BUDGET_USD) > 0
-        && Number(process.env.NOVYRA_MONTHLY_BUDGET_USD) > 0
-        && process.env.NOVYRA_MODEL_NAME
-        && (process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY)
-        ? 'online-configured' : 'offline-template',
+      engineMode: aiConfiguration().ready ? 'online-configured' : 'offline-template',
       tokensUsedToday: usage?.totalTokens || 0,
       requestsToday: usage?.requestCount || 0,
       dailyTokenLimit: Number(process.env.NOVYRA_DAILY_TOKEN_LIMIT || 150000),

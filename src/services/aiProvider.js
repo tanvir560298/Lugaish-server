@@ -1,7 +1,12 @@
+import {createAiCapacity} from './aiCapacity.js';
+import {aiConfiguration} from './aiConfig.js';
+import {reserveAiBudget} from './aiBudget.js';
+import {readProviderEvents} from './aiStream.js';
 import { NovyraUsage } from "../models/NovyraUsage.js";
 import { answerHtmlCourseQuestion } from "./lugaishCurriculum.js";
 
 const DEFAULT_TIMEOUT_MS = 25000;
+const acquireOnline=createAiCapacity(Math.max(1,Math.min(16,Number(process.env.NOVYRA_MAX_CONCURRENT_REQUESTS)||4)));
 const DAILY_TOKEN_LIMIT = Number(process.env.NOVYRA_DAILY_TOKEN_LIMIT || 150000);
 const DAILY_REQUEST_LIMIT = Number(process.env.NOVYRA_DAILY_REQUEST_LIMIT || 200);
 
@@ -77,9 +82,9 @@ export async function recordTokenUsage(userId, promptTokens = 0, completionToken
 // PROVIDER IMPLEMENTATIONS
 // --------------------------------------------------------------------------
 
-async function callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens = 2048, apiKey }) {
+export async function callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens = 2048, apiKey, onDelta, signal }) {
   const model = process.env.NOVYRA_MODEL_NAME || "gemini-1.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:${onDelta?'streamGenerateContent?alt=sse':'generateContent'}`;
 
   const contents = [];
   for (const m of messages) {
@@ -111,9 +116,9 @@ async function callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens = 204
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-goog-api-key":apiKey },
       body: JSON.stringify(body),
-      signal: controller.signal,
+      signal: signal ? AbortSignal.any([controller.signal,signal]) : controller.signal,
     });
 
     if (!res.ok) {
@@ -121,6 +126,7 @@ async function callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens = 204
       throw new Error(`Gemini API error (${res.status}): ${errText.slice(0, 300)}`);
     }
 
+    if(onDelta){let text='',usage={},finished=false;await readProviderEvents(res.body,event=>{if(event.error)throw Error('Provider stream failed.');const candidate=event.candidates?.[0];if(candidate?.finishReason)finished=true;const delta=candidate?.content?.parts?.filter(p=>!p.thought).map(p=>p.text||'').join('')||'';if(delta){text+=delta;onDelta(delta);}if(event.usageMetadata)usage=event.usageMetadata;});if(!text||!finished)throw Error('Provider stream was interrupted.');return{text,provider:'gemini',model,promptTokens:usage.promptTokenCount||0,completionTokens:(usage.candidatesTokenCount||0)+(usage.thoughtsTokenCount||0)};}
     const data = await res.json();
     const candidate = data.candidates?.[0];
     const text = candidate?.content?.parts?.map((p) => p.text).join("") || "";
@@ -139,7 +145,7 @@ async function callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens = 204
   }
 }
 
-async function callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens = 2048, apiKey }) {
+export async function callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens = 2048, apiKey, onDelta, signal }) {
   const model = process.env.NOVYRA_MODEL_NAME || "gpt-4o-mini";
   const url = "https://api.openai.com/v1/chat/completions";
 
@@ -156,8 +162,8 @@ async function callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens = 204
   const body = {
     model,
     messages: formattedMessages,
-    max_tokens: maxTokens,
-    temperature: 0.7,
+    max_completion_tokens: maxTokens,
+    ...(onDelta?{stream:true,stream_options:{include_usage:true}}:{}),
     ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
   };
 
@@ -172,7 +178,7 @@ async function callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens = 204
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(body),
-      signal: controller.signal,
+      signal: signal ? AbortSignal.any([controller.signal,signal]) : controller.signal,
     });
 
     if (!res.ok) {
@@ -180,6 +186,7 @@ async function callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens = 204
       throw new Error(`OpenAI API error (${res.status}): ${errText.slice(0, 300)}`);
     }
 
+    if(onDelta){let text='',usage={},finished=false;await readProviderEvents(res.body,event=>{if(event.error)throw Error('Provider stream failed.');if(event.choices?.[0]?.finish_reason)finished=true;const delta=event.choices?.[0]?.delta?.content||'';if(delta){text+=delta;onDelta(delta);}if(event.usage)usage=event.usage;});if(!text||!finished)throw Error('Provider stream was interrupted.');return{text,provider:'openai',model,promptTokens:usage.prompt_tokens||0,completionTokens:usage.completion_tokens||0};}
     const data = await res.json();
     const choice = data.choices?.[0];
     const text = choice?.message?.content || "";
@@ -523,14 +530,12 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
   // 4. Default pedagogical assistant greeting / response
   return {
     text:
-      "Hello! I am **Tanu AI**, your intelligent learning agent on Lugaish.\n\n" +
-      "I can help you:\n" +
-      "- 🎯 **Plan your study routine** (e.g. *\"Create a 60-minute Java loops study plan\"*)\n" +
-      "- 💻 **Learn Programming** in C, Java, Python, JavaScript, or Web Development\n" +
-      "- 🗣️ **Practice Languages** in English and Arabic\n" +
-      "- 🧩 **Test your knowledge** with targeted practice quizzes\n" +
-      "- 🛠️ **Debug errors** with step-by-step guidance\n\n" +
-      "What subject or goal are we focusing on today?",
+      "Let’s start with one small thing. What are you trying to learn?\n\n" +
+      "I’m using prepared learning guides right now, so I may not understand a general question. Try a specific starting point:\n" +
+      "- **HTML help:** ‘What is the difference between h1 and h2?’\n" +
+      "- **Study routine:** ‘Make me a 30-minute HTML study routine.’\n" +
+      "- **Java loops:** ‘Explain a Java while loop.’\n\n" +
+      "To test yourself, open **Practise a topic**. For your own code, open **Work on code**; a tailored review needs online AI.",
     provider: "pedagogical_engine",
     model: "novyra-tutor-v2",
     promptTokens: 40,
@@ -548,6 +553,7 @@ export async function generateAiCompletion({
   systemPrompt = "",
   jsonMode = false,
   maxTokens = 2048,
+  onDelta, signal,
 }) {
   // Check user quota first
   if (userId) {
@@ -557,23 +563,25 @@ export async function generateAiCompletion({
     }
   }
 
-  const provider = (process.env.NOVYRA_AI_PROVIDER || "auto").toLowerCase();
-  // Credentials alone must not trigger spending. Atomic monetary budgeting is
-  // still a release blocker; paid providers require a deliberate opt-in.
-  const paidEnabled = process.env.NOVYRA_PAID_ENABLED === 'true'
-    && Number(process.env.NOVYRA_DAILY_BUDGET_USD) > 0
-    && Number(process.env.NOVYRA_MONTHLY_BUDGET_USD) > 0
-    && Boolean(process.env.NOVYRA_MODEL_NAME);
-  const geminiKey = paidEnabled ? process.env.GEMINI_API_KEY : null;
-  const openAiKey = paidEnabled ? process.env.OPENAI_API_KEY : null;
+  const config=aiConfiguration();
+  const provider=config.provider;
+  const paidEnabled=config.ready;
+  const geminiKey=paidEnabled&&provider==='gemini'?process.env.GEMINI_API_KEY:null;
+  const openAiKey=paidEnabled&&provider==='openai'?process.env.OPENAI_API_KEY:null;
+  if(signal?.aborted)throw Error('Request cancelled.');
+  const release=paidEnabled?acquireOnline(userId||'anonymous-provider-call'):()=>{};
+  if(!release)throw Error('The online tutor is busy. Please retry shortly.');
+  try {
+  if(paidEnabled)await reserveAiBudget({messages,systemPrompt,maxTokens});
 
   let result = null;
 
   // 1. Try Gemini if configured or in auto mode with key
   if ((provider === "gemini" || provider === "auto") && geminiKey) {
     try {
-      result = await callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens, apiKey: geminiKey });
+      result = await callGeminiApi({ messages, systemPrompt, jsonMode, maxTokens, apiKey: geminiKey, onDelta, signal });
     } catch (err) {
+      if(onDelta||signal?.aborted)throw Error('The online tutor could not respond. Please retry.');
       console.warn("Gemini request failed; using limited fallback.");
     }
   }
@@ -581,8 +589,9 @@ export async function generateAiCompletion({
   // 2. Try OpenAI if configured or fallback with key
   if (!result && (provider === "openai" || provider === "auto") && openAiKey) {
     try {
-      result = await callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens, apiKey: openAiKey });
+      result = await callOpenAiApi({ messages, systemPrompt, jsonMode, maxTokens, apiKey: openAiKey, onDelta, signal });
     } catch (err) {
+      if(onDelta||signal?.aborted)throw Error('The online tutor could not respond. Please retry.');
       console.warn("OpenAI request failed; using limited fallback.");
     }
   }
@@ -593,10 +602,12 @@ export async function generateAiCompletion({
     result.text = jsonMode ? result.text : '[Offline template mode — not an AI-generated answer.]\n\n' + result.text;
   }
 
+  if(!result.text?.trim())throw Error('The tutor returned an empty response. Please retry.');
   // Record usage
   if (userId && result) {
     await recordTokenUsage(userId, result.promptTokens, result.completionTokens);
   }
 
   return result;
+  } finally {release();}
 }
