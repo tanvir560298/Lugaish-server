@@ -18,6 +18,7 @@ import {
   getMistakeHistory,
   recommendNextActivity,
 } from "../services/agentTools.js";
+import { HTML_COURSE_CONTEXT, HTML_COURSE_LESSONS } from "../services/lugaishCurriculum.js";
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -174,26 +175,45 @@ router.post("/chat", objectBody, async (req, res) => {
 
     // Check for agent tool execution triggers
     const lower = message.toLowerCase();
+    const studentProfile = await getStudentProfile(req.userId);
+    const htmlFocused = subject === "web_dev" || /\b(html|web development|heading|paragraph|h[1-6]|live server|div and span|anchor|alt text)\b/i.test(message);
+    const focusSubject = htmlFocused ? "web_dev" : subject;
+    const wantsRoutine = /\b(study routine|study plan|study schedule|daily routine|make me a routine|create.*plan|routine)\b|পড়ার রুটিন|পড়ার পরিকল্পনা|স্টাডি রুটিন/i.test(message);
+    let routineTopic = focusSubject === "web_dev"
+      ? "HTML course practice"
+      : studentProfile.weakAreas?.[0] || focusSubject;
+    const requestedClass = focusSubject === "web_dev" && message.match(/\b(?:class|lesson)\s*0?([1-7])\b/i);
+    if (requestedClass) {
+      const lesson = HTML_COURSE_LESSONS[Number(requestedClass[1]) - 1];
+      routineTopic = `HTML class ${lesson.id}: ${lesson.title}`;
+    }
+    const requestedDuration = wantsRoutine && message.match(/\b(\d{1,3})\s*(?:minutes?|mins?)\b/i);
+    const routineDuration = requestedDuration && Number(requestedDuration[1]) >= 15 && Number(requestedDuration[1]) <= 120
+      ? Number(requestedDuration[1])
+      : null;
     const executedTools = [];
 
     if (lower.includes("my progress") || lower.includes("how am i doing")) {
       const progressData = await getVerifiedProgress(req.userId);
       executedTools.push({ name: "getVerifiedProgress", result: progressData });
     } else if (lower.includes("weak area") || lower.includes("my mistakes")) {
-      const mistakeData = await getMistakeHistory(req.userId, subject);
+      const mistakeData = await getMistakeHistory(req.userId, focusSubject);
       executedTools.push({ name: "getMistakeHistory", result: mistakeData });
     } else if (lower.includes("what next") || lower.includes("recommend")) {
-      const rec = await recommendNextActivity(req.userId, subject);
+      const rec = await recommendNextActivity(req.userId, focusSubject);
       executedTools.push({ name: "recommendNextActivity", result: rec });
     }
 
     // System prompt with pedagogical instructions
     const systemPrompt =
-      "You are Tanu AI, the intelligent, personalized learning companion on Lugaish. " +
-      "You teach concepts step by step, adjust depth to the student's ability, provide code examples with proper formatting, " +
-      "use hints before complete solutions, and guide students to mastery. " +
-      "Subjects supported: English, Arabic, C, Java, Python, JavaScript, Web Development, Computer Science. " +
-      "Zain is the 3D student avatar on campus; you are the intelligent mentor. " +
+      "You are Tanu AI, the learning companion on Lugaish. Teach one idea at a time, use plain language and small examples, " +
+      "adjust depth to the student's level, ask a short check-for-understanding question, and offer a hint before a full solution. " +
+      "Do not claim a student has mastered something without evidence. If you do not know, say so and ask a helpful follow-up. " +
+      `The current student-selected subject is \"${focusSubject}\". ` +
+      `The student is at ${studentProfile.experienceLevel} level, working toward ${studentProfile.primaryGoal}, ` +
+      `and prefers explanations in ${studentProfile.explanationLanguage}. Their daily study target is ${studentProfile.dailyTimeMinutes} minutes. ` +
+      (studentProfile.weakAreas?.length ? `Areas they asked to practise: ${studentProfile.weakAreas.slice(0, 5).join(", ")}. ` : "") +
+      (focusSubject === "web_dev" ? `\nLugaish's published Web Development course currently teaches HTML only. Use this verified course outline and do not claim CSS, React, or full-stack lessons are available:\n${HTML_COURSE_CONTEXT}` : "") +
       (executedTools.length > 0 ? `\nContext data from platform tools: ${JSON.stringify(executedTools)}` : "");
 
     // Generate AI response
@@ -219,6 +239,7 @@ router.post("/chat", objectBody, async (req, res) => {
       avatarState,
       timestamp: new Date(),
       tokenCount: completion.completionTokens,
+      ...(wantsRoutine ? { actionUrl: `/tanu?tab=planner&topic=${encodeURIComponent(routineTopic)}${routineDuration ? `&duration=${routineDuration}` : ""}` } : {}),
     };
     conversation.messages.push(novyraMsg);
     conversation.messages = conversation.messages.slice(-64);
@@ -285,7 +306,19 @@ router.get("/plans", async (req, res) => {
 router.post("/plans", objectBody, async (req, res) => {
   try {
     const { subject = "english", topic = "Fundamentals", durationMinutes = 60 } = req.body;
-    const plan = await createStudyPlan(req.userId, { subject, topic, durationMinutes });
+    const profile = await getStudentProfile(req.userId);
+    const plan = await createStudyPlan(req.userId, {
+      subject,
+      topic,
+      durationMinutes,
+      learnerContext: {
+        experienceLevel: profile.experienceLevel,
+        primaryGoal: profile.primaryGoal,
+        explanationLanguage: profile.explanationLanguage,
+        dailyTimeMinutes: profile.dailyTimeMinutes,
+        weakAreas: profile.weakAreas,
+      },
+    });
     res.status(201).json(plan);
   } catch (err) {
     res.status(400).json({ error: err.message || "Failed to create study plan" });

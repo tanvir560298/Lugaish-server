@@ -1,4 +1,5 @@
 import { NovyraUsage } from "../models/NovyraUsage.js";
+import { answerHtmlCourseQuestion } from "./lugaishCurriculum.js";
 
 const DEFAULT_TIMEOUT_MS = 25000;
 const DAILY_TOKEN_LIMIT = Number(process.env.NOVYRA_DAILY_TOKEN_LIMIT || 150000);
@@ -297,13 +298,25 @@ const SUBJECT_KNOWLEDGE = {
   },
   web_dev: {
     name: "Web Development",
-    categories: ["HTML/CSS", "React & Component State", "REST APIs", "Responsive Layout", "Security"],
+    categories: ["HTML structure", "Text and headings", "Links and images", "Forms and containers", "Lists and first portfolio"],
     sampleQuestions: [
       {
-        question: "In React, which hook lets you subscribe to state updates and trigger re-renders?",
-        options: ["useRef", "useEffect", "useState", "useMemo"],
+        question: "Which HTML element is used for the main heading of a page?",
+        options: ["<p>", "<h1>", "<span>", "<br>"],
+        correctIndex: 1,
+        explanation: "Use a clear <h1> for the page's main heading, then choose lower heading levels to show sections.",
+      },
+      {
+        question: "Which attribute tells an anchor element where its link should go?",
+        options: ["src", "alt", "href", "class"],
         correctIndex: 2,
-        explanation: "`useState` declares a state variable and its setter function that triggers component re-renders.",
+        explanation: "The href attribute contains the link destination for an <a> element.",
+      },
+      {
+        question: "Which list element holds each individual list item?",
+        options: ["<li>", "<ul>", "<ol>", "<list>"],
+        correctIndex: 0,
+        explanation: "Use <li> for each item, inside an ordered <ol> or unordered <ul> list.",
       },
     ],
   },
@@ -326,13 +339,20 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
   const lowerMsg = latestMessage.toLowerCase();
 
   // Detect subject
-  let subject = "general";
-  for (const [key, meta] of Object.entries(SUBJECT_KNOWLEDGE)) {
-    if (lowerMsg.includes(key) || lowerMsg.includes(meta.name.toLowerCase())) {
-      subject = key;
-      break;
-    }
-  }
+  let subject = systemPrompt.match(/current student-selected subject is \"([^\"]+)\"/i)?.[1] || "general";
+  const explicitSubject = [
+    ["web_dev", /\b(?:html|web[\s_-]*development|heading tags|live server|div\s*(?:and|&)\s*span)\b/i],
+    ["javascript", /\bjavascript\b/i],
+    ["python", /\bpython\b/i],
+    ["java", /\bjava\b/i],
+    ["computer_science", /\bcomputer science\b/i],
+    ["arabic", /\barabic\b/i],
+    ["english", /\benglish\b/i],
+    ["c", /\b(?:c language|c programming|c pointers)\b/i],
+  ].find(([, pattern]) => pattern.test(latestMessage));
+  if (explicitSubject) subject = explicitSubject[0];
+  if (!SUBJECT_KNOWLEDGE[subject]) subject = "general";
+  const prefersBengali = /preferred explanation language is bengali/i.test(systemPrompt);
 
   // 1. JSON Mode: Handle Study Plan or Quiz Requests
   if (jsonMode) {
@@ -355,56 +375,75 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
 
     // Default JSON response: Structured Study Plan
     const duration = Number(lowerMsg.match(/(\d+)[-\s]*min/)?.[1]) || 60;
-    const topic = lowerMsg.includes("loop")
+    const requestedTopic = latestMessage.match(/focusing on (.+?)(?:\.\s*include timed blocks|$)/i)?.[1]?.trim();
+    const topic = requestedTopic || (lowerMsg.includes("loop")
       ? "Loops & Iterations"
       : lowerMsg.includes("function")
       ? "Functions & Scope"
-      : "Core Fundamentals";
+      : "Core Fundamentals");
+    const htmlCourse = subject === "web_dev";
+    const bengaliPlan = /preferred explanation language: bengali/i.test(systemPrompt);
+    const requestedHtmlClass = htmlCourse && topic.match(/class\s*0?([1-7])/i);
+    const htmlLessonPath = requestedHtmlClass
+      ? `/learn/web-development/html/${String(Number(requestedHtmlClass[1])).padStart(2, "0")}`
+      : "/learn/web-development/html";
 
     const blocks = [
       {
         id: "block-1",
-        title: `Core Concept: ${topic}`,
+        title: bengaliPlan ? `${topic}: বিষয়টি বুঝে নাও` : `Core Concept: ${topic}`,
         type: "concept",
         durationMinutes: Math.round(duration * 0.35),
         objectives: [`Understand syntax and runtime flow of ${topic}`, "Review standard code patterns and edge cases"],
-        instructions: `Carefully read the explanations and trace the execution path for ${topic}.`,
-        materials: [`Interactive ${subject} lesson card`, "Code trace examples"],
+        instructions: htmlCourse && bengaliPlan
+          ? `Lugaish-এর ${topic} HTML lesson খোলো। অল্প করে দেখো, মাঝে থেমে মূল ধারণাটি নিজের ভাষায় লিখে নাও।`
+          : htmlCourse
+          ? `Open the Lugaish HTML lesson for ${topic}. Watch a short section, pause, and write down the idea in your own words.`
+          : `Carefully read the explanations and trace the execution path for ${topic}.`,
+        materials: htmlCourse ? [`Course lesson path: ${htmlLessonPath}`] : [`Interactive ${subject} lesson card`, "Code trace examples"],
       },
       {
         id: "block-2",
-        title: "Guided Practice & Code Lab",
-        type: subject.includes("c") || subject.includes("java") || subject.includes("python") || subject.includes("javascript") ? "coding_exercise" : "practice",
+        title: htmlCourse && bengaliPlan ? `${topic} দিয়ে ছোট কিছু বানাও` : htmlCourse ? `Build a small example: ${topic}` : bengaliPlan ? "অনুশীলন করে দেখো" : "Guided Practice & Code Lab",
+        type: htmlCourse || subject.includes("c") || subject.includes("java") || subject.includes("python") || subject.includes("javascript") ? "coding_exercise" : "practice",
         durationMinutes: Math.round(duration * 0.35),
         objectives: ["Solve 3 progressive challenge problems", "Identify and fix common syntax/logical traps"],
-        instructions: "Implement the required logic independently. Request hints from Tanu AI before viewing complete solutions.",
-        materials: ["Interactive exercise prompt"],
+        instructions: htmlCourse && bengaliPlan
+          ? "নিজের editor-এ আজকের বিষয়টি দিয়ে ছোট একটি HTML page বানাও। Browser-এ দেখে অন্তত একটি ভুল নিজে ঠিক করো।"
+          : htmlCourse
+          ? "Create or edit a small HTML page in your editor using today's idea. Check the browser result and fix one thing yourself."
+          : "Implement the required logic independently. Request hints from Tanu AI before viewing complete solutions.",
+        materials: htmlCourse ? [`Course lesson path: ${htmlLessonPath}`] : ["Interactive exercise prompt"],
       },
       {
         id: "block-3",
-        title: "Mind Reset & Quick Break",
+        title: bengaliPlan ? "ছোট বিরতি নাও" : "Mind Reset & Quick Break",
         type: "break",
         durationMinutes: Math.max(5, Math.round(duration * 0.1)),
         objectives: ["Step away from the screen", "Hydrate and stretch before assessment"],
-        instructions: "Rest your eyes. Take deep breaths for 5 minutes.",
+        instructions: bengaliPlan ? "চোখকে বিশ্রাম দাও, একটু পানি খাও, আর কয়েক মিনিট হাঁটো।" : "Rest your eyes. Take deep breaths for 5 minutes.",
         materials: [],
       },
       {
         id: "block-4",
-        title: "Knowledge Check Quiz",
+        title: bengaliPlan ? "নিজেকে যাচাই করো" : "Knowledge Check Quiz",
         type: "quiz",
         durationMinutes: Math.round(duration * 0.15),
         objectives: ["Verify mastery under timed conditions", "Pinpoint remaining weak areas"],
-        instructions: "Answer the practice questions without referencing outside notes.",
-        materials: ["Tanu AI adaptive quiz"],
+        instructions: htmlCourse && bengaliPlan
+          ? "নোট না দেখে মূল ধারণাটি নিজের ভাষায় বোঝাও। Practice Quizzes tab-এ একটি প্রশ্নের উত্তর দাও।"
+          : htmlCourse
+          ? "Without looking at your notes, explain the main idea and try a question in the Practice Quizzes tab."
+          : bengaliPlan ? "নোট না দেখে অনুশীলনের প্রশ্নগুলোর উত্তর দাও। আটকে গেলে কোন জায়গাটি কঠিন লেগেছে লিখে রাখো." : "Answer the practice questions without referencing outside notes.",
+        materials: [htmlCourse ? "Tanu HTML practice questions" : "Practice questions"],
       },
       {
         id: "block-5",
-        title: "Reflection & Next Step Plan",
+        title: bengaliPlan ? "আজ কী শিখলে, লিখে রাখো" : "Reflection & Next Step Plan",
         type: "reflection",
         durationMinutes: Math.max(5, Math.round(duration * 0.05)),
         objectives: ["Log what was mastered today", "Record unresolved questions for tomorrow"],
-        instructions: "Write a short 2-sentence summary of your key takeaway.",
+        instructions: bengaliPlan ? "আজকের শেখা বিষয়টি নিয়ে দুই বাক্য লেখো; পরেরবার কী অনুশীলন করবে সেটিও ঠিক করো।" : "Write a short 2-sentence summary of your key takeaway.",
         materials: [],
       },
     ];
@@ -423,12 +462,27 @@ export function runPedagogicalEngine({ messages = [], systemPrompt = "", jsonMod
         topic,
         targetDurationMinutes: duration,
         blocks,
-        recommendedNextActivity: `Complete the ${topic} practice exercises to lock in your daily streak!`,
+        recommendedNextActivity: htmlCourse && bengaliPlan
+          ? `${topic} আবার দেখে পরের HTML class-এ এগিয়ে যাও।`
+          : htmlCourse
+          ? `Continue with the next HTML class after reviewing ${topic}.`
+          : bengaliPlan ? `${topic} থেকে একটি ছোট অনুশীলন করে আবার দেখে নাও।` : `Review ${topic} with one short practice activity.`,
       }),
       provider: "pedagogical_engine",
       model: "novyra-tutor-v2",
       promptTokens: 80,
       completionTokens: 240,
+    };
+  }
+
+  if (subject === "web_dev") {
+    const htmlReply = answerHtmlCourseQuestion(latestMessage, prefersBengali ? "bengali" : "english");
+    return {
+      text: `[Built-in Lugaish HTML course guide — limited offline help.]\n\n${htmlReply}`,
+      provider: "pedagogical_engine",
+      model: "novyra-tutor-v2",
+      promptTokens: 100,
+      completionTokens: Math.max(80, Math.round(htmlReply.length / 4)),
     };
   }
 

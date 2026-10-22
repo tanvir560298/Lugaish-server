@@ -5,6 +5,7 @@ import { ReviewAttempt } from "../models/ReviewAttempt.js";
 import { NovyraProfile, NOVYRA_SUBJECTS } from "../models/NovyraProfile.js";
 import { NovyraStudyPlan } from "../models/NovyraStudyPlan.js";
 import { generateAiCompletion } from "./aiProvider.js";
+import { HTML_COURSE_CONTEXT } from "./lugaishCurriculum.js";
 
 // Tool: Get Student Profile & Novyra Memory
 export async function getStudentProfile(userId) {
@@ -70,12 +71,19 @@ export async function getVerifiedProgress(userId) {
 }
 
 // Tool: Create Structured Daily Study Plan
-export async function createStudyPlan(userId, { subject = "english", topic = "General Study", durationMinutes = 60 }) {
+export async function createStudyPlan(userId, { subject = "english", topic = "General Study", durationMinutes = 60, learnerContext = {} }) {
   if (!NOVYRA_SUBJECTS.includes(subject) && subject !== "general") {
     throw new Error(`Subject must be one of: ${NOVYRA_SUBJECTS.join(", ")}`);
   }
 
   const duration = Math.max(15, Math.min(360, Number(durationMinutes) || 60));
+  const level = ["beginner", "intermediate", "advanced"].includes(learnerContext.experienceLevel) ? learnerContext.experienceLevel : "beginner";
+  const goal = ["exam", "job_prep", "project", "general_mastery"].includes(learnerContext.primaryGoal) ? learnerContext.primaryGoal : "general_mastery";
+  const explanationLanguage = ["english", "bengali", "arabic"].includes(learnerContext.explanationLanguage) ? learnerContext.explanationLanguage : "english";
+  const dailyTime = Number.isInteger(learnerContext.dailyTimeMinutes) && learnerContext.dailyTimeMinutes >= 15 && learnerContext.dailyTimeMinutes <= 360 ? learnerContext.dailyTimeMinutes : 60;
+  const weakAreas = Array.isArray(learnerContext.weakAreas) ? learnerContext.weakAreas.slice(0, 5).map((area) => String(area).slice(0, 100)) : [];
+  const profileContext = `Student level: ${level}; goal: ${goal}; preferred explanation language: ${explanationLanguage}; daily target: ${dailyTime} minutes. ` +
+    (weakAreas.length ? `Prioritize practice on: ${weakAreas.join(", ")}. ` : "");
 
   // Request structured plan from AI provider
   const completion = await generateAiCompletion({
@@ -83,11 +91,13 @@ export async function createStudyPlan(userId, { subject = "english", topic = "Ge
     messages: [
       {
         sender: "student",
-        content: `Create a structured ${duration}-minute study plan for ${subject} focusing on ${topic}. Include timed blocks for concepts, practice, break, quiz, and reflection.`,
+        content: `Create a structured ${duration}-minute study plan for ${subject} focusing on ${topic}. Include timed blocks for concepts, practice, break, quiz, and reflection. Fit all blocks within the requested time.`,
       },
     ],
     systemPrompt:
-      "You are the Novyra Study Planner. Output a strict JSON object with: title, subject, topic, targetDurationMinutes, blocks (array of { id, title, type, durationMinutes, objectives, instructions, materials }), recommendedNextActivity.",
+      "You are Tanu, Lugaish's study coach. " + profileContext +
+      (subject === "web_dev" ? `The published Web Development course covers HTML only. Build the plan around this course outline; do not invent CSS or React lessons:\n${HTML_COURSE_CONTEXT}\n` : "") +
+      "Make instructions concrete and achievable. Include one short break for sessions of 30 minutes or more. Do not claim an adaptive quiz exists. Output a strict JSON object with: title, subject, topic, targetDurationMinutes, blocks (array of { id, title, type, durationMinutes, objectives, instructions, materials }), recommendedNextActivity.",
     jsonMode: true,
   });
 
