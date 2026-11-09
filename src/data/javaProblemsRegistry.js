@@ -356,6 +356,67 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Calculate remaining years as: eventYear - currentYear.\n• Print in the exact format: "X years remaining".'
+    },
+    {
+      id: 'java-bio-07',
+      number: '07',
+      title: 'Welcome Bot Greeting',
+      slug: 'welcome-bot-greeting',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `Lugaish is building a simple welcome bot for new learners.
+
+The bot takes a student's name and displays a personalized welcome message.
+
+Write a Java program that reads a student's first name and prints a greeting.`,
+      inputFormat: 'A single word containing the student\'s name.',
+      outputFormat: 'Print the welcome message in the following format: Welcome, NAME! Happy Coding!',
+      constraints: 'The name consists of a single word with English letters (1 ≤ length ≤ 50).',
+      sampleTestCases: [
+        {
+          input: 'Amina',
+          expectedOutput: 'Welcome, Amina! Happy Coding!',
+          explanation: 'Takes "Amina" as input and prints "Welcome, Amina! Happy Coding!".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: 'Amina',
+          expectedOutput: 'Welcome, Amina! Happy Coding!'
+        },
+        {
+          input: 'Tanvir',
+          expectedOutput: 'Welcome, Tanvir! Happy Coding!'
+        },
+        {
+          input: 'Rahim',
+          expectedOutput: 'Welcome, Rahim! Happy Coding!'
+        },
+        {
+          input: 'Sara',
+          expectedOutput: 'Welcome, Sara! Happy Coding!'
+        },
+        {
+          input: 'Alexander',
+          expectedOutput: 'Welcome, Alexander! Happy Coding!'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Read the student\'s name using scanner.next().\n• Exact output format: "Welcome, NAME! Happy Coding!" (note the comma, spaces, and exclamation marks).'
     }
   ]
 };
