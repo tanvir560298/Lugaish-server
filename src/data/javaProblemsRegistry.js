@@ -179,6 +179,65 @@ Write a Java program that displays the club name, department, and membership sta
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Make sure the entire message appears on one line.\n• Use exact spacing and pipe symbols (|).'
+    },
+    {
+      id: 'java-bio-04',
+      number: '04',
+      title: 'Snack Shop Total Bill',
+      slug: 'snack-shop-total-bill',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `You visit a snack shop and buy two items. The shopkeeper wants a simple program to calculate your total bill.
+
+Write a Java program that takes the prices of two items and displays their total cost.`,
+      inputFormat: 'A single line containing two integers, A and B, representing the item prices.',
+      outputFormat: 'Print the total cost in the following format: Total Bill: X SAR',
+      constraints: '0 ≤ A, B ≤ 1000',
+      sampleTestCases: [
+        {
+          input: '15 25',
+          expectedOutput: 'Total Bill: 40 SAR',
+          explanation: 'Sum of 15 and 25 is 40. Prints "Total Bill: 40 SAR".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '15 25',
+          expectedOutput: 'Total Bill: 40 SAR'
+        },
+        {
+          input: '0 0',
+          expectedOutput: 'Total Bill: 0 SAR'
+        },
+        {
+          input: '1000 1000',
+          expectedOutput: 'Total Bill: 2000 SAR'
+        },
+        {
+          input: '120 350',
+          expectedOutput: 'Total Bill: 470 SAR'
+        },
+        {
+          input: '5 995',
+          expectedOutput: 'Total Bill: 1000 SAR'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Use Scanner to read the two integers from standard input.\n• Make sure the output format exactly matches "Total Bill: X SAR" including spaces and capitalization.'
     }
   ]
 };
