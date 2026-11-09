@@ -540,6 +540,68 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Remember that Java is case-sensitive: system.out.println must use capital S for System.\n• Output format must match: "Temperature: X C".'
+    },
+    {
+      id: 'java-bio-10',
+      number: '10',
+      title: 'Fix the Parcel Tracker Entry Point',
+      slug: 'fix-the-parcel-tracker-entry-point',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A delivery company has created a simple Java program to display a parcel's tracking number.
+
+The code compiles successfully, but Java cannot start the program because the expected entry point is missing.
+
+Your task is to fix the method declaration so the program runs correctly.`,
+      inputFormat: 'A single positive integer representing the parcel tracking number.',
+      outputFormat: 'Print the tracking number in the following format: Parcel ID: X',
+      constraints: '1 ≤ trackingNumber ≤ 999999',
+      sampleTestCases: [
+        {
+          input: '58241',
+          expectedOutput: 'Parcel ID: 58241',
+          explanation: 'Reads 58241 and prints "Parcel ID: 58241".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '58241',
+          expectedOutput: 'Parcel ID: 58241'
+        },
+        {
+          input: '1',
+          expectedOutput: 'Parcel ID: 1'
+        },
+        {
+          input: '999999',
+          expectedOutput: 'Parcel ID: 999999'
+        },
+        {
+          input: '100200',
+          expectedOutput: 'Parcel ID: 100200'
+        },
+        {
+          input: '777',
+          expectedOutput: 'Parcel ID: 777'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void mian(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int trackingNumber = sc.nextInt();
+
+        System.out.println("Parcel ID: " + trackingNumber);
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• The method is incorrectly named "mian" instead of "main".\n• Java requires the exact entry point signature: public static void main(String[] args).'
     }
   ]
 };
