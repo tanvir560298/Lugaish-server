@@ -417,6 +417,67 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Read the student\'s name using scanner.next().\n• Exact output format: "Welcome, NAME! Happy Coding!" (note the comma, spaces, and exclamation marks).'
+    },
+    {
+      id: 'java-bio-08',
+      number: '08',
+      title: 'Fix the Café Bill Bug',
+      slug: 'fix-the-cafe-bill-bug',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A small café has developed a Java program to calculate the price of two drinks. Unfortunately, the program contains a syntax error and cannot be compiled.
+
+Your task is to identify the mistake, fix the code, and display the total bill correctly.`,
+      inputFormat: 'Two space-separated integers representing the prices of coffee and juice.',
+      outputFormat: 'Print Bill: X, where X is the total price.',
+      constraints: '0 ≤ coffee, juice ≤ 1000',
+      sampleTestCases: [
+        {
+          input: '12 18',
+          expectedOutput: 'Bill: 30',
+          explanation: 'Sum of 12 + 18 is 30. Prints "Bill: 30".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '12 18',
+          expectedOutput: 'Bill: 30'
+        },
+        {
+          input: '0 0',
+          expectedOutput: 'Bill: 0'
+        },
+        {
+          input: '1000 1000',
+          expectedOutput: 'Bill: 2000'
+        },
+        {
+          input: '45 55',
+          expectedOutput: 'Bill: 100'
+        },
+        {
+          input: '20 5',
+          expectedOutput: 'Bill: 25'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int coffee = sc.nextInt();
+        int juice = sc.nextInt();
+        int total = coffee + juice
+        System.out.println("Bill: " + total);
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• The provided starter code is missing a semicolon (;) on the line defining total.\n• Fix the syntax error so the code compiles and produces the correct output.'
     }
   ]
 };
