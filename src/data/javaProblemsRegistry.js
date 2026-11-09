@@ -139,6 +139,46 @@ Ready for the mission!`,
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Each message must appear on a new line.\n• Spelling, spaces, and punctuation (including periods and exclamation mark) must match exactly.'
+    },
+    {
+      id: 'java-bio-03',
+      number: '03',
+      title: 'Digital Nameplate',
+      slug: 'digital-nameplate',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A tech club wants to display a digital nameplate on its welcome screen.
+
+Write a Java program that displays the club name, department, and membership status together on a single line.`,
+      inputFormat: 'There is no input for this problem.',
+      outputFormat: 'Print exactly: Code Club | Department: CS | Status: Open',
+      constraints: 'None. Make sure the entire message appears on one line with the correct spacing and symbols.',
+      sampleTestCases: [
+        {
+          input: '',
+          expectedOutput: 'Code Club | Department: CS | Status: Open',
+          explanation: 'Prints the club details separated by pipe characters (|) on a single line.'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '',
+          expectedOutput: 'Code Club | Department: CS | Status: Open'
+        }
+      ],
+      starterCode: `public class Main {
+    public static void main(String[] args) {
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Make sure the entire message appears on one line.\n• Use exact spacing and pipe symbols (|).'
     }
   ]
 };
