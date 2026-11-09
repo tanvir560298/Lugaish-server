@@ -238,6 +238,65 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Use Scanner to read the two integers from standard input.\n• Make sure the output format exactly matches "Total Bill: X SAR" including spaces and capitalization.'
+    },
+    {
+      id: 'java-bio-05',
+      number: '05',
+      title: 'Championship Final Score',
+      slug: 'championship-final-score',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A gaming team plays three rounds in a championship. Each round gives the team some points.
+
+Your task is to calculate the team's total score after all three rounds.`,
+      inputFormat: 'Three space-separated integers representing the points earned in the three rounds.',
+      outputFormat: 'Print the final score in the following format: Final Score = X',
+      constraints: "0 ≤ Each round's score ≤ 1000",
+      sampleTestCases: [
+        {
+          input: '120 85 95',
+          expectedOutput: 'Final Score = 300',
+          explanation: 'Sum of 120 + 85 + 95 = 300. Prints "Final Score = 300".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '120 85 95',
+          expectedOutput: 'Final Score = 300'
+        },
+        {
+          input: '0 0 0',
+          expectedOutput: 'Final Score = 0'
+        },
+        {
+          input: '1000 1000 1000',
+          expectedOutput: 'Final Score = 3000'
+        },
+        {
+          input: '250 500 250',
+          expectedOutput: 'Final Score = 1000'
+        },
+        {
+          input: '1 2 3',
+          expectedOutput: 'Final Score = 6'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Read three space-separated integers using Scanner.\n• Make sure the output format is exactly "Final Score = X" with spaces around the equals sign.'
     }
   ]
 };
