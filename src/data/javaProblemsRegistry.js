@@ -96,6 +96,49 @@ This is your first Java programming problem. The goal is to become familiar with
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• The output is case-sensitive.\n• Do not print any extra words or characters.\n• Use Java to solve this problem.'
+    },
+    {
+      id: 'java-bio-02',
+      number: '02',
+      title: 'Robot Startup Messages',
+      slug: 'robot-startup-messages',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A small robot is getting ready for its first mission. Before starting, it must display three startup messages.
+
+Write a Java program to display the following messages, each on a separate line.`,
+      inputFormat: 'There is no input for this problem.',
+      outputFormat: `Print exactly the following, each on a separate line:
+Robot is waking up...
+Battery is fully charged.
+Ready for the mission!`,
+      constraints: 'None. Each message must appear on a new line.',
+      sampleTestCases: [
+        {
+          input: '',
+          expectedOutput: 'Robot is waking up...\nBattery is fully charged.\nReady for the mission!',
+          explanation: 'Prints the 3 startup messages sequentially, each on its own line.'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '',
+          expectedOutput: 'Robot is waking up...\nBattery is fully charged.\nReady for the mission!'
+        }
+      ],
+      starterCode: `public class Main {
+    public static void main(String[] args) {
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Each message must appear on a new line.\n• Spelling, spaces, and punctuation (including periods and exclamation mark) must match exactly.'
     }
   ]
 };
