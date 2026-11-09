@@ -297,6 +297,65 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• Read three space-separated integers using Scanner.\n• Make sure the output format is exactly "Final Score = X" with spaces around the equals sign.'
+    },
+    {
+      id: 'java-bio-06',
+      number: '06',
+      title: 'Years Until Event',
+      slug: 'years-until-event',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A student is planning a special event in the future and wants to know how many years remain.
+
+Write a Java program that takes the current year and the event year, then calculates the number of years remaining.`,
+      inputFormat: 'Two integers: currentYear and eventYear.',
+      outputFormat: 'Print the number of years remaining in the following format: X years remaining',
+      constraints: '2000 ≤ currentYear ≤ eventYear ≤ 3000',
+      sampleTestCases: [
+        {
+          input: '2026 2030',
+          expectedOutput: '4 years remaining',
+          explanation: '2030 - 2026 = 4. Output: "4 years remaining".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '2026 2030',
+          expectedOutput: '4 years remaining'
+        },
+        {
+          input: '2024 2024',
+          expectedOutput: '0 years remaining'
+        },
+        {
+          input: '2000 3000',
+          expectedOutput: '1000 years remaining'
+        },
+        {
+          input: '2025 2050',
+          expectedOutput: '25 years remaining'
+        },
+        {
+          input: '2026 2027',
+          expectedOutput: '1 years remaining'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Calculate remaining years as: eventYear - currentYear.\n• Print in the exact format: "X years remaining".'
     }
   ]
 };
