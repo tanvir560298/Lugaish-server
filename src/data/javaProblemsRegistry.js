@@ -478,6 +478,68 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• The provided starter code is missing a semicolon (;) on the line defining total.\n• Fix the syntax error so the code compiles and produces the correct output.'
+    },
+    {
+      id: 'java-bio-09',
+      number: '09',
+      title: 'Fix the Weather Station Bug',
+      slug: 'fix-the-weather-station-bug',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A weather station records the temperature every morning.
+
+The station's Java program reads the temperature correctly, but an incorrect capitalization prevents it from compiling.
+
+Find the error and repair the program.`,
+      inputFormat: 'A single integer representing the temperature in Celsius.',
+      outputFormat: 'Display the temperature in the following format: Temperature: X C',
+      constraints: '-50 ≤ temperature ≤ 60',
+      sampleTestCases: [
+        {
+          input: '27',
+          expectedOutput: 'Temperature: 27 C',
+          explanation: 'Reads 27 and prints "Temperature: 27 C".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '27',
+          expectedOutput: 'Temperature: 27 C'
+        },
+        {
+          input: '0',
+          expectedOutput: 'Temperature: 0 C'
+        },
+        {
+          input: '-15',
+          expectedOutput: 'Temperature: -15 C'
+        },
+        {
+          input: '60',
+          expectedOutput: 'Temperature: 60 C'
+        },
+        {
+          input: '-50',
+          expectedOutput: 'Temperature: -50 C'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int temperature = sc.nextInt();
+
+        system.out.println("Temperature: " + temperature + " C");
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• Remember that Java is case-sensitive: system.out.println must use capital S for System.\n• Output format must match: "Temperature: X C".'
     }
   ]
 };
