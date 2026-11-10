@@ -915,7 +915,50 @@ public class Main {
       problemType: 'external',
       sourcePlatform: 'CodeChef',
       concepts: 'Multiplication',
-      externalUrl: 'https://www.codechef.com/practice/course/cpp/PCPP01/problems/INSTNOODLE'
+      externalUrl: 'https://www.codechef.com/practice/course/cpp/PCPP01/problems/INSTNOODLE',
+      description: `Chef has invented 1-minute Instant Noodles. As the name suggests, each packet takes exactly 1 minute to cook.
+
+Chef's restaurant has X stoves and only 1 packet can be cooked in a single stove at any minute.
+
+How many customers can Chef serve in Y minutes if each customer orders exactly 1 packet of noodles?`,
+      inputFormat: 'The first and only line of input contains two space-separated integers X and Y — the number of stoves and the number of minutes, respectively.',
+      outputFormat: 'Print a single integer — the maximum number of customers Chef can serve in Y minutes.',
+      constraints: '1 ≤ X, Y ≤ 1000',
+      sampleTestCases: [
+        {
+          input: '3 7',
+          expectedOutput: '21',
+          explanation: 'Chef cooks for Y = 7 minutes with X = 3 stoves. Total packets = 3 * 7 = 21.'
+        },
+        {
+          input: '7 8',
+          expectedOutput: '56',
+          explanation: 'Chef cooks for Y = 8 minutes with X = 7 stoves. Total packets = 7 * 8 = 56.'
+        }
+      ],
+      hiddenTestCases: [
+        { input: '3 7', expectedOutput: '21' },
+        { input: '7 8', expectedOutput: '56' },
+        { input: '1 1', expectedOutput: '1' },
+        { input: '10 100', expectedOutput: '1000' },
+        { input: '1000 1000', expectedOutput: '1000000' }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int x = sc.nextInt();
+        int y = sc.nextInt();
+
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• In 1 minute, X packets are cooked across X stoves.\n• In Y minutes, the total packets cooked is X * Y.'
     },
     {
       id: 'ext-bio-05',
