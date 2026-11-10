@@ -1,4 +1,6 @@
 import express from 'express';
+import { optionalAuthMiddleware } from '../middleware/auth.js';
+import { awardJavaSolve, javaLeaders } from '../services/javaLeaderboard.js';
 import { createRateLimit } from '../middleware/rateLimit.js';
 import { executeJavaCode, judgeJavaSubmission } from '../services/javaJudge.js';
 import {
@@ -10,6 +12,21 @@ import {
 } from '../data/javaProblemsRegistry.js';
 
 const router = express.Router();
+router.use(optionalAuthMiddleware);
+router.get('/java/leaderboard', async (_req, res) => {
+  try { res.set('Cache-Control', 'no-store'); return res.json({ leaders: await javaLeaders() }); }
+  catch { return res.status(503).json({ error: 'Leaderboard temporarily unavailable.' }); }
+});
+
+async function attachScore(req, result, topicSlug, problem) {
+  if (result.success && result.verdict === 'Accepted') {
+    if (!req.userId) result.scoreMessage = 'Sign in and submit to earn leaderboard points.';
+    else {
+      try { result.score = await awardJavaSolve(req.userId, topicSlug, problem.id); }
+      catch { result.scoreMessage = 'Accepted, but points could not be saved. Submit again to retry safely.'; }
+    }
+  }
+}
 
 // Rate limiters for Java execution to protect sandbox service and fair access
 const runCodeLimiter = createRateLimit({
@@ -141,6 +158,8 @@ router.post('/api/practice/java/submit', submitLimiter, async (req, res) => {
       sourceCode
     });
 
+    await attachScore(req, result, topicSlug, internalProblem);
+
     return res.json(result);
   } catch (err) {
     console.error('[Practice Route] Error judging Java submission:', err);
@@ -177,6 +196,8 @@ router.post('/java/submit', submitLimiter, async (req, res) => {
       problem: internalProblem,
       sourceCode
     });
+
+    await attachScore(req, result, topicSlug, internalProblem);
 
     return res.json(result);
   } catch (err) {
