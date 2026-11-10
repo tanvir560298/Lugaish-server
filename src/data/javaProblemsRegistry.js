@@ -602,6 +602,69 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• The method is incorrectly named "mian" instead of "main".\n• Java requires the exact entry point signature: public static void main(String[] args).'
+    },
+    {
+      id: 'java-bio-11',
+      number: '11',
+      title: 'Fix the Library Books Parenthesis',
+      slug: 'fix-the-library-books-parenthesis',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A school library wants to calculate how many books remain after students borrow some of them.
+
+The programmer has written the calculation, but the program contains a missing parenthesis.
+
+Fix the error and display the remaining number of books.`,
+      inputFormat: 'Two integers representing the total number of books and the number borrowed.',
+      outputFormat: 'Print the number of remaining books in the following format: Remaining: X',
+      constraints: '0 ≤ borrowedBooks ≤ totalBooks ≤ 10000',
+      sampleTestCases: [
+        {
+          input: '150 45',
+          expectedOutput: 'Remaining: 105',
+          explanation: '150 - 45 = 105. Prints "Remaining: 105".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '150 45',
+          expectedOutput: 'Remaining: 105'
+        },
+        {
+          input: '0 0',
+          expectedOutput: 'Remaining: 0'
+        },
+        {
+          input: '10000 0',
+          expectedOutput: 'Remaining: 10000'
+        },
+        {
+          input: '10000 10000',
+          expectedOutput: 'Remaining: 0'
+        },
+        {
+          input: '500 123',
+          expectedOutput: 'Remaining: 377'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int totalBooks = sc.nextInt();
+        int borrowedBooks = sc.nextInt();
+
+        System.out.println("Remaining: " + (totalBooks - borrowedBooks);
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• The System.out.println call is missing a closing parenthesis ")".\n• Output format must match: "Remaining: X".'
     }
   ]
 };
