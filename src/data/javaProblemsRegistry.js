@@ -813,6 +813,162 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• In Java, String is an object reference type / class and must be capitalized: String student = sc.next();\n• Java is case-sensitive, so "string" is not recognized.'
+    },
+    {
+      id: 'ext-bio-01',
+      number: 'E01',
+      title: 'Number Mirror',
+      slug: 'number-mirror-start01',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'CodeChef',
+      concepts: 'Integer Input/Output',
+      externalUrl: 'https://www.codechef.com/problems/START01'
+    },
+    {
+      id: 'ext-bio-02',
+      number: 'E02',
+      title: 'Java Stdin and Stdout I',
+      slug: 'java-stdin-and-stdout-1',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'HackerRank',
+      concepts: 'Scanner, Printing',
+      externalUrl: 'https://www.hackerrank.com/challenges/java-stdin-and-stdout-1/problem'
+    },
+    {
+      id: 'ext-bio-03',
+      number: 'E03',
+      title: 'Java Stdin and Stdout II',
+      slug: 'java-stdin-stdout',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'HackerRank',
+      concepts: 'int, double, String',
+      externalUrl: 'https://www.hackerrank.com/challenges/java-stdin-stdout/problem'
+    },
+    {
+      id: 'ext-bio-04',
+      number: 'E04',
+      title: 'Chef and Instant Noodles',
+      slug: 'chef-and-instant-noodles-instnoodle',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'CodeChef',
+      concepts: 'Multiplication',
+      externalUrl: 'https://www.codechef.com/practice/course/cpp/PCPP01/problems/INSTNOODLE'
+    },
+    {
+      id: 'ext-bio-05',
+      number: 'E05',
+      title: 'Area of a Circle — 1002',
+      slug: 'area-of-a-circle-1002',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'beecrowd',
+      concepts: 'Double, Formula',
+      externalUrl: 'https://judge.beecrowd.com/en/problems/view/1002'
+    },
+    {
+      id: 'ext-bio-06',
+      number: 'E06',
+      title: 'Average 1 — 1005',
+      slug: 'average-1-1005',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'beecrowd',
+      concepts: 'Weighted Average',
+      externalUrl: 'https://judge.beecrowd.com/en/problems/view/1005'
+    },
+    {
+      id: 'ext-bio-07',
+      number: 'E07',
+      title: 'Salary — 1008',
+      slug: 'salary-1008',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'beecrowd',
+      concepts: 'Variables, Multiplication',
+      externalUrl: 'https://judge.beecrowd.com/en/problems/view/1008'
+    },
+    {
+      id: 'ext-bio-08',
+      number: 'E08',
+      title: 'Consumption — 1014',
+      slug: 'consumption-1014',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'beecrowd',
+      concepts: 'Division, Decimal Output',
+      externalUrl: 'https://judge.beecrowd.com/en/problems/view/1014'
+    },
+    {
+      id: 'ext-bio-09',
+      number: 'E09',
+      title: 'Domino Piling — 50A',
+      slug: 'domino-piling-50a',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'external',
+      sourcePlatform: 'Codeforces',
+      concepts: 'Integer Division',
+      externalUrl: 'https://codeforces.com/problemset/problem/50/A'
+    },
+    {
+      id: 'ext-bio-10',
+      number: 'E10',
+      title: 'Elephant — 617A',
+      slug: 'elephant-617a',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy+',
+      problemType: 'external',
+      sourcePlatform: 'Codeforces',
+      concepts: 'Division, Rounding Up',
+      externalUrl: 'https://codeforces.com/problemset/problem/617/A'
+    },
+    {
+      id: 'ext-bio-11',
+      number: 'E11',
+      title: 'Banknotes — 1018',
+      slug: 'banknotes-1018',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy+',
+      problemType: 'external',
+      sourcePlatform: 'beecrowd',
+      concepts: 'Division, Modulo',
+      externalUrl: 'https://judge.beecrowd.com/en/problems/view/1018'
+    },
+    {
+      id: 'ext-bio-12',
+      number: 'E12',
+      title: 'Theatre Square — 1A',
+      slug: 'theatre-square-1a',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Challenge',
+      problemType: 'external',
+      sourcePlatform: 'Codeforces',
+      concepts: 'Rounding Up, long',
+      externalUrl: 'https://codeforces.com/problemset/problem/1/A'
     }
   ]
 };
@@ -857,6 +1013,7 @@ export function toPublicProblem(problem) {
       difficulty: problem.difficulty,
       problemType: 'external',
       sourcePlatform: problem.sourcePlatform || 'External',
+      concepts: problem.concepts || '',
       externalUrl: problem.externalUrl || ''
     };
   }
@@ -907,7 +1064,7 @@ export function getPublicProblemBySlug(topicSlug = 'basic-io-variables', slug) {
 export function getInternalProblemForJudging(topicSlug = 'basic-io-variables', problemId) {
   const problems = javaProblemsByTopic[topicSlug] || [];
   const problem = problems.find(p => p.id === problemId || p.slug === problemId);
-  if (!problem) return null;
+  if (!problem || problem.problemType === 'external') return null;
 
   const sampleCases = (problem.sampleTestCases || []).map(tc => ({
     input: tc.input || '',

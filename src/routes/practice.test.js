@@ -71,6 +71,8 @@ test('toPublicProblem strictly hides private hidden test cases and credentials',
 });
 
 test('getInternalProblemForJudging prepares combined test cases with isSample flags', () => {
+  const originalProblems = [...(javaProblemsByTopic['basic-io-variables'] || [])];
+
   const mockProblem = {
     id: 'judge-test-01',
     slug: 'judge-test-slug',
@@ -92,8 +94,11 @@ test('getInternalProblemForJudging prepares combined test cases with isSample fl
   assert.equal(internalProb.testCases[1].isSample, false);
   assert.equal(internalProb.testCases[1].expectedOutput, '30');
 
-  // Clean up mock problem so registry remains clean
-  javaProblemsByTopic['basic-io-variables'] = [];
+  // External problems must never be judged by internal judge
+  assert.equal(getInternalProblemForJudging('basic-io-variables', 'ext-bio-01'), null);
+
+  // Restore original problems so registry remains clean
+  javaProblemsByTopic['basic-io-variables'] = originalProblems;
 });
 
 test('practice router handlers respond with expected data and validation errors', async () => {
