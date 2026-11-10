@@ -11,6 +11,20 @@ const MAX_SOURCE_CODE_BYTES = 64 * 1024; // 64 KB
 const MAX_STDIN_BYTES = 64 * 1024; // 64 KB
 
 /**
+ * Decodes base64-encoded strings if returned by Judge0, otherwise returns input as-is.
+ */
+export function decodeBase64(str) {
+  if (!str || typeof str !== 'string') return '';
+  try {
+    const decoded = Buffer.from(str, 'base64').toString('utf8');
+    if (Buffer.from(decoded, 'utf8').toString('base64') === str.replace(/\s+$/, '')) {
+      return decoded;
+    }
+  } catch {}
+  return str;
+}
+
+/**
  * Normalizes output string for whitespace-insensitive judging:
  * - Replaces CRLF (\r\n) and CR (\r) with LF (\n)
  * - Trims trailing whitespace from each line
@@ -78,18 +92,18 @@ export async function executeJavaCode({
   }
 
   const payload = {
-    source_code: sourceCode,
+    source_code: Buffer.from(sourceCode, 'utf8').toString('base64'),
     language_id: JAVA_LANGUAGE_ID,
-    stdin: safeStdin,
+    stdin: Buffer.from(safeStdin, 'utf8').toString('base64'),
     cpu_time_limit: Math.min(Math.max(Number(timeLimit) || DEFAULT_TIMEOUT_SECONDS, 1), 10),
     memory_limit: Math.min(Math.max(Number(memoryLimit) || DEFAULT_MEMORY_LIMIT_KB, 16000), 256000)
   };
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), (payload.cpu_time_limit + 10) * 1000);
+    const timeout = setTimeout(() => controller.abort(), (payload.cpu_time_limit + 15) * 1000);
 
-    const response = await fetch(`${JUDGE0_BASE_URL}/submissions?base64_encoded=false&wait=true`, {
+    const response = await fetch(`${JUDGE0_BASE_URL}/submissions?base64_encoded=true&wait=true`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
@@ -112,7 +126,30 @@ export async function executeJavaCode({
       };
     }
 
-    const data = await response.json();
+    let data = await response.json();
+
+    // If still in queue or processing, poll the submission token until done (max 15s)
+    if (data?.status?.id <= 2 && data?.token) {
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        try {
+          const pollRes = await fetch(`${JUDGE0_BASE_URL}/submissions/${data.token}?base64_encoded=true`, {
+            headers,
+            signal: controller.signal
+          });
+          if (pollRes.ok) {
+            const polledData = await pollRes.json();
+            if (polledData?.status?.id > 2) {
+              data = polledData;
+              break;
+            }
+          }
+        } catch {
+          // ignore transient poll error and retry
+        }
+      }
+    }
+
     const statusId = data?.status?.id ?? 0;
     const statusDesc = data?.status?.description ?? 'Unknown';
 
@@ -137,6 +174,8 @@ export async function executeJavaCode({
       verdict = 'Runtime Error';
     } else if (statusId >= 13) {
       verdict = 'Execution Service Unavailable';
+    } else if (statusId <= 2) {
+      verdict = 'Time Limit Exceeded';
     } else {
       verdict = statusDesc;
     }
@@ -145,10 +184,10 @@ export async function executeJavaCode({
       success: verdict === 'Accepted',
       verdict,
       statusId,
-      stdout: data.stdout || '',
-      stderr: data.stderr || '',
-      compileOutput: data.compile_output || '',
-      message: data.message || '',
+      stdout: decodeBase64(data.stdout),
+      stderr: decodeBase64(data.stderr),
+      compileOutput: decodeBase64(data.compile_output),
+      message: decodeBase64(data.message),
       time: parseFloat(data.time) || 0,
       memory: parseInt(data.memory, 10) || 0
     };

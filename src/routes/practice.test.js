@@ -9,7 +9,15 @@ import {
   registerProblem,
   javaProblemsByTopic
 } from '../data/javaProblemsRegistry.js';
-import { normalizeOutput } from '../services/javaJudge.js';
+import { normalizeOutput, decodeBase64 } from '../services/javaJudge.js';
+
+test('decodeBase64 correctly decodes base64 strings and preserves plain text', () => {
+  assert.equal(decodeBase64('SGVsbG8sIHdvcmxkIQo='), 'Hello, world!\n');
+  assert.equal(decodeBase64('TWFpbi5qYXZhOjE6IGVycm9y'), 'Main.java:1: error');
+  assert.equal(decodeBase64('Hello, world!\n'), 'Hello, world!\n');
+  assert.equal(decodeBase64(''), '');
+  assert.equal(decodeBase64(null), '');
+});
 
 test('normalizeOutput handles CRLF, trailing spaces, and empty lines', () => {
   assert.equal(normalizeOutput('Hello World  \r\n'), 'Hello World');
