@@ -848,10 +848,61 @@ public class Main {
       language: 'Java',
       categorySlug: 'basic-io-variables',
       difficulty: 'Easy',
-      problemType: 'external',
+      problemType: 'lugaish',
       sourcePlatform: 'HackerRank',
       concepts: 'int, double, String',
-      externalUrl: 'https://www.hackerrank.com/challenges/java-stdin-stdout/problem'
+      externalUrl: 'https://www.hackerrank.com/challenges/java-stdin-stdout/problem',
+      description: `In this challenge, you must read an integer, a double, and a String from stdin, then print the values according to the instructions.
+
+Note: If you use the nextLine() method immediately following the nextInt() method, recall that nextInt() reads integer tokens; because of this, the newline character following the integer token is still in the buffer. Remember to clear the buffer with scan.nextLine() before reading your String.`,
+      inputFormat: `There are three lines of input:
+1. The first line contains an integer.
+2. The second line contains a double.
+3. The third line contains a String.`,
+      outputFormat: `There are three lines of output:
+1. On the first line, print String: followed by the unaltered String read from stdin.
+2. On the second line, print Double: followed by the unaltered double read from stdin.
+3. On the third line, print Int: followed by the unaltered integer read from stdin.`,
+      constraints: 'The integer fits in a standard 32-bit signed integer. The double is a valid floating point number. The String contains up to 100 printable characters.',
+      sampleTestCases: [
+        {
+          input: "42\n3.1415\nWelcome to HackerRank's Java tutorials!",
+          expectedOutput: "String: Welcome to HackerRank's Java tutorials!\nDouble: 3.1415\nInt: 42",
+          explanation: 'Reads integer 42, double 3.1415, clears buffer, reads full line string, and prints in the requested order.'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: "42\n3.1415\nWelcome to HackerRank's Java tutorials!",
+          expectedOutput: "String: Welcome to HackerRank's Java tutorials!\nDouble: 3.1415\nInt: 42"
+        },
+        {
+          input: "100\n42.5\nJava is awesome",
+          expectedOutput: "String: Java is awesome\nDouble: 42.5\nInt: 100"
+        },
+        {
+          input: "1\n0.0\nLearning Java on Lugaish platform",
+          expectedOutput: "String: Learning Java on Lugaish platform\nDouble: 0.0\nInt: 1"
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+        int i = scan.nextInt();
+        double d = scan.nextDouble();
+        scan.nextLine(); // Clear the newline character from the buffer
+        String s = scan.nextLine();
+
+        // Write your code here
+        
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• When using Scanner nextInt() or nextDouble(), the trailing newline character is left in the input buffer.\n• Call scan.nextLine() once to clear the newline before reading the full line string.'
     },
     {
       id: 'ext-bio-04',

@@ -25,6 +25,16 @@ export function decodeBase64(str) {
 }
 
 /**
+ * Normalizes Java source code so that public class Solution or custom names compile as Main on OpenJDK.
+ */
+export function normalizeJavaSource(code = '') {
+  if (typeof code !== 'string') return '';
+  return code
+    .replace(/public\s+class\s+[A-Za-z0-9_$]+/g, 'public class Main')
+    .replace(/\bclass\s+Solution\b/g, 'class Main');
+}
+
+/**
  * Normalizes output string for whitespace-insensitive judging:
  * - Replaces CRLF (\r\n) and CR (\r) with LF (\n)
  * - Trims trailing whitespace from each line
@@ -91,8 +101,10 @@ export async function executeJavaCode({
     headers['X-RapidAPI-Host'] = JUDGE0_API_HOST;
   }
 
+  const normalizedSource = normalizeJavaSource(sourceCode);
+
   const payload = {
-    source_code: Buffer.from(sourceCode, 'utf8').toString('base64'),
+    source_code: Buffer.from(normalizedSource, 'utf8').toString('base64'),
     language_id: JAVA_LANGUAGE_ID,
     stdin: Buffer.from(safeStdin, 'utf8').toString('base64'),
     cpu_time_limit: Math.min(Math.max(Number(timeLimit) || DEFAULT_TIMEOUT_SECONDS, 1), 10),
