@@ -744,6 +744,75 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• The expression (friends - friends) evaluates to 0, which causes an ArithmeticException: / by zero.\n• Correct the divisor to friends: int each = cookies / friends;'
+    },
+    {
+      id: 'java-bio-13',
+      number: '13',
+      title: 'Fix the Digital Access Card',
+      slug: 'fix-the-digital-access-card',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A university is developing a program that generates digital access cards for students.
+
+The program reads a student's name and displays a confirmation message.
+
+Unfortunately, the developer made a mistake while declaring a variable.
+
+Fix the program so that it accepts the student's name and displays the correct message.`,
+      inputFormat: "A single word representing the student's name.",
+      outputFormat: 'Print the message in the following format: Access granted to NAME',
+      constraints: 'The name contains 1 to 30 English letters and no spaces.',
+      sampleTestCases: [
+        {
+          input: 'Omar',
+          expectedOutput: 'Access granted to Omar',
+          explanation: 'Reads student name "Omar" and prints "Access granted to Omar".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: 'Omar',
+          expectedOutput: 'Access granted to Omar'
+        },
+        {
+          input: 'Fatima',
+          expectedOutput: 'Access granted to Fatima'
+        },
+        {
+          input: 'A',
+          expectedOutput: 'Access granted to A'
+        },
+        {
+          input: 'Zaid',
+          expectedOutput: 'Access granted to Zaid'
+        },
+        {
+          input: 'Christopher',
+          expectedOutput: 'Access granted to Christopher'
+        },
+        {
+          input: 'Sarah',
+          expectedOutput: 'Access granted to Sarah'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        string student = sc.next();
+
+        System.out.println("Access granted to " + student);
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• In Java, String is an object reference type / class and must be capitalized: String student = sc.next();\n• Java is case-sensitive, so "string" is not recognized.'
     }
   ]
 };
