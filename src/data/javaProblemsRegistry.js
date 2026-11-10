@@ -1158,7 +1158,7 @@ export function getPublicProblemBySlug(topicSlug = 'basic-io-variables', slug) {
 export function getInternalProblemForJudging(topicSlug = 'basic-io-variables', problemId) {
   const problems = javaProblemsByTopic[topicSlug] || [];
   const problem = problems.find(p => p.id === problemId || p.slug === problemId);
-  if (!problem || problem.problemType === 'external') return null;
+  if (!problem || (problem.problemType === 'external' && (!problem.sampleTestCases || problem.sampleTestCases.length === 0))) return null;
 
   const sampleCases = (problem.sampleTestCases || []).map(tc => ({
     input: tc.input || '',
