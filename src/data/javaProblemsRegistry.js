@@ -665,6 +665,85 @@ public class Main {
       timeLimit: 3,
       memoryLimit: 128000,
       notes: '• The System.out.println call is missing a closing parenthesis ")".\n• Output format must match: "Remaining: X".'
+    },
+    {
+      id: 'java-bio-12',
+      number: '12',
+      title: 'Fix the Cookie Sharing Bug',
+      slug: 'fix-the-cookie-sharing-bug',
+      language: 'Java',
+      categorySlug: 'basic-io-variables',
+      difficulty: 'Easy',
+      problemType: 'lugaish',
+      sourcePlatform: 'Lugaish',
+      description: `A group of friends wants to share cookies equally.
+
+A programmer has created a Java program to calculate how many cookies each friend should receive.
+
+However, the program crashes while performing the calculation because of an incorrect expression.
+
+Your task is to find and fix the problem.`,
+      inputFormat: 'Two space-separated integers representing the number of cookies and friends.',
+      outputFormat: 'Print the number of cookies each friend receives in the following format: Cookies per friend: X',
+      constraints: '1 ≤ cookies ≤ 10000\n1 ≤ friends ≤ cookies\nThe number of cookies is always divisible by the number of friends.',
+      sampleTestCases: [
+        {
+          input: '36 6',
+          expectedOutput: 'Cookies per friend: 6',
+          explanation: '36 / 6 = 6. Prints "Cookies per friend: 6".'
+        }
+      ],
+      hiddenTestCases: [
+        {
+          input: '36 6',
+          expectedOutput: 'Cookies per friend: 6'
+        },
+        {
+          input: '10 1',
+          expectedOutput: 'Cookies per friend: 10'
+        },
+        {
+          input: '10 10',
+          expectedOutput: 'Cookies per friend: 1'
+        },
+        {
+          input: '10000 1',
+          expectedOutput: 'Cookies per friend: 10000'
+        },
+        {
+          input: '10000 100',
+          expectedOutput: 'Cookies per friend: 100'
+        },
+        {
+          input: '72 8',
+          expectedOutput: 'Cookies per friend: 9'
+        },
+        {
+          input: '15 3',
+          expectedOutput: 'Cookies per friend: 5'
+        },
+        {
+          input: '1 1',
+          expectedOutput: 'Cookies per friend: 1'
+        }
+      ],
+      starterCode: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int cookies = sc.nextInt();
+        int friends = sc.nextInt();
+
+        int each = cookies / (friends - friends);
+
+        System.out.println("Cookies per friend: " + each);
+    }
+}
+`,
+      timeLimit: 3,
+      memoryLimit: 128000,
+      notes: '• The expression (friends - friends) evaluates to 0, which causes an ArithmeticException: / by zero.\n• Correct the divisor to friends: int each = cookies / friends;'
     }
   ]
 };
