@@ -26,10 +26,10 @@ test('normalizeOutput handles CRLF, trailing spaces, and empty lines', () => {
   assert.equal(normalizeOutput(null), '');
 });
 
-test('Topic 1 metadata is accurately configured for Basic Input, Output & Variables', () => {
+test('Topic metadata is accurately configured for Java practice topics', () => {
   const topics = getAllTopics();
   assert.ok(Array.isArray(topics));
-  assert.equal(topics.length, 1);
+  assert.ok(topics.length >= 2);
 
   const topic1 = getTopicBySlug('basic-io-variables');
   assert.ok(topic1);
@@ -37,6 +37,11 @@ test('Topic 1 metadata is accurately configured for Basic Input, Output & Variab
   assert.equal(topic1.language, 'Java');
   assert.equal(topic1.level, 'Beginner');
   assert.ok(topic1.description.includes('Begin your Java programming journey'));
+
+  const topic2 = getTopicBySlug('operators-expressions');
+  assert.ok(topic2);
+  assert.equal(topic2.title, 'Operators & Expressions');
+  assert.equal(topic2.problemCount, 12);
 });
 
 test('toPublicProblem strictly hides private hidden test cases and credentials', () => {
@@ -139,8 +144,9 @@ test('practice router handlers respond with expected data and validation errors'
   const topicsRes = createMockRes();
   topicsLayer.route.stack[0].handle(topicsReq, topicsRes);
   assert.equal(topicsRes.statusCode, 200);
-  assert.equal(topicsRes.body.topics.length, 1);
+  assert.ok(topicsRes.body.topics.length >= 2);
   assert.equal(topicsRes.body.topics[0].slug, 'basic-io-variables');
+  assert.equal(topicsRes.body.topics[1].slug, 'operators-expressions');
 
   // Find layer for GET /java/topics/:topicSlug
   const topicSlugLayer = practiceRoutes.stack.find(s => s.route?.path === '/java/topics/:topicSlug');
