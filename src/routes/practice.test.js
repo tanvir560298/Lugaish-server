@@ -58,10 +58,20 @@ test('Topic metadata is accurately configured for Java practice topics', () => {
   assert.equal(topic5.title, 'Nested Loops & Pattern Printing');
   assert.equal(topic5.problemCount, 2);
 
+  const topic6 = getTopicBySlug('arrays');
+  assert.ok(topic6);
+  assert.equal(topic6.title, 'Arrays');
+  assert.equal(topic6.problemCount, 3);
+
   const topic7 = getTopicBySlug('strings-manipulation');
   assert.ok(topic7);
   assert.equal(topic7.title, 'Strings & String Manipulation');
   assert.equal(topic7.problemCount, 8);
+
+  const topic8 = getTopicBySlug('methods-functions');
+  assert.ok(topic8);
+  assert.equal(topic8.title, 'Methods & Functions');
+  assert.equal(topic8.problemCount, 9);
 });
 
 test('toPublicProblem strictly hides private hidden test cases and credentials', () => {
@@ -164,13 +174,15 @@ test('practice router handlers respond with expected data and validation errors'
   const topicsRes = createMockRes();
   topicsLayer.route.stack[0].handle(topicsReq, topicsRes);
   assert.equal(topicsRes.statusCode, 200);
-  assert.ok(topicsRes.body.topics.length >= 6);
+  assert.ok(topicsRes.body.topics.length >= 8);
   assert.equal(topicsRes.body.topics[0].slug, 'basic-io-variables');
   assert.equal(topicsRes.body.topics[1].slug, 'operators-expressions');
   assert.equal(topicsRes.body.topics[2].slug, 'conditional-statements');
   assert.equal(topicsRes.body.topics[3].slug, 'loops-iterations');
   assert.equal(topicsRes.body.topics[4].slug, 'nested-loops-pattern-printing');
-  assert.equal(topicsRes.body.topics[5].slug, 'strings-manipulation');
+  assert.equal(topicsRes.body.topics[5].slug, 'arrays');
+  assert.equal(topicsRes.body.topics[6].slug, 'strings-manipulation');
+  assert.equal(topicsRes.body.topics[7].slug, 'methods-functions');
 
   // Find layer for GET /java/topics/:topicSlug
   const topicSlugLayer = practiceRoutes.stack.find(s => s.route?.path === '/java/topics/:topicSlug');

@@ -58,6 +58,17 @@ export const JAVA_PRACTICE_TOPICS = [
     active: true
   },
   {
+    id: 'topic-06',
+    slug: 'arrays',
+    title: 'Arrays',
+    language: 'Java',
+    level: 'Beginner to Intermediate',
+    description:
+      'Master array operations in Java: memory allocation, indexing, min/max search, deduplication, and range calculations with practical coding challenges.',
+    icon: 'Layers',
+    active: true
+  },
+  {
     id: 'topic-07',
     slug: 'strings-manipulation',
     title: 'Strings & String Manipulation',
@@ -66,6 +77,17 @@ export const JAVA_PRACTICE_TOPICS = [
     description:
       'Master String methods in Java: length(), charAt(), indexOf(), substring(), toUpperCase(), toLowerCase(), and equals() with practical coding challenges.',
     icon: 'Type',
+    active: true
+  },
+  {
+    id: 'topic-08',
+    slug: 'methods-functions',
+    title: 'Methods & Functions',
+    language: 'Java',
+    level: 'Beginner to Intermediate',
+    description:
+      'Master modular programming: method declarations, parameters, return types, mathematical logic, string transformations, and boolean helper methods with practical coding challenges.',
+    icon: 'Terminal',
     active: true
   }
 ];
@@ -4083,6 +4105,838 @@ public class Main {
             {
                 "input": "8",
                 "expectedOutput": "X......X\\n.X....X.\\n..X..X..\\n...XX...\\n...XX...\\n..X..X..\\n.X....X.\\nX......X"
+            }
+        ]
+    }
+],
+  "methods-functions": [
+    {
+        "id": "java-meth-70",
+        "number": "01",
+        "title": "Signal Gap Calculator",
+        "slug": "signal-gap-calculator",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Method Parameters, Return Values, Arithmetic",
+        "description": "Two communication towers are positioned at different numbered locations along a straight road.\n\nA maintenance robot needs to calculate the distance between their positions.\nThe robot can travel in either direction, so the distance must never be negative.\n\nWrite a Java program that calculates the distance between the two positions.\nCreate a reusable method to perform the calculation.\n\nSuggested Method:\n`static long calculateDistance(long a, long b)`",
+        "inputFormat": "Two space-separated integers: A B representing the tower positions.",
+        "outputFormat": "Print: Distance: X",
+        "constraints": "-1000000000 ≤ A, B ≤ 1000000000",
+        "sampleTestCases": [
+            {
+                "input": "-18 25",
+                "expectedOutput": "Distance: 43",
+                "explanation": "Distance between -18 and 25 is |-18 - 25| = 43."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static long calculateDistance(long a, long b) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use Math.abs((long) a - b) or condition (a > b ? a - b : b - a) to calculate the non-negative distance.\n• Use 64-bit integer type (long) to prevent overflow when subtracting large numbers.",
+        "hiddenTestCases": [
+            {
+                "input": "50 50",
+                "expectedOutput": "Distance: 0"
+            },
+            {
+                "input": "-100 -100",
+                "expectedOutput": "Distance: 0"
+            },
+            {
+                "input": "-45 -12",
+                "expectedOutput": "Distance: 33"
+            },
+            {
+                "input": "-10 -90",
+                "expectedOutput": "Distance: 80"
+            },
+            {
+                "input": "25 -18",
+                "expectedOutput": "Distance: 43"
+            },
+            {
+                "input": "100 20",
+                "expectedOutput": "Distance: 80"
+            },
+            {
+                "input": "-1000000000 1000000000",
+                "expectedOutput": "Distance: 2000000000"
+            },
+            {
+                "input": "1000000000 -1000000000",
+                "expectedOutput": "Distance: 2000000000"
+            },
+            {
+                "input": "0 75",
+                "expectedOutput": "Distance: 75"
+            },
+            {
+                "input": "-60 0",
+                "expectedOutput": "Distance: 60"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-71",
+        "number": "02",
+        "title": "The Middle Sensor",
+        "slug": "the-middle-sensor",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Methods, Conditional Logic, Return Statements",
+        "description": "A research station has three temperature sensors.\n\nSometimes one sensor records an unusually high or low reading.\nThe station wants to use the middle value among the three readings.\n\nThe middle value is the number that would appear in the second position if all three values were arranged in ascending order.\nDo not confuse the middle value with the arithmetic average.\n\nWrite a Java program to find that value.\n\nSuggested Method:\n`static int middleReading(int a, int b, int c)`",
+        "inputFormat": "Three integers: A B C",
+        "outputFormat": "Print: Middle Reading: X",
+        "constraints": "-1000000 ≤ A, B, C ≤ 1000000",
+        "sampleTestCases": [
+            {
+                "input": "32 17 25",
+                "expectedOutput": "Middle Reading: 25",
+                "explanation": "Sorted order is 17, 25, 32. Middle reading is 25."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static int middleReading(int a, int b, int c) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Compare the three numbers using if-else conditions or sort an array of 3 numbers.\n• The median element is between the minimum and maximum.",
+        "hiddenTestCases": [
+            {
+                "input": "10 20 30",
+                "expectedOutput": "Middle Reading: 20"
+            },
+            {
+                "input": "50 40 30",
+                "expectedOutput": "Middle Reading: 40"
+            },
+            {
+                "input": "15 15 15",
+                "expectedOutput": "Middle Reading: 15"
+            },
+            {
+                "input": "10 20 20",
+                "expectedOutput": "Middle Reading: 20"
+            },
+            {
+                "input": "20 10 20",
+                "expectedOutput": "Middle Reading: 20"
+            },
+            {
+                "input": "20 20 10",
+                "expectedOutput": "Middle Reading: 20"
+            },
+            {
+                "input": "-30 -10 -20",
+                "expectedOutput": "Middle Reading: -20"
+            },
+            {
+                "input": "-50 0 50",
+                "expectedOutput": "Middle Reading: 0"
+            },
+            {
+                "input": "-15 25 -5",
+                "expectedOutput": "Middle Reading: -5"
+            },
+            {
+                "input": "1000000 -1000000 0",
+                "expectedOutput": "Middle Reading: 0"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-72",
+        "number": "03",
+        "title": "Secret Digit Multiplier",
+        "slug": "secret-digit-multiplier",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Methods, While Loops, Division, Modulus",
+        "description": "A puzzle machine receives a non-negative integer.\n\nTo generate its secret verification number, the machine multiplies all the decimal digits of the integer.\nFor example, the number 352 contains the digits 3, 5, and 2. Their product is 30.\n\nWrite a Java program that calculates the digit product.\nFor the input 0, the digit product is defined as 0.\n\nSuggested Method:\n`static int digitProduct(int n)`",
+        "inputFormat": "One non-negative integer N.",
+        "outputFormat": "Print: Digit Product: X",
+        "constraints": "0 ≤ N ≤ 999999",
+        "sampleTestCases": [
+            {
+                "input": "352",
+                "expectedOutput": "Digit Product: 30",
+                "explanation": "Digits 3 * 5 * 2 = 30."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static int digitProduct(int n) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• If n == 0, return 0 immediately.\n• Extract digits repeatedly with temp % 10 and update temp /= 10.",
+        "hiddenTestCases": [
+            {
+                "input": "0",
+                "expectedOutput": "Digit Product: 0"
+            },
+            {
+                "input": "7",
+                "expectedOutput": "Digit Product: 7"
+            },
+            {
+                "input": "1",
+                "expectedOutput": "Digit Product: 1"
+            },
+            {
+                "input": "105",
+                "expectedOutput": "Digit Product: 0"
+            },
+            {
+                "input": "400",
+                "expectedOutput": "Digit Product: 0"
+            },
+            {
+                "input": "20",
+                "expectedOutput": "Digit Product: 0"
+            },
+            {
+                "input": "222",
+                "expectedOutput": "Digit Product: 8"
+            },
+            {
+                "input": "3333",
+                "expectedOutput": "Digit Product: 81"
+            },
+            {
+                "input": "999999",
+                "expectedOutput": "Digit Product: 531441"
+            },
+            {
+                "input": "1111",
+                "expectedOutput": "Digit Product: 1"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-73",
+        "number": "04",
+        "title": "Hashtag Activity Counter",
+        "slug": "hashtag-activity-counter",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "String Processing, Loops, Methods",
+        "description": "A social learning platform allows students to publish short captions.\n\nSome words begin with the # symbol, indicating hashtags.\nThe platform wants to count the number of hashtags in a caption.\n\nA hashtag is defined as a space-separated token that begins with # and contains at least one additional character.\nA token containing only # is not considered a hashtag.\nWords may be separated by multiple spaces.\n\nWrite a Java program to count the hashtags.\n\nSuggested Method:\n`static int countHashtags(String caption)`",
+        "inputFormat": "One line containing the caption.",
+        "outputFormat": "Print: Hashtags: X",
+        "constraints": "1 ≤ Caption length ≤ 500; contains printable ASCII characters and spaces.",
+        "sampleTestCases": [
+            {
+                "input": "Ready  #Java  #Lugaish  #  #2026",
+                "expectedOutput": "Hashtags: 3",
+                "explanation": "#Java, #Lugaish, and #2026 are valid hashtags. Single '#' does not qualify."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static int countHashtags(String caption) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Split the caption by whitespace using split(\"\\\\s+\") or read tokens with Scanner.\n• For each word, check if word.startsWith(\"#\") && word.length() > 1.",
+        "hiddenTestCases": [
+            {
+                "input": "Hello world this is a test",
+                "expectedOutput": "Hashtags: 0"
+            },
+            {
+                "input": "Learning #Java today",
+                "expectedOutput": "Hashtags: 1"
+            },
+            {
+                "input": "Check   #code   #   and   #tips",
+                "expectedOutput": "Hashtags: 2"
+            },
+            {
+                "input": "# # ##",
+                "expectedOutput": "Hashtags: 1"
+            },
+            {
+                "input": "#day100 #2026 #cs",
+                "expectedOutput": "Hashtags: 3"
+            },
+            {
+                "input": "#one #two #three",
+                "expectedOutput": "Hashtags: 3"
+            },
+            {
+                "input": "#Lugaish",
+                "expectedOutput": "Hashtags: 1"
+            },
+            {
+                "input": "#a #b #c #",
+                "expectedOutput": "Hashtags: 3"
+            },
+            {
+                "input": "Just tags ### ###1 #tag",
+                "expectedOutput": "Hashtags: 3"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-74",
+        "number": "05",
+        "title": "Digital Badge Mask",
+        "slug": "digital-badge-mask",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "String Manipulation, Loops, Return Values",
+        "description": "A digital security system displays partially hidden access badge codes.\n\nTo protect sensitive information, the system keeps only the first and last characters visible.\nEvery character between them is replaced with an asterisk (*).\n\nIf a code contains one or two characters, it remains unchanged.\n\nWrite a Java program that generates the masked badge code.\n\nSuggested Method:\n`static String maskBadge(String code)`",
+        "inputFormat": "One string S containing an access badge code.",
+        "outputFormat": "Print: Masked: X",
+        "constraints": "1 ≤ Length of S ≤ 100; contains uppercase English letters and digits only.",
+        "sampleTestCases": [
+            {
+                "input": "ORBIT9",
+                "expectedOutput": "Masked: O****9",
+                "explanation": "Keep first ('O') and last ('9'). Replace 4 middle characters with '*'."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static String maskBadge(String code) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• If code length <= 2, return code untouched.\n• Otherwise, keep code.charAt(0) and code.charAt(code.length() - 1) and append '*' for middle positions.",
+        "hiddenTestCases": [
+            {
+                "input": "A",
+                "expectedOutput": "Masked: A"
+            },
+            {
+                "input": "X1",
+                "expectedOutput": "Masked: X1"
+            },
+            {
+                "input": "K9Z",
+                "expectedOutput": "Masked: K*Z"
+            },
+            {
+                "input": "PASS",
+                "expectedOutput": "Masked: P**S"
+            },
+            {
+                "input": "ADMINISTRATION99",
+                "expectedOutput": "Masked: A**************9"
+            },
+            {
+                "input": "CODE2026",
+                "expectedOutput": "Masked: C******6"
+            },
+            {
+                "input": "JAVA",
+                "expectedOutput": "Masked: J**A"
+            },
+            {
+                "input": "LUGAISH",
+                "expectedOutput": "Masked: L*****H"
+            },
+            {
+                "input": "SECUREID12345",
+                "expectedOutput": "Masked: S***********5"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-75",
+        "number": "06",
+        "title": "Sentence Initials Generator",
+        "slug": "sentence-initials-generator",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "String Traversal, Character Extraction, Methods",
+        "description": "A student is developing a system that creates short codes from long project titles.\n\nThe system generates a code using the first letter of every word.\nAll extracted letters must be converted to uppercase.\n\nFor example, the title \"creative learning system\" produces the code \"CLS\".\n\nWrite a Java program to generate a code from the given sentence.\n\nSuggested Method:\n`static String createInitials(String sentence)`",
+        "inputFormat": "One line containing a sentence S.",
+        "outputFormat": "Print: Initials: X",
+        "constraints": "1 ≤ Length of S ≤ 300; English letters and spaces only; no leading/trailing spaces.",
+        "sampleTestCases": [
+            {
+                "input": "build better code daily",
+                "expectedOutput": "Initials: BBCD",
+                "explanation": "First letters: b -> B, b -> B, c -> C, d -> D. Initials: BBCD."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static String createInitials(String sentence) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Split sentence into words using sentence.trim().split(\"\\\\s+\").\n• Append Character.toUpperCase(word.charAt(0)) to a StringBuilder for each word.",
+        "hiddenTestCases": [
+            {
+                "input": "lugaish",
+                "expectedOutput": "Initials: L"
+            },
+            {
+                "input": "creative learning system",
+                "expectedOutput": "Initials: CLS"
+            },
+            {
+                "input": "data   structures   and   algorithms",
+                "expectedOutput": "Initials: DSAA"
+            },
+            {
+                "input": "Object Oriented Programming",
+                "expectedOutput": "Initials: OOP"
+            },
+            {
+                "input": "java Virtual Machine",
+                "expectedOutput": "Initials: JVM"
+            },
+            {
+                "input": "a quick brown fox",
+                "expectedOutput": "Initials: AQBF"
+            },
+            {
+                "input": "hello world",
+                "expectedOutput": "Initials: HW"
+            },
+            {
+                "input": "computer science principles",
+                "expectedOutput": "Initials: CSP"
+            },
+            {
+                "input": "software engineering laboratory practice",
+                "expectedOutput": "Initials: SELP"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-76",
+        "number": "07",
+        "title": "Signal Noise Compressor",
+        "slug": "signal-noise-compressor",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Loops, Adjacent Character Comparison, StringBuilder",
+        "description": "A communication device sometimes receives repeated consecutive characters because of signal interference.\n\nTo simplify the message, the device removes consecutive duplicate characters, keeping only the first character of each consecutive group.\nNon-consecutive repeated characters must remain.\nThe comparison is case-sensitive.\n\nFor example: AAAbbCCCCaa becomes AbCa.\n\nWrite a Java program to generate the simplified signal.\n\nSuggested Method:\n`static String cleanSignal(String signal)`",
+        "inputFormat": "One non-empty string S.",
+        "outputFormat": "Print: Clean Signal: X",
+        "constraints": "1 ≤ Length of S ≤ 100000; English letters and digits only.",
+        "sampleTestCases": [
+            {
+                "input": "AAAbbCCCCaa",
+                "expectedOutput": "Clean Signal: AbCa",
+                "explanation": "Group 'AAA' -> 'A', 'bb' -> 'b', 'CCCC' -> 'C', 'aa' -> 'a'. Result: AbCa."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static String cleanSignal(String signal) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use StringBuilder to avoid O(N^2) string allocation overhead on long strings (up to 100,000 chars).\n• Append charAt(i) if i == 0 || charAt(i) != charAt(i - 1).",
+        "hiddenTestCases": [
+            {
+                "input": "Z",
+                "expectedOutput": "Clean Signal: Z"
+            },
+            {
+                "input": "AAAAAAAAAA",
+                "expectedOutput": "Clean Signal: A"
+            },
+            {
+                "input": "ABCDEF",
+                "expectedOutput": "Clean Signal: ABCDEF"
+            },
+            {
+                "input": "ABABAB",
+                "expectedOutput": "Clean Signal: ABABAB"
+            },
+            {
+                "input": "aAaA",
+                "expectedOutput": "Clean Signal: aAaA"
+            },
+            {
+                "input": "AAaa",
+                "expectedOutput": "Clean Signal: Aa"
+            },
+            {
+                "input": "11122333AAABB",
+                "expectedOutput": "Clean Signal: 123AB"
+            },
+            {
+                "input": "pqqqrrsssttu",
+                "expectedOutput": "Clean Signal: pqrstu"
+            },
+            {
+                "input": "abbcccddddeeeee",
+                "expectedOutput": "Clean Signal: abcde"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-77",
+        "number": "08",
+        "title": "Assessment Decision Engine",
+        "slug": "assessment-decision-engine",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Multiple Methods, Boolean Conditions, Return Values",
+        "description": "A technical training program evaluates students through three practical assessments.\n\nA student passes an assessment when the score is at least 40.\nThe final decision follows these rules:\n- If all three assessments are passed, the result is PASS.\n- If exactly one assessment is failed, the result is RETAKE.\n- If two or three assessments are failed, the result is FAIL.\n\nWrite a Java program that evaluates the three scores and prints the final decision.\nUse reusable methods for the evaluation logic.\n\nSuggested Methods:\n`static boolean passed(int score)`\n`static String evaluate(int a, int b, int c)`",
+        "inputFormat": "Three space-separated integers: A B C",
+        "outputFormat": "Print exactly one of: PASS, RETAKE, FAIL",
+        "constraints": "0 ≤ A, B, C ≤ 100",
+        "sampleTestCases": [
+            {
+                "input": "78 39 54",
+                "expectedOutput": "RETAKE",
+                "explanation": "Scores 78 and 54 are >= 40 (passed). Score 39 is < 40 (failed). Exactly one failed = RETAKE."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested methods:\n    // static boolean passed(int score) { ... }\n    // static String evaluate(int a, int b, int c) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Write a helper method passed(int score) that returns score >= 40.\n• Count passed assessments: 3 passed -> PASS, 2 passed -> RETAKE, <= 1 passed -> FAIL.",
+        "hiddenTestCases": [
+            {
+                "input": "80 90 100",
+                "expectedOutput": "PASS"
+            },
+            {
+                "input": "35 85 70",
+                "expectedOutput": "RETAKE"
+            },
+            {
+                "input": "90 20 80",
+                "expectedOutput": "RETAKE"
+            },
+            {
+                "input": "100 95 0",
+                "expectedOutput": "RETAKE"
+            },
+            {
+                "input": "20 30 85",
+                "expectedOutput": "FAIL"
+            },
+            {
+                "input": "75 10 39",
+                "expectedOutput": "FAIL"
+            },
+            {
+                "input": "0 10 25",
+                "expectedOutput": "FAIL"
+            },
+            {
+                "input": "40 40 40",
+                "expectedOutput": "PASS"
+            },
+            {
+                "input": "40 39 40",
+                "expectedOutput": "RETAKE"
+            },
+            {
+                "input": "39 39 40",
+                "expectedOutput": "FAIL"
+            },
+            {
+                "input": "100 100 100",
+                "expectedOutput": "PASS"
+            },
+            {
+                "input": "0 0 0",
+                "expectedOutput": "FAIL"
+            }
+        ]
+    },
+    {
+        "id": "java-meth-78",
+        "number": "09",
+        "title": "Prime Access Gate",
+        "slug": "prime-access-gate",
+        "language": "Java",
+        "categorySlug": "methods-functions",
+        "difficulty": "Hard",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Boolean Methods, Loops, Mathematical Logic",
+        "description": "A futuristic security system generates special access numbers.\n\nAn access number is considered valid when it is a prime number.\nA prime number is an integer greater than 1 that has exactly two positive divisors: 1 and itself.\n\nWrite a Java program that determines whether a given number is prime.\n\nSuggested Method:\n`static boolean isPrime(int n)`",
+        "inputFormat": "One integer N.",
+        "outputFormat": "Print PRIME if N is prime; otherwise print NOT_PRIME.",
+        "constraints": "0 ≤ N ≤ 1000000",
+        "sampleTestCases": [
+            {
+                "input": "29",
+                "expectedOutput": "PRIME",
+                "explanation": "29 has no divisors other than 1 and 29."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static boolean isPrime(int n) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Numbers <= 1 are not prime.\n• Check potential divisors from 2 up to sqrt(N) (i * i <= N) for efficient O(sqrt(N)) primality test.",
+        "hiddenTestCases": [
+            {
+                "input": "0",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "1",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "PRIME"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "PRIME"
+            },
+            {
+                "input": "17",
+                "expectedOutput": "PRIME"
+            },
+            {
+                "input": "4",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "9",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "15",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "25",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "49",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "100",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "999983",
+                "expectedOutput": "PRIME"
+            },
+            {
+                "input": "1000000",
+                "expectedOutput": "NOT_PRIME"
+            },
+            {
+                "input": "999999",
+                "expectedOutput": "NOT_PRIME"
+            }
+        ]
+    }
+],
+  "arrays": [
+    {
+        "id": "java-arr-80",
+        "number": "01",
+        "title": "First Minimum Locator",
+        "slug": "first-minimum-locator",
+        "language": "Java",
+        "categorySlug": "arrays",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Arrays, Methods, Minimum Value, Indexing",
+        "description": "A cold storage facility records temperature measurements from several monitoring devices.\n\nThe facility wants to identify the first device that reported the lowest temperature.\nEach device is represented by its zero-based position in the input sequence.\n\nIf the minimum temperature occurs more than once, report the index of its first occurrence.\n\nWrite a Java program to find the required index.\n\nSuggested Method:\n`static int firstMinimumIndex(int[] readings)`",
+        "inputFormat": "The first line contains integer N. The second line contains N space-separated integer temperatures.",
+        "outputFormat": "Print: First Minimum Index: X",
+        "constraints": "1 ≤ N ≤ 100000; -1000000000 ≤ Each temperature ≤ 1000000000",
+        "sampleTestCases": [
+            {
+                "input": "6\n4 -2 8 -2 3 7",
+                "expectedOutput": "First Minimum Index: 1",
+                "explanation": "Lowest temperature is -2. First occurrence is at index 1."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static int firstMinimumIndex(int[] readings) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Initialize minVal = readings[0] and minIdx = 0.\n• Use strictly less than (readings[i] < minVal) so that only earlier occurrences update the index.",
+        "hiddenTestCases": [
+            {
+                "input": "1\n42",
+                "expectedOutput": "First Minimum Index: 0"
+            },
+            {
+                "input": "4\n-10 0 5 10",
+                "expectedOutput": "First Minimum Index: 0"
+            },
+            {
+                "input": "5\n10 20 30 40 5",
+                "expectedOutput": "First Minimum Index: 4"
+            },
+            {
+                "input": "5\n3 1 4 1 5",
+                "expectedOutput": "First Minimum Index: 1"
+            },
+            {
+                "input": "4\n7 7 7 7",
+                "expectedOutput": "First Minimum Index: 0"
+            },
+            {
+                "input": "4\n-5 -20 -15 -20",
+                "expectedOutput": "First Minimum Index: 1"
+            },
+            {
+                "input": "3\n1000000000 -1000000000 0",
+                "expectedOutput": "First Minimum Index: 1"
+            },
+            {
+                "input": "6\n0 0 0 0 0 0",
+                "expectedOutput": "First Minimum Index: 0"
+            },
+            {
+                "input": "5\n-100 -200 -300 -400 -500",
+                "expectedOutput": "First Minimum Index: 4"
+            }
+        ]
+    },
+    {
+        "id": "java-arr-81",
+        "number": "02",
+        "title": "Second-Highest Distinct Score",
+        "slug": "second-highest-distinct-score",
+        "language": "Java",
+        "categorySlug": "arrays",
+        "difficulty": "Hard",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Arrays, Loops, Methods, Distinct Values",
+        "description": "A robotics tournament records scores from several participating teams.\n\nThe organizers want to determine the second-highest distinct score.\nRepeated occurrences of the same score do not create additional ranking positions.\n\nFor example, in the sequence 20 35 35 12, the highest distinct score is 35, and the second-highest distinct score is 20.\nIf all scores are identical, there is no second-highest distinct score.\n\nWrite a Java program that finds the result.\n\nSuggested Method:\n`static String findSecondHighest(int[] scores)`",
+        "inputFormat": "The first line contains integer N. The second line contains N space-separated integer scores.",
+        "outputFormat": "If a second-highest distinct score exists, print: Second Highest: X\nOtherwise, print: NONE",
+        "constraints": "2 ≤ N ≤ 100000; -1000000000 ≤ Each score ≤ 1000000000",
+        "sampleTestCases": [
+            {
+                "input": "7\n18 25 25 9 14 18 4",
+                "expectedOutput": "Second Highest: 18",
+                "explanation": "Distinct scores sorted descending: 25, 18, 14, 9, 4. Second highest is 18."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static String findSecondHighest(int[] scores) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Track highest and secondHighest variables, or sort unique scores.\n• Make sure to handle negative scores properly (e.g. initialize secondHighest with null or Long.MIN_VALUE).",
+        "hiddenTestCases": [
+            {
+                "input": "4\n10 10 10 10",
+                "expectedOutput": "NONE"
+            },
+            {
+                "input": "2\n-5 -5",
+                "expectedOutput": "NONE"
+            },
+            {
+                "input": "3\n50 100 50",
+                "expectedOutput": "Second Highest: 50"
+            },
+            {
+                "input": "2\n20 40",
+                "expectedOutput": "Second Highest: 20"
+            },
+            {
+                "input": "5\n99 99 99 50 20",
+                "expectedOutput": "Second Highest: 50"
+            },
+            {
+                "input": "4\n-10 -5 -20 -5",
+                "expectedOutput": "Second Highest: -10"
+            },
+            {
+                "input": "4\n100 80 60 40",
+                "expectedOutput": "Second Highest: 80"
+            },
+            {
+                "input": "4\n10 20 30 40",
+                "expectedOutput": "Second Highest: 30"
+            },
+            {
+                "input": "3\n1000000000 -1000000000 0",
+                "expectedOutput": "Second Highest: 0"
+            },
+            {
+                "input": "5\n-50 -40 -30 -20 -10",
+                "expectedOutput": "Second Highest: -20"
+            }
+        ]
+    },
+    {
+        "id": "java-arr-82",
+        "number": "03",
+        "title": "Temperature Range Analyzer",
+        "slug": "temperature-range-analyzer",
+        "language": "Java",
+        "categorySlug": "arrays",
+        "difficulty": "Hard",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Array Parameters, Minimum, Maximum, Long Arithmetic",
+        "description": "A planetary exploration robot collects temperature readings from several locations.\n\nScientists want to determine how much the temperature varies between the hottest and coldest recorded locations.\nThe temperature range is calculated by subtracting the minimum recorded temperature from the maximum recorded temperature.\n\nWrite a Java program that calculates the range.\n\nSuggested Method:\n`static long calculateRange(int[] temperatures)`",
+        "inputFormat": "The first line contains integer N. The second line contains N space-separated integer temperatures.",
+        "outputFormat": "Print: Temperature Range: X",
+        "constraints": "1 ≤ N ≤ 100000; -2000000000 ≤ Each temperature ≤ 2000000000",
+        "sampleTestCases": [
+            {
+                "input": "5\n-4 6 0 13 -8",
+                "expectedOutput": "Temperature Range: 21",
+                "explanation": "Max is 13, Min is -8. Range = 13 - (-8) = 21."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    // Suggested method:\n    // static long calculateRange(int[] temperatures) { ... }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Find max and min elements in the array.\n• The range (max - min) can exceed 32-bit signed int (up to 4,000,000,000); cast to long: (long) max - min.",
+        "hiddenTestCases": [
+            {
+                "input": "1\n55",
+                "expectedOutput": "Temperature Range: 0"
+            },
+            {
+                "input": "4\n-15 -15 -15 -15",
+                "expectedOutput": "Temperature Range: 0"
+            },
+            {
+                "input": "4\n-10 10 -20 20",
+                "expectedOutput": "Temperature Range: 40"
+            },
+            {
+                "input": "3\n-5 0 25",
+                "expectedOutput": "Temperature Range: 30"
+            },
+            {
+                "input": "3\n35 10 -5",
+                "expectedOutput": "Temperature Range: 40"
+            },
+            {
+                "input": "2\n2000000000 -2000000000",
+                "expectedOutput": "Temperature Range: 4000000000"
+            },
+            {
+                "input": "3\n1500000000 0 -1500000000",
+                "expectedOutput": "Temperature Range: 3000000000"
+            },
+            {
+                "input": "5\n100 200 500 1000 0",
+                "expectedOutput": "Temperature Range: 1000"
+            },
+            {
+                "input": "6\n-50 -100 -20 -80 -10 -5",
+                "expectedOutput": "Temperature Range: 95"
             }
         ]
     }
