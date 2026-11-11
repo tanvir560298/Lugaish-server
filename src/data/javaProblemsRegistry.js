@@ -36,6 +36,28 @@ export const JAVA_PRACTICE_TOPICS = [
     active: true
   },
   {
+    id: 'topic-04',
+    slug: 'loops-iterations',
+    title: 'Loops & Iterations',
+    language: 'Java',
+    level: 'Beginner',
+    description:
+      'Master loop control structures: for loops, while loops, do-while loops, sentinel loops, streak counters, and accumulators with practical coding challenges.',
+    icon: 'RefreshCw',
+    active: true
+  },
+  {
+    id: 'topic-05',
+    slug: 'nested-loops-pattern-printing',
+    title: 'Nested Loops & Pattern Printing',
+    language: 'Java',
+    level: 'Intermediate',
+    description:
+      'Master multi-dimensional iterations: star triangles, pyramids, border frames, radar diagonals, and number matrices with practical coding challenges.',
+    icon: 'Layers',
+    active: true
+  },
+  {
     id: 'topic-07',
     slug: 'strings-manipulation',
     title: 'Strings & String Manipulation',
@@ -884,58 +906,7 @@ public class Main {
       problemType: 'external',
       sourcePlatform: 'HackerRank',
       concepts: 'int, double, String',
-      externalUrl: 'https://www.hackerrank.com/challenges/java-stdin-stdout/problem',
-      description: `In this challenge, you must read an integer, a double, and a String from stdin, then print the values according to the instructions.
-
-Note: If you use the nextLine() method immediately following the nextInt() method, recall that nextInt() reads integer tokens; because of this, the newline character following the integer token is still in the buffer. Remember to clear the buffer with scan.nextLine() before reading your String.`,
-      inputFormat: `There are three lines of input:
-1. The first line contains an integer.
-2. The second line contains a double.
-3. The third line contains a String.`,
-      outputFormat: `There are three lines of output:
-1. On the first line, print String: followed by the unaltered String read from stdin.
-2. On the second line, print Double: followed by the unaltered double read from stdin.
-3. On the third line, print Int: followed by the unaltered integer read from stdin.`,
-      constraints: 'The integer fits in a standard 32-bit signed integer. The double is a valid floating point number. The String contains up to 100 printable characters.',
-      sampleTestCases: [
-        {
-          input: "42\n3.1415\nWelcome to HackerRank's Java tutorials!",
-          expectedOutput: "String: Welcome to HackerRank's Java tutorials!\nDouble: 3.1415\nInt: 42",
-          explanation: 'Reads integer 42, double 3.1415, clears buffer, reads full line string, and prints in the requested order.'
-        }
-      ],
-      hiddenTestCases: [
-        {
-          input: "42\n3.1415\nWelcome to HackerRank's Java tutorials!",
-          expectedOutput: "String: Welcome to HackerRank's Java tutorials!\nDouble: 3.1415\nInt: 42"
-        },
-        {
-          input: "100\n42.5\nJava is awesome",
-          expectedOutput: "String: Java is awesome\nDouble: 42.5\nInt: 100"
-        },
-        {
-          input: "1\n0.0\nLearning Java on Lugaish platform",
-          expectedOutput: "String: Learning Java on Lugaish platform\nDouble: 0.0\nInt: 1"
-        }
-      ],
-      starterCode: `import java.util.Scanner;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);
-        int i = scan.nextInt();
-        double d = scan.nextDouble();
-        scan.nextLine(); // Clear the newline character from the buffer
-        String s = scan.nextLine();
-
-        // Write your code here
-        
-    }
-}
-`,
-      timeLimit: 3,
-      memoryLimit: 128000,
-      notes: '• When using Scanner nextInt() or nextDouble(), the trailing newline character is left in the input buffer.\n• Call scan.nextLine() once to clear the newline before reading the full line string.'
+      externalUrl: 'https://www.hackerrank.com/challenges/java-stdin-stdout/problem'
     },
     {
       id: 'ext-bio-04',
@@ -3251,7 +3222,871 @@ public class Main {
           "memoryLimit": 128000,
           "notes": "• boolean hasDanger = s.toUpperCase().contains(\"DANGER\");\n• if (hasDanger && s.length() >= 15) -> HIGH_PRIORITY\n• else if (hasDanger) -> SHORT_ALERT\n• else -> NORMAL"
       }
-  ]
+  ],
+  "loops-iterations": [
+    {
+        "id": "java-loop-50",
+        "number": "01",
+        "title": "Rocket Launch Countdown",
+        "slug": "rocket-launch-countdown",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, Decrement",
+        "description": "A space research club is preparing a small model rocket for launch.\n\nBefore launching, the control screen must display a countdown starting from N and ending at 1.\n\nWrite a Java program that generates the countdown automatically.",
+        "inputFormat": "One positive integer N.",
+        "outputFormat": "Print all integers from N down to 1 on one line, separated by a single space.",
+        "constraints": "1 ≤ N ≤ 1000",
+        "sampleTestCases": [
+            {
+                "input": "5",
+                "expectedOutput": "5 4 3 2 1",
+                "explanation": "Countdown begins at 5 and counts down to 1 separated by spaces."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use a for loop starting at N and decrementing by 1 (i--) until i reaches 1.\\n• Print elements on a single line separated by spaces.",
+        "hiddenTestCases": [
+            {
+                "input": "1",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "2 1"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "3 2 1"
+            },
+            {
+                "input": "7",
+                "expectedOutput": "7 6 5 4 3 2 1"
+            },
+            {
+                "input": "10",
+                "expectedOutput": "10 9 8 7 6 5 4 3 2 1"
+            },
+            {
+                "input": "15",
+                "expectedOutput": "15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            },
+            {
+                "input": "25",
+                "expectedOutput": "25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            },
+            {
+                "input": "50",
+                "expectedOutput": "50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            },
+            {
+                "input": "100",
+                "expectedOutput": "100 99 98 97 96 95 94 93 92 91 90 89 88 87 86 85 84 83 82 81 80 79 78 77 76 75 74 73 72 71 70 69 68 67 66 65 64 63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-51",
+        "number": "02",
+        "title": "Every Third Lamp",
+        "slug": "every-third-lamp",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, Modulus, Conditional Statements",
+        "description": "A long corridor contains N lamps numbered from 1 to N.\n\nAn automatic maintenance system must inspect every lamp whose number is divisible by 3.\n\nWrite a program to display the numbers of all lamps requiring inspection.\n\nIf no lamp qualifies, display NONE.",
+        "inputFormat": "One positive integer N.",
+        "outputFormat": "Print the qualifying lamp numbers in ascending order, separated by a single space. If there are no qualifying lamps, print NONE.",
+        "constraints": "1 ≤ N ≤ 1000",
+        "sampleTestCases": [
+            {
+                "input": "11",
+                "expectedOutput": "3 6 9",
+                "explanation": "Lamps 3, 6, and 9 are less than or equal to 11 and divisible by 3."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Check each lamp number i from 1 to N using the modulo operator (i % 3 == 0).\\n• If no lamp qualifies (when N < 3), print NONE.",
+        "hiddenTestCases": [
+            {
+                "input": "1",
+                "expectedOutput": "NONE"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "NONE"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "3"
+            },
+            {
+                "input": "5",
+                "expectedOutput": "3"
+            },
+            {
+                "input": "6",
+                "expectedOutput": "3 6"
+            },
+            {
+                "input": "12",
+                "expectedOutput": "3 6 9 12"
+            },
+            {
+                "input": "20",
+                "expectedOutput": "3 6 9 12 15 18"
+            },
+            {
+                "input": "30",
+                "expectedOutput": "3 6 9 12 15 18 21 24 27 30"
+            },
+            {
+                "input": "50",
+                "expectedOutput": "3 6 9 12 15 18 21 24 27 30 33 36 39 42 45 48"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-52",
+        "number": "03",
+        "title": "The Growing Coin Jar",
+        "slug": "the-growing-coin-jar",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, Accumulator, Multiplication",
+        "description": "A student starts a creative saving challenge.\n\nOn day 1, the student adds 1 coin to a jar.\nOn day 2, the student adds 4 coins.\nOn day 3, the student adds 9 coins.\n\nThe number of coins added on day i is equal to i multiplied by i.\n\nCalculate the total number of coins saved after N days.",
+        "inputFormat": "One positive integer N representing the number of days.",
+        "outputFormat": "Print: Total Coins: X",
+        "constraints": "1 ≤ N ≤ 100000",
+        "sampleTestCases": [
+            {
+                "input": "4",
+                "expectedOutput": "Total Coins: 30",
+                "explanation": "Day 1 (1) + Day 2 (4) + Day 3 (9) + Day 4 (16) = 30 coins."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• For large N (up to 100,000), total coins will exceed the 32-bit integer limit (2^31 - 1).\\n• Use 64-bit integer type (long) for accumulator: long total = 0; total += (long) i * i;\\n• Print in exact format: Total Coins: X",
+        "hiddenTestCases": [
+            {
+                "input": "1",
+                "expectedOutput": "Total Coins: 1"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "Total Coins: 5"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "Total Coins: 14"
+            },
+            {
+                "input": "5",
+                "expectedOutput": "Total Coins: 55"
+            },
+            {
+                "input": "10",
+                "expectedOutput": "Total Coins: 385"
+            },
+            {
+                "input": "50",
+                "expectedOutput": "Total Coins: 42925"
+            },
+            {
+                "input": "100",
+                "expectedOutput": "Total Coins: 338350"
+            },
+            {
+                "input": "1000",
+                "expectedOutput": "Total Coins: 333833500"
+            },
+            {
+                "input": "100000",
+                "expectedOutput": "Total Coins: 333338333350000"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-53",
+        "number": "04",
+        "title": "Meteor Signal Monitor",
+        "slug": "meteor-signal-monitor",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "While Loop, Sentinel Input, Counting, Maximum Value",
+        "description": "A meteor observation station receives signal strength readings one at a time.\n\nEach reading is an integer between 0 and 100.\nA reading is considered strong when its value is at least 70.\n\nThe station must determine:\n1. How many strong readings were received.\n2. The highest signal strength recorded.\n\nThe reading -1 indicates that data transmission has ended and must not be included.\nIf no readings were received, the highest signal strength is considered 0.",
+        "inputFormat": "A sequence of integers ending with -1. The integers may appear on one or multiple lines.",
+        "outputFormat": "Print:\\nStrong Signals: X\\nPeak Signal: Y",
+        "constraints": "Each actual reading is between 0 and 100. The final value is always -1. There are at most 10000 actual readings. The input may contain no readings before -1.",
+        "sampleTestCases": [
+            {
+                "input": "12 76 42 100 -1",
+                "expectedOutput": "Strong Signals: 2\\nPeak Signal: 100",
+                "explanation": "Readings 76 and 100 are >= 70 (2 strong). Highest reading is 100. -1 terminates the loop."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use a while loop reading integers until encountering -1: while (sc.hasNextInt()) { int val = sc.nextInt(); if (val == -1) break; ... }\\n• If no valid readings precede -1, Peak Signal is 0 and Strong Signals is 0.",
+        "hiddenTestCases": [
+            {
+                "input": "-1",
+                "expectedOutput": "Strong Signals: 0\\nPeak Signal: 0"
+            },
+            {
+                "input": "15 40 55 69 0 -1",
+                "expectedOutput": "Strong Signals: 0\\nPeak Signal: 15"
+            },
+            {
+                "input": "70 -1",
+                "expectedOutput": "Strong Signals: 1\\nPeak Signal: 70"
+            },
+            {
+                "input": "10\n85\n60\n92\n-1",
+                "expectedOutput": "Strong Signals: 0\\nPeak Signal: 10"
+            },
+            {
+                "input": "0 0 0 -1",
+                "expectedOutput": "Strong Signals: 0\\nPeak Signal: 0"
+            },
+            {
+                "input": "70 80 90 100 -1",
+                "expectedOutput": "Strong Signals: 1\\nPeak Signal: 70"
+            },
+            {
+                "input": "65 -1",
+                "expectedOutput": "Strong Signals: 0\\nPeak Signal: 65"
+            },
+            {
+                "input": "95 20 88 14 70 30 -1",
+                "expectedOutput": "Strong Signals: 1\\nPeak Signal: 95"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-54",
+        "number": "05",
+        "title": "Secure Terminal Attempts",
+        "slug": "secure-terminal-attempts",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Do-While Loop, Repetition, Equality Checking",
+        "description": "A private computer terminal is protected by a four-digit access PIN.\n\nA user enters a sequence of PIN attempts until the correct PIN is entered.\n\nThe system must count the total number of attempts required to unlock the terminal.\n\nThe correct PIN is supplied first, followed by the attempted PIN values.\nThe input is guaranteed to contain the correct PIN eventually.",
+        "inputFormat": "The first integer is the correct PIN. The remaining integers are the user PIN attempts, in chronological order. Input ends with the first correct attempt.",
+        "outputFormat": "Print: Attempts: X",
+        "constraints": "1000 ≤ Correct PIN ≤ 9999; 1000 ≤ Each attempted PIN ≤ 9999; 1 ≤ Number of attempts ≤ 100",
+        "sampleTestCases": [
+            {
+                "input": "4926\\n1234 2222 4926",
+                "expectedOutput": "Attempts: 3",
+                "explanation": "Correct PIN is 4926. Attempts are 1234, 2222, and 4926. It took 3 attempts to succeed."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Read the correct PIN first: int correctPin = sc.nextInt();\\n• Increment attempts counter on each attempt until attempted == correctPin.\\n• Include the final successful attempt in the total count.",
+        "hiddenTestCases": [
+            {
+                "input": "5555\\n5555",
+                "expectedOutput": "Attempts: 0"
+            },
+            {
+                "input": "1234\\n9999 1234",
+                "expectedOutput": "Attempts: 0"
+            },
+            {
+                "input": "7777\\n1111 1111 2222 3333 7777",
+                "expectedOutput": "Attempts: 0"
+            },
+            {
+                "input": "8421 1000 2000 3000 4000 8421",
+                "expectedOutput": "Attempts: 0"
+            },
+            {
+                "input": "3141\\n9876 5432 1024 3141",
+                "expectedOutput": "Attempts: 0"
+            },
+            {
+                "input": "6543\\n1111 2222 3333 4444 5555 6543",
+                "expectedOutput": "Attempts: 0"
+            },
+            {
+                "input": "9090\\n1001 1002 1003 1004 1005 1006 1007 1008 1009 9090",
+                "expectedOutput": "Attempts: 0"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-55",
+        "number": "06",
+        "title": "Motion Sensor Summary",
+        "slug": "motion-sensor-summary",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, If-Else, Multiple Counters",
+        "description": "A robotics laboratory collects N movement measurements.\n\nEach measurement is an integer.\n- A positive value indicates forward movement.\n- A negative value indicates backward movement.\n- Zero indicates no movement.\n\nWrite a program that counts how many measurements belong to each category.",
+        "inputFormat": "The first line contains integer N. The next line contains N space-separated integers.",
+        "outputFormat": "Print exactly:\\nForward: X\\nBackward: Y\\nStationary: Z",
+        "constraints": "1 ≤ N ≤ 100000; -1000000 ≤ Each measurement ≤ 1000000",
+        "sampleTestCases": [
+            {
+                "input": "7\\n4 -2 0 9 -7 0 1",
+                "expectedOutput": "Forward: 3\\nBackward: 2\\nStationary: 2",
+                "explanation": "Positive values (4, 9, 1) = 3 forward. Negative values (-2, -7) = 2 backward. Zeroes (0, 0) = 2 stationary."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Read N first, then iterate N times reading each movement reading.\\n• Maintain 3 separate counters initialized to 0 and print each on its own line.",
+        "hiddenTestCases": [
+            {
+                "input": "1\\n45",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 1"
+            },
+            {
+                "input": "1\\n-99",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 1"
+            },
+            {
+                "input": "1\\n0",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 1"
+            },
+            {
+                "input": "4\\n10 20 30 40",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 4"
+            },
+            {
+                "input": "3\\n-5 -15 -25",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 3"
+            },
+            {
+                "input": "4\\n0 0 0 0",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 4"
+            },
+            {
+                "input": "5\\n1000000 -1000000 0 500000 -250000",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 5"
+            },
+            {
+                "input": "6\\n1\\n-1\\n0\\n2\\n-2\\n0",
+                "expectedOutput": "Forward: 0\\nBackward: 0\\nStationary: 6"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-56",
+        "number": "07",
+        "title": "Battery Upgrade Cycles",
+        "slug": "battery-upgrade-cycles",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "While Loop, Repeated Addition, Termination Conditions",
+        "description": "A technician is upgrading an experimental robot battery system.\n\nThe battery currently has P energy units.\nEach upgrade cycle adds exactly G energy units.\nThe technician wants the battery to reach at least T energy units.\n\nCalculate the minimum number of upgrade cycles required and the final energy level after those cycles.",
+        "inputFormat": "Three integers: P G T\\nWhere: P = Current energy, G = Energy added per cycle, T = Required target energy.",
+        "outputFormat": "Print:\\nCycles: X\\nFinal Energy: Y",
+        "constraints": "0 ≤ P ≤ T ≤ 1000000; 1 ≤ G ≤ 1000000",
+        "sampleTestCases": [
+            {
+                "input": "17 6 40",
+                "expectedOutput": "Cycles: 4\\nFinal Energy: 41",
+                "explanation": "17 + 6 = 23 (1), + 6 = 29 (2), + 6 = 35 (3), + 6 = 41 (4). 4 cycles to reach >= 40."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• If current energy P already equals target T, 0 cycles are required and final energy equals P.\\n• Loop condition: while (energy < T) { energy += G; cycles++; }",
+        "hiddenTestCases": [
+            {
+                "input": "50 10 50",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "0 5 0",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "10 10 20",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "0 25 100",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "5 20 15",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "100 5000 2000",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "93 1 100",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            },
+            {
+                "input": "22 7 60",
+                "expectedOutput": "Cycles: 0\\nFinal Energy: NaN"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-57",
+        "number": "08",
+        "title": "Digital Signal Switch Counter",
+        "slug": "digital-signal-switch-counter",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, String Traversal, Character Comparison",
+        "description": "A digital communication device records a signal as a sequence of zeros and ones.\n\nThe signal is considered to have switched whenever two consecutive characters are different.\n\nWrite a program that counts the total number of signal switches.\n\nFor example, switching from 0 to 1 or from 1 to 0 counts as one switch. Repeated identical digits do not count as switches.",
+        "inputFormat": "One string S containing only the characters 0 and 1.",
+        "outputFormat": "Print: Switches: X",
+        "constraints": "1 ≤ Length of S ≤ 100000",
+        "sampleTestCases": [
+            {
+                "input": "001110010",
+                "expectedOutput": "Switches: 4",
+                "explanation": "Transitions occur at 0->1 (idx 1 to 2), 1->0 (idx 4 to 5), 0->1 (idx 6 to 7), and 1->0 (idx 7 to 8). Total = 4 switches."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Traverse the string with a for loop from index 1 to S.length() - 1.\\n• Compare charAt(i) with charAt(i - 1). If different, increment the switch count.",
+        "hiddenTestCases": [
+            {
+                "input": "0",
+                "expectedOutput": "Switches: 0"
+            },
+            {
+                "input": "1",
+                "expectedOutput": "Switches: 0"
+            },
+            {
+                "input": "0000000",
+                "expectedOutput": "Switches: 0"
+            },
+            {
+                "input": "1111111",
+                "expectedOutput": "Switches: 0"
+            },
+            {
+                "input": "010101",
+                "expectedOutput": "Switches: 5"
+            },
+            {
+                "input": "101010",
+                "expectedOutput": "Switches: 5"
+            },
+            {
+                "input": "00001111",
+                "expectedOutput": "Switches: 1"
+            },
+            {
+                "input": "111000",
+                "expectedOutput": "Switches: 1"
+            },
+            {
+                "input": "100110011",
+                "expectedOutput": "Switches: 4"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-58",
+        "number": "09",
+        "title": "Even Square Energy",
+        "slug": "even-square-energy",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, Modulus, Accumulation, Long Integers",
+        "description": "A computing machine generates energy points based on numbered stations.\n\nOnly stations with even numbers contribute energy.\nA station numbered i contributes i multiplied by i energy points.\n\nGiven the total number of stations N, calculate the combined energy produced by all even-numbered stations from 1 to N.",
+        "inputFormat": "One positive integer N.",
+        "outputFormat": "Print: Energy: X",
+        "constraints": "1 ≤ N ≤ 100000",
+        "sampleTestCases": [
+            {
+                "input": "6",
+                "expectedOutput": "Energy: 56",
+                "explanation": "Stations 2, 4, and 6 contribute 4, 16, and 36 energy points. Total = 4 + 16 + 36 = 56."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Increment by 2 in your loop (for (long i = 2; i <= N; i += 2)) or check if i % 2 == 0.\\n• Use 64-bit long integer for energy accumulator to prevent integer overflow.",
+        "hiddenTestCases": [
+            {
+                "input": "1",
+                "expectedOutput": "Energy: 0"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "Energy: 4"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "Energy: 4"
+            },
+            {
+                "input": "4",
+                "expectedOutput": "Energy: 20"
+            },
+            {
+                "input": "5",
+                "expectedOutput": "Energy: 20"
+            },
+            {
+                "input": "10",
+                "expectedOutput": "Energy: 220"
+            },
+            {
+                "input": "20",
+                "expectedOutput": "Energy: 1540"
+            },
+            {
+                "input": "100",
+                "expectedOutput": "Energy: 171700"
+            },
+            {
+                "input": "100000",
+                "expectedOutput": "Energy: 166671666700000"
+            }
+        ]
+    },
+    {
+        "id": "java-loop-59",
+        "number": "10",
+        "title": "Fitness Streak Analyzer",
+        "slug": "fitness-streak-analyzer",
+        "language": "Java",
+        "categorySlug": "loops-iterations",
+        "difficulty": "Hard",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "For Loop, Conditional Counting, Running Maximum",
+        "description": "A fitness application records the number of exercise minutes completed each day.\n\nA day is considered successful if the student exercises for at least 30 minutes.\nThe application wants to determine the longest sequence of consecutive successful days.\n\nAn unsuccessful day resets the current streak to zero.\n\nWrite a program that calculates the longest successful streak.",
+        "inputFormat": "The first line contains integer N, representing the number of days. The second line contains N integers representing exercise minutes for each day.",
+        "outputFormat": "Print: Longest Streak: X",
+        "constraints": "1 ≤ N ≤ 100000; 0 ≤ Exercise minutes per day ≤ 1440",
+        "sampleTestCases": [
+            {
+                "input": "8\\n31 45 20 30 30 50 0 35",
+                "expectedOutput": "Longest Streak: 3",
+                "explanation": "Streaks of consecutive >= 30 days are [31, 45] (length 2), [30, 30, 50] (length 3), and [35] (length 1). Longest streak is 3."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Track two variables: currentStreak and maxStreak.\\n• When minutes >= 30, increment currentStreak and update maxStreak = Math.max(maxStreak, currentStreak).\\n• When minutes < 30, reset currentStreak = 0.",
+        "hiddenTestCases": [
+            {
+                "input": "1\\n29",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "1\\n30",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "5\\n10 15 20 25 29",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "5\\n30 45 60 90 120",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "6\\n40 45 50 10 20 25",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "6\\n15 20 10 35 40 45",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "7\\n35 35 10 40 40 15 30",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "5\\n0 120 0 0 0",
+                "expectedOutput": "Longest Streak: 0"
+            },
+            {
+                "input": "6\\n30 20 30 20 30 20",
+                "expectedOutput": "Longest Streak: 0"
+            }
+        ]
+    }
+],
+  "nested-loops-pattern-printing": [
+    {
+        "id": "java-nl-60",
+        "number": "15",
+        "title": "Pixel Art Frame",
+        "slug": "pixel-art-frame",
+        "language": "Java",
+        "categorySlug": "nested-loops-pattern-printing",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Nested Loops, Row and Column Conditions",
+        "description": "A digital artist wants to create a rectangular pixel frame.\n\nThe frame must have R rows and C columns.\nThe outer border must use the # character.\nEvery position inside the border must use the . character.\n\nWrite a program that prints the requested frame.",
+        "inputFormat": "Two integers: R C\\nWhere R represents the number of rows and C represents the number of columns.",
+        "outputFormat": "Print exactly R lines, each containing exactly C characters.",
+        "constraints": "2 ≤ R, C ≤ 30",
+        "sampleTestCases": [
+            {
+                "input": "4 6",
+                "expectedOutput": "######\\n#....#\\n#....#\\n######",
+                "explanation": "Frame of 4 rows and 6 columns. Outer border has # and inner area has . characters."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use nested loops: outer loop runs for r from 0 to R - 1, inner loop for c from 0 to C - 1.\\n• Print # if (r == 0 || r == R - 1 || c == 0 || c == C - 1); otherwise print ..",
+        "hiddenTestCases": [
+            {
+                "input": "2 2",
+                "expectedOutput": ""
+            },
+            {
+                "input": "2 5",
+                "expectedOutput": ""
+            },
+            {
+                "input": "5 2",
+                "expectedOutput": ""
+            },
+            {
+                "input": "3 3",
+                "expectedOutput": ""
+            },
+            {
+                "input": "5 4",
+                "expectedOutput": ""
+            },
+            {
+                "input": "6 6",
+                "expectedOutput": ""
+            },
+            {
+                "input": "7 10",
+                "expectedOutput": ""
+            }
+        ]
+    },
+    {
+        "id": "java-nl-61",
+        "number": "16",
+        "title": "Double Diagonal Radar",
+        "slug": "double-diagonal-radar",
+        "language": "Java",
+        "categorySlug": "nested-loops-pattern-printing",
+        "difficulty": "Hard",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Nested Loops, Row/Column Indexing, Conditional Expressions",
+        "description": "A radar display uses a square grid of size N by N.\n\nThe display must mark both diagonals using the character X.\nAll remaining positions must contain a dot (.).\n\nThe first diagonal runs from the top-left corner to the bottom-right corner.\nThe second diagonal runs from the top-right corner to the bottom-left corner.\n\nWrite a program that generates the radar pattern.",
+        "inputFormat": "One positive integer N.",
+        "outputFormat": "Print N lines, each containing exactly N characters.",
+        "constraints": "1 ≤ N ≤ 30",
+        "sampleTestCases": [
+            {
+                "input": "5",
+                "expectedOutput": "X...X\\n.X.X.\\n..X..\\n.X.X.\\nX...X",
+                "explanation": "5x5 grid with X on both main diagonal (r == c) and anti-diagonal (r + c == 4). Center position (2,2) contains a single X."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• In an N x N grid with 0-based indices (r, c), the main diagonal is r == c and anti-diagonal is r + c == N - 1.\\n• When both conditions hold (e.g., center of odd N), print a single X.",
+        "hiddenTestCases": [
+            {
+                "input": "1",
+                "expectedOutput": "X"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "XX\\nXX"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "X.X\\n.X.\\nX.X"
+            },
+            {
+                "input": "4",
+                "expectedOutput": "X..X\\n.XX.\\n.XX.\\nX..X"
+            },
+            {
+                "input": "6",
+                "expectedOutput": "X....X\\n.X..X.\\n..XX..\\n..XX..\\n.X..X.\\nX....X"
+            },
+            {
+                "input": "7",
+                "expectedOutput": "X.....X\\n.X...X.\\n..X.X..\\n...X...\\n..X.X..\\n.X...X.\\nX.....X"
+            },
+            {
+                "input": "8",
+                "expectedOutput": "X......X\\n.X....X.\\n..X..X..\\n...XX...\\n...XX...\\n..X..X..\\n.X....X.\\nX......X"
+            }
+        ]
+    }
+],
+  "nested-loops": [
+    {
+        "id": "java-nl-60",
+        "number": "15",
+        "title": "Pixel Art Frame",
+        "slug": "pixel-art-frame",
+        "language": "Java",
+        "categorySlug": "nested-loops-pattern-printing",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Nested Loops, Row and Column Conditions",
+        "description": "A digital artist wants to create a rectangular pixel frame.\n\nThe frame must have R rows and C columns.\nThe outer border must use the # character.\nEvery position inside the border must use the . character.\n\nWrite a program that prints the requested frame.",
+        "inputFormat": "Two integers: R C\\nWhere R represents the number of rows and C represents the number of columns.",
+        "outputFormat": "Print exactly R lines, each containing exactly C characters.",
+        "constraints": "2 ≤ R, C ≤ 30",
+        "sampleTestCases": [
+            {
+                "input": "4 6",
+                "expectedOutput": "######\\n#....#\\n#....#\\n######",
+                "explanation": "Frame of 4 rows and 6 columns. Outer border has # and inner area has . characters."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use nested loops: outer loop runs for r from 0 to R - 1, inner loop for c from 0 to C - 1.\\n• Print # if (r == 0 || r == R - 1 || c == 0 || c == C - 1); otherwise print ..",
+        "hiddenTestCases": [
+            {
+                "input": "2 2",
+                "expectedOutput": ""
+            },
+            {
+                "input": "2 5",
+                "expectedOutput": ""
+            },
+            {
+                "input": "5 2",
+                "expectedOutput": ""
+            },
+            {
+                "input": "3 3",
+                "expectedOutput": ""
+            },
+            {
+                "input": "5 4",
+                "expectedOutput": ""
+            },
+            {
+                "input": "6 6",
+                "expectedOutput": ""
+            },
+            {
+                "input": "7 10",
+                "expectedOutput": ""
+            }
+        ]
+    },
+    {
+        "id": "java-nl-61",
+        "number": "16",
+        "title": "Double Diagonal Radar",
+        "slug": "double-diagonal-radar",
+        "language": "Java",
+        "categorySlug": "nested-loops-pattern-printing",
+        "difficulty": "Hard",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "concepts": "Nested Loops, Row/Column Indexing, Conditional Expressions",
+        "description": "A radar display uses a square grid of size N by N.\n\nThe display must mark both diagonals using the character X.\nAll remaining positions must contain a dot (.).\n\nThe first diagonal runs from the top-left corner to the bottom-right corner.\nThe second diagonal runs from the top-right corner to the bottom-left corner.\n\nWrite a program that generates the radar pattern.",
+        "inputFormat": "One positive integer N.",
+        "outputFormat": "Print N lines, each containing exactly N characters.",
+        "constraints": "1 ≤ N ≤ 30",
+        "sampleTestCases": [
+            {
+                "input": "5",
+                "expectedOutput": "X...X\\n.X.X.\\n..X..\\n.X.X.\\nX...X",
+                "explanation": "5x5 grid with X on both main diagonal (r == c) and anti-diagonal (r + c == 4). Center position (2,2) contains a single X."
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• In an N x N grid with 0-based indices (r, c), the main diagonal is r == c and anti-diagonal is r + c == N - 1.\\n• When both conditions hold (e.g., center of odd N), print a single X.",
+        "hiddenTestCases": [
+            {
+                "input": "1",
+                "expectedOutput": "X"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "XX\\nXX"
+            },
+            {
+                "input": "3",
+                "expectedOutput": "X.X\\n.X.\\nX.X"
+            },
+            {
+                "input": "4",
+                "expectedOutput": "X..X\\n.XX.\\n.XX.\\nX..X"
+            },
+            {
+                "input": "6",
+                "expectedOutput": "X....X\\n.X..X.\\n..XX..\\n..XX..\\n.X..X.\\nX....X"
+            },
+            {
+                "input": "7",
+                "expectedOutput": "X.....X\\n.X...X.\\n..X.X..\\n...X...\\n..X.X..\\n.X...X.\\nX.....X"
+            },
+            {
+                "input": "8",
+                "expectedOutput": "X......X\\n.X....X.\\n..X..X..\\n...XX...\\n...XX...\\n..X..X..\\n.X....X.\\nX......X"
+            }
+        ]
+    }
+]
 };
 
 /**
