@@ -61,7 +61,7 @@ test('Topic metadata is accurately configured for Java practice topics', () => {
   const topic6 = getTopicBySlug('arrays');
   assert.ok(topic6);
   assert.equal(topic6.title, 'Arrays');
-  assert.equal(topic6.problemCount, 3);
+  assert.equal(topic6.problemCount, 15);
 
   const topic7 = getTopicBySlug('strings-manipulation');
   assert.ok(topic7);

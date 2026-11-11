@@ -4940,6 +4940,827 @@ public class Main {
             }
         ]
     }
+,
+{
+    "id": "java-arr-83",
+    "number": "04",
+    "title": "Alternate Shelf Display",
+    "slug": "alternate-shelf-display",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Array Indexing, Traversal, For Loops",
+    "description": "A museum organizes digital exhibits in a numbered sequence.\n\nTo create a special visitor experience, the display system first shows the exhibits at even zero-based indexes.\nAfterward, it shows the exhibits at odd zero-based indexes.\n\nThe original order within each group must be preserved.\n\nWrite a Java program that generates the new display sequence.",
+    "inputFormat": "The first line contains an integer N representing the number of exhibits. The second line contains N space-separated integers representing exhibit IDs.",
+    "outputFormat": "Print the reordered exhibit IDs on one line, separated by spaces.",
+    "constraints": "1 ≤ N ≤ 100000; 1 ≤ Each exhibit ID ≤ 1000000",
+    "sampleTestCases": [
+        {
+            "input": "7\n11 22 33 44 55 66 77",
+            "expectedOutput": "11 33 55 77 22 44 66",
+            "explanation": "Even indices (0, 2, 4, 6) give 11, 33, 55, 77. Odd indices (1, 3, 5) give 22, 44, 66."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextInt();\n        }\n\n        // Print even indexes first, then odd indexes\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Use two separate passes: first iterate with i += 2 starting at 0, then with i += 2 starting at 1.\n• Format with single space between consecutive numbers.",
+    "hiddenTestCases": [
+        {
+            "input": "1\n42",
+            "expectedOutput": "42"
+        },
+        {
+            "input": "2\n99 100",
+            "expectedOutput": "99 100"
+        },
+        {
+            "input": "4\n10 20 30 40",
+            "expectedOutput": "10 30 20 40"
+        },
+        {
+            "input": "5\n1 2 3 4 5",
+            "expectedOutput": "1 3 5 2 4"
+        },
+        {
+            "input": "6\n7 7 8 8 7 8",
+            "expectedOutput": "7 8 7 7 8 8"
+        },
+        {
+            "input": "8\n100 200 300 400 500 600 700 800",
+            "expectedOutput": "100 300 500 700 200 400 600 800"
+        },
+        {
+            "input": "3\n500000 600000 700000",
+            "expectedOutput": "500000 700000 600000"
+        },
+        {
+            "input": "9\n10 11 12 13 14 15 16 17 18",
+            "expectedOutput": "10 12 14 16 18 11 13 15 17"
+        },
+        {
+            "input": "10\n1 1 2 2 3 3 4 4 5 5",
+            "expectedOutput": "1 2 3 4 5 1 2 3 4 5"
+        }
+    ]
+},
+{
+    "id": "java-arr-84",
+    "number": "05",
+    "title": "Heat Alert Index",
+    "slug": "heat-alert-index",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Linear Search, Conditional Counting",
+    "description": "A manufacturing factory has several temperature sensors.\nEach sensor reports a temperature reading.\n\nThe factory defines an alert threshold T.\nAny sensor reporting a temperature strictly greater than T is considered overheated.\n\nYour task is to determine:\n1. How many sensors are overheated.\n2. The zero-based index of the first overheated sensor.\n\nIf no sensor is overheated, report -1 as the first index.",
+    "inputFormat": "The first line contains two integers: N T. The second line contains N space-separated temperature readings.",
+    "outputFormat": "Print:\nAlerts: X\nFirst Alert Index: Y",
+    "constraints": "1 ≤ N ≤ 100000; -100000 ≤ T ≤ 100000; -100000 ≤ Each reading ≤ 100000",
+    "sampleTestCases": [
+        {
+            "input": "6 30\n18 31 35 30 45 20",
+            "expectedOutput": "Alerts: 3\nFirst Alert Index: 1",
+            "explanation": "Readings > 30 are 31 (index 1), 35 (index 2), and 45 (index 4). Total = 3, first index = 1."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int t = sc.nextInt();\n        int[] readings = new int[n];\n        for (int i = 0; i < n; i++) {\n            readings[i] = sc.nextInt();\n        }\n\n        // Write your code here\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Readings equal to T are not alerts (reading > T is strictly required).\n• Initialize firstIndex = -1 and set it on the first reading > T encountered.",
+    "hiddenTestCases": [
+        {
+            "input": "4 25\n20 25 15 22",
+            "expectedOutput": "Alerts: 0\nFirst Alert Index: -1"
+        },
+        {
+            "input": "3 10\n15 5 2",
+            "expectedOutput": "Alerts: 1\nFirst Alert Index: 0"
+        },
+        {
+            "input": "4 50\n10 20 30 55",
+            "expectedOutput": "Alerts: 1\nFirst Alert Index: 3"
+        },
+        {
+            "input": "3 0\n0 0 0",
+            "expectedOutput": "Alerts: 0\nFirst Alert Index: -1"
+        },
+        {
+            "input": "5 -10\n-20 -10 -5 -8 -15",
+            "expectedOutput": "Alerts: 2\nFirst Alert Index: 2"
+        },
+        {
+            "input": "1 100\n100",
+            "expectedOutput": "Alerts: 0\nFirst Alert Index: -1"
+        },
+        {
+            "input": "1 100\n101",
+            "expectedOutput": "Alerts: 1\nFirst Alert Index: 0"
+        },
+        {
+            "input": "6 -50\n-60 -50 -49 -48 -51 -47",
+            "expectedOutput": "Alerts: 3\nFirst Alert Index: 2"
+        },
+        {
+            "input": "7 0\n1 2 3 4 5 6 7",
+            "expectedOutput": "Alerts: 7\nFirst Alert Index: 0"
+        },
+        {
+            "input": "5 10\n5 8 9 10 9",
+            "expectedOutput": "Alerts: 0\nFirst Alert Index: -1"
+        }
+    ]
+},
+{
+    "id": "java-arr-85",
+    "number": "06",
+    "title": "Battery Transaction Log",
+    "slug": "battery-transaction-log",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Array Traversal, Accumulation, Long Integers",
+    "description": "A robotic charging station records changes to its stored energy.\nEvery transaction is represented by an integer:\n• A positive value represents energy added.\n• A negative value represents energy consumed.\n• Zero represents no change.\n\nThe station wants to calculate the net change in energy and count the transactions that caused no change.\n\nWrite a Java program that produces this summary.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated integers representing energy transactions.",
+    "outputFormat": "Print:\nNet Change: X\nNo Change Events: Y",
+    "constraints": "1 ≤ N ≤ 100000; -1000000000 ≤ Each transaction ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "6\n8 -3 0 -7 12 0",
+            "expectedOutput": "Net Change: 10\nNo Change Events: 2",
+            "explanation": "8 + (-3) + 0 + (-7) + 12 + 0 = 10. There are 2 zero transactions."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n\n        // Write your code here (use long for sum)\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• The net sum can exceed 32-bit int bounds: use a long accumulator initialized to 0L.\n• Count how many transactions equal 0.",
+    "hiddenTestCases": [
+        {
+            "input": "3\n10 20 30",
+            "expectedOutput": "Net Change: 60\nNo Change Events: 0"
+        },
+        {
+            "input": "3\n-5 -15 -20",
+            "expectedOutput": "Net Change: -40\nNo Change Events: 0"
+        },
+        {
+            "input": "4\n0 0 0 0",
+            "expectedOutput": "Net Change: 0\nNo Change Events: 4"
+        },
+        {
+            "input": "1\n5",
+            "expectedOutput": "Net Change: 5\nNo Change Events: 0"
+        },
+        {
+            "input": "1\n0",
+            "expectedOutput": "Net Change: 0\nNo Change Events: 1"
+        },
+        {
+            "input": "4\n1000000000 1000000000 1000000000 0",
+            "expectedOutput": "Net Change: 3000000000\nNo Change Events: 1"
+        },
+        {
+            "input": "4\n-1000000000 -1000000000 -1000000000 0",
+            "expectedOutput": "Net Change: -3000000000\nNo Change Events: 1"
+        },
+        {
+            "input": "6\n500 -500 0 300 -300 0",
+            "expectedOutput": "Net Change: 0\nNo Change Events: 2"
+        },
+        {
+            "input": "5\n-100 200 -50 0 0",
+            "expectedOutput": "Net Change: 50\nNo Change Events: 2"
+        },
+        {
+            "input": "2\n1000000000 -1000000000",
+            "expectedOutput": "Net Change: 0\nNo Change Events: 0"
+        }
+    ]
+},
+{
+    "id": "java-arr-86",
+    "number": "07",
+    "title": "Robot Dock Swap",
+    "slug": "robot-dock-swap",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Array Access, Updating Elements, Swapping",
+    "description": "An automated warehouse has N robot docking stations arranged in a row.\nEach station currently contains a robot identified by an integer ID.\n\nDuring maintenance, two robots must exchange their docking positions.\n\nWrite a Java program that performs the exchange and displays the updated sequence.\nThe positions use zero-based indexing.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated robot IDs. The third line contains two integers P Q representing the indexes to swap.",
+    "outputFormat": "Print the updated array on a single line.",
+    "constraints": "1 ≤ N ≤ 100000; 1 ≤ Each robot ID ≤ 1000000000; 0 ≤ P, Q < N",
+    "sampleTestCases": [
+        {
+            "input": "5\n6 9 12 15 18\n1 3",
+            "expectedOutput": "6 15 12 9 18",
+            "explanation": "Exchanged index 1 (9) and index 3 (15)."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextInt();\n        }\n        int p = sc.nextInt();\n        int q = sc.nextInt();\n\n        // Swap arr[p] and arr[q]\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• P and Q may be equal; in that case, the array remains unchanged.\n• Use a temporary variable to swap arr[p] and arr[q].",
+    "hiddenTestCases": [
+        {
+            "input": "5\n10 20 30 40 50\n0 4",
+            "expectedOutput": "50 20 30 40 10"
+        },
+        {
+            "input": "4\n1 2 3 4\n1 2",
+            "expectedOutput": "1 3 2 4"
+        },
+        {
+            "input": "3\n7 8 9\n1 1",
+            "expectedOutput": "7 8 9"
+        },
+        {
+            "input": "1\n999\n0 0",
+            "expectedOutput": "999"
+        },
+        {
+            "input": "6\n5 5 10 10 15 15\n0 5",
+            "expectedOutput": "15 5 10 10 15 5"
+        },
+        {
+            "input": "2\n100 200\n0 1",
+            "expectedOutput": "200 100"
+        },
+        {
+            "input": "5\n1000000000 200000000 300000000 400000000 500000000\n0 2",
+            "expectedOutput": "300000000 200000000 1000000000 400000000 500000000"
+        },
+        {
+            "input": "4\n11 22 33 44\n3 0",
+            "expectedOutput": "44 22 33 11"
+        },
+        {
+            "input": "7\n1 3 5 7 9 11 13\n2 4",
+            "expectedOutput": "1 3 9 7 5 11 13"
+        }
+    ]
+},
+{
+    "id": "java-arr-87",
+    "number": "08",
+    "title": "Last Beacon Ping",
+    "slug": "last-beacon-ping",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Medium",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Linear Search, Array Traversal, Index Tracking",
+    "description": "A communication station records a sequence of beacon identifiers.\n\nA technician wants to know how many times a particular beacon appeared and the index of its most recent appearance.\n\nWrite a program to calculate:\n1. The total number of occurrences of beacon K.\n2. The zero-based index of the last occurrence.\n\nIf the beacon does not appear, the last index is -1.",
+    "inputFormat": "The first line contains two integers: N K. The second line contains N space-separated beacon identifiers.",
+    "outputFormat": "Print:\nOccurrences: X\nLast Index: Y",
+    "constraints": "1 ≤ N ≤ 100000; -1000000000 ≤ K ≤ 1000000000; -1000000000 ≤ Each identifier ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "8 7\n4 7 4 9 4 7 8 7",
+            "expectedOutput": "Occurrences: 3\nLast Index: 7",
+            "explanation": "Beacon 7 appears 3 times (at index 1, 5, 7). Most recent is at index 7."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long k = sc.nextLong();\n        long[] beacons = new long[n];\n        for (int i = 0; i < n; i++) {\n            beacons[i] = sc.nextLong();\n        }\n\n        // Write your code here\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Track lastIndex initialized to -1.\n• Whenever beacons[i] == K, increment occurrences count and update lastIndex = i.",
+    "hiddenTestCases": [
+        {
+            "input": "5 100\n1 2 3 4 5",
+            "expectedOutput": "Occurrences: 0\nLast Index: -1"
+        },
+        {
+            "input": "4 5\n5 1 2 3",
+            "expectedOutput": "Occurrences: 1\nLast Index: 0"
+        },
+        {
+            "input": "4 9\n1 2 3 9",
+            "expectedOutput": "Occurrences: 1\nLast Index: 3"
+        },
+        {
+            "input": "4 7\n7 7 7 7",
+            "expectedOutput": "Occurrences: 4\nLast Index: 3"
+        },
+        {
+            "input": "1 42\n42",
+            "expectedOutput": "Occurrences: 1\nLast Index: 0"
+        },
+        {
+            "input": "1 42\n40",
+            "expectedOutput": "Occurrences: 0\nLast Index: -1"
+        },
+        {
+            "input": "6 -10\n-10 20 -10 30 -10 40",
+            "expectedOutput": "Occurrences: 3\nLast Index: 4"
+        },
+        {
+            "input": "7 0\n0 1 0 2 0 3 0",
+            "expectedOutput": "Occurrences: 4\nLast Index: 6"
+        },
+        {
+            "input": "5 1000000000\n1000000000 2 3 1000000000 5",
+            "expectedOutput": "Occurrences: 2\nLast Index: 3"
+        },
+        {
+            "input": "6 -5\n1 -5 2 -5 3 4",
+            "expectedOutput": "Occurrences: 2\nLast Index: 3"
+        }
+    ]
+},
+{
+    "id": "java-arr-88",
+    "number": "09",
+    "title": "Rotating Exhibition Belt",
+    "slug": "rotating-exhibition-belt",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Medium",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Circular Rotation, Modulus",
+    "description": "An exhibition center uses a circular display belt containing N objects.\n\nDuring each rotation, every object moves one position to the right.\nThe object at the last position moves to the first position.\n\nGiven the initial arrangement and the number of right rotations K, determine the final arrangement.",
+    "inputFormat": "The first line contains N K. The second line contains N space-separated integers.",
+    "outputFormat": "Print the final array after K right rotations on one line.",
+    "constraints": "1 ≤ N ≤ 100000; 0 ≤ K ≤ 1000000000; -1000000000 ≤ Each element ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "5 2\n10 20 30 40 50",
+            "expectedOutput": "40 50 10 20 30",
+            "explanation": "After 2 right rotations, 40 and 50 move to the front."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long k = sc.nextLong();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextInt();\n        }\n\n        // Compute effective rotation: int r = (int)(k % n)\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• K may be much larger than N; take k = k % n.\n• An element at index i moves to (i + k) % n in the rotated array.",
+    "hiddenTestCases": [
+        {
+            "input": "5 0\n10 20 30 40 50",
+            "expectedOutput": "10 20 30 40 50"
+        },
+        {
+            "input": "5 1\n10 20 30 40 50",
+            "expectedOutput": "50 10 20 30 40"
+        },
+        {
+            "input": "5 5\n10 20 30 40 50",
+            "expectedOutput": "10 20 30 40 50"
+        },
+        {
+            "input": "5 7\n10 20 30 40 50",
+            "expectedOutput": "40 50 10 20 30"
+        },
+        {
+            "input": "1 100\n42",
+            "expectedOutput": "42"
+        },
+        {
+            "input": "4 1000000000\n1 2 3 4",
+            "expectedOutput": "1 2 3 4"
+        },
+        {
+            "input": "4 1000000001\n1 2 3 4",
+            "expectedOutput": "4 1 2 3"
+        },
+        {
+            "input": "6 3\n-5 -4 -3 -2 -1 0",
+            "expectedOutput": "-2 -1 0 -5 -4 -3"
+        },
+        {
+            "input": "3 10\n100 200 300",
+            "expectedOutput": "300 100 200"
+        },
+        {
+            "input": "2 3\n9 8",
+            "expectedOutput": "8 9"
+        }
+    ]
+},
+{
+    "id": "java-arr-89",
+    "number": "10",
+    "title": "Terrain Sensor Jumps",
+    "slug": "terrain-sensor-jumps",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Medium",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Adjacent Array Elements, Absolute Difference, Maximum Tracking",
+    "description": "An exploration robot moves through a rocky landscape.\nAt each checkpoint, it records the terrain elevation.\n\nScientists want to identify the largest elevation change between any two consecutive checkpoints.\nThe change is calculated using the absolute difference between neighboring readings.\n\nWrite a program that determines the largest change.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated elevation readings.",
+    "outputFormat": "Print:\nLargest Jump: X",
+    "constraints": "2 ≤ N ≤ 100000; -1000000000 ≤ Each elevation ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "6\n3 12 -4 7 7 20",
+            "expectedOutput": "Largest Jump: 16",
+            "explanation": "Jumps are |12-3|=9, |-4-12|=16, |7-(-4)|=11, |7-7|=0, |20-7|=13. Largest is 16."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long[] elev = new long[n];\n        for (int i = 0; i < n; i++) {\n            elev[i] = sc.nextLong();\n        }\n\n        // Track max absolute difference between consecutive checkpoints\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Compare Math.abs(elev[i] - elev[i - 1]) for i from 1 to n - 1.\n• Elevation difference between 10^9 and -10^9 is 2*10^9; use long arithmetic.",
+    "hiddenTestCases": [
+        {
+            "input": "2\n10 25",
+            "expectedOutput": "Largest Jump: 15"
+        },
+        {
+            "input": "4\n5 5 5 5",
+            "expectedOutput": "Largest Jump: 0"
+        },
+        {
+            "input": "4\n-10 -20 -15 -35",
+            "expectedOutput": "Largest Jump: 20"
+        },
+        {
+            "input": "5\n1 2 4 7 11",
+            "expectedOutput": "Largest Jump: 4"
+        },
+        {
+            "input": "5\n100 80 50 10 -40",
+            "expectedOutput": "Largest Jump: 50"
+        },
+        {
+            "input": "2\n1000000000 -1000000000",
+            "expectedOutput": "Largest Jump: 2000000000"
+        },
+        {
+            "input": "3\n-500000000 0 500000000",
+            "expectedOutput": "Largest Jump: 500000000"
+        },
+        {
+            "input": "6\n0 100 0 100 0 100",
+            "expectedOutput": "Largest Jump: 100"
+        },
+        {
+            "input": "5\n-5 5 -10 10 -20",
+            "expectedOutput": "Largest Jump: 30"
+        },
+        {
+            "input": "4\n12 18 20 22",
+            "expectedOutput": "Largest Jump: 6"
+        }
+    ]
+},
+{
+    "id": "java-arr-90",
+    "number": "11",
+    "title": "Even-First Parcel Order",
+    "slug": "even-first-parcel-order",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Medium",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Modulus, Stable Rearrangement",
+    "description": "A delivery company processes parcels identified by integer codes.\n\nThe sorting machine follows a special arrangement rule:\n1. All even-numbered codes must appear first.\n2. All odd-numbered codes must appear afterward.\n\nThe original relative order of codes within the even and odd groups must remain unchanged.\n\nWrite a program to produce the rearranged list.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated integer codes.",
+    "outputFormat": "Print the rearranged codes on one line.",
+    "constraints": "1 ≤ N ≤ 100000; -1000000000 ≤ Each code ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "7\n5 8 3 6 2 9 4",
+            "expectedOutput": "8 6 2 4 5 3 9",
+            "explanation": "Evens: 8, 6, 2, 4. Odds: 5, 3, 9. Stable relative order preserved."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] codes = new int[n];\n        for (int i = 0; i < n; i++) {\n            codes[i] = sc.nextInt();\n        }\n\n        // Print all even codes first in original order, then all odd codes\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• In Java, negative even numbers satisfy code % 2 == 0.\n• Two separate loops over the array or separate collection lists ensure stable relative ordering.",
+    "hiddenTestCases": [
+        {
+            "input": "4\n2 4 6 8",
+            "expectedOutput": "2 4 6 8"
+        },
+        {
+            "input": "4\n1 3 5 7",
+            "expectedOutput": "1 3 5 7"
+        },
+        {
+            "input": "4\n-2 -3 4 -5",
+            "expectedOutput": "-2 4 -3 -5"
+        },
+        {
+            "input": "3\n0 1 2",
+            "expectedOutput": "0 2 1"
+        },
+        {
+            "input": "1\n8",
+            "expectedOutput": "8"
+        },
+        {
+            "input": "1\n9",
+            "expectedOutput": "9"
+        },
+        {
+            "input": "6\n-10 -7 0 3 8 11",
+            "expectedOutput": "-10 0 8 -7 3 11"
+        },
+        {
+            "input": "5\n100 201 302 403 504",
+            "expectedOutput": "100 302 504 201 403"
+        },
+        {
+            "input": "6\n2 1 4 3 6 5",
+            "expectedOutput": "2 4 6 1 3 5"
+        },
+        {
+            "input": "4\n0 0 0 0",
+            "expectedOutput": "0 0 0 0"
+        }
+    ]
+},
+{
+    "id": "java-arr-91",
+    "number": "12",
+    "title": "Visitor Badge Deduplication",
+    "slug": "visitor-badge-deduplication",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Medium",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Duplicate Detection, Nested Loops",
+    "description": "A conference registration system stores a sequence of visitor badge IDs.\nBecause visitors may scan their badges multiple times, the same ID can appear repeatedly.\n\nThe registration team wants a simplified list in which each distinct badge ID appears only once.\nKeep only the first occurrence of each ID and preserve the original order of those first occurrences.\n\nWrite a Java program that creates the simplified list.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated badge IDs.",
+    "outputFormat": "Print:\nUnique Badges: X\nFollowed by the unique badge IDs in their first-occurrence order on the next line.",
+    "constraints": "1 ≤ N ≤ 2000; -100000 ≤ Each badge ID ≤ 100000",
+    "sampleTestCases": [
+        {
+            "input": "9\n5 2 5 7 2 8 7 7 9",
+            "expectedOutput": "Unique Badges: 5\n5 2 7 8 9",
+            "explanation": "Unique IDs in order of first appearance: 5, 2, 7, 8, 9."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] badges = new int[n];\n        for (int i = 0; i < n; i++) {\n            badges[i] = sc.nextInt();\n        }\n\n        // Deduplicate while preserving first-occurrence order\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• For each badge at index i, check if it already appeared at any index j < i.\n• Collect first-occurrence badges and output the count then the sequence.",
+    "hiddenTestCases": [
+        {
+            "input": "4\n1 2 3 4",
+            "expectedOutput": "Unique Badges: 4\n1 2 3 4"
+        },
+        {
+            "input": "5\n9 9 9 9 9",
+            "expectedOutput": "Unique Badges: 1\n9"
+        },
+        {
+            "input": "4\n-10 20 -10 30",
+            "expectedOutput": "Unique Badges: 3\n-10 20 30"
+        },
+        {
+            "input": "1\n42",
+            "expectedOutput": "Unique Badges: 1\n42"
+        },
+        {
+            "input": "6\n5 5 5 1 2 3",
+            "expectedOutput": "Unique Badges: 4\n5 1 2 3"
+        },
+        {
+            "input": "6\n1 2 3 5 5 5",
+            "expectedOutput": "Unique Badges: 4\n1 2 3 5"
+        },
+        {
+            "input": "7\n0 10 0 20 0 30 0",
+            "expectedOutput": "Unique Badges: 4\n0 10 20 30"
+        },
+        {
+            "input": "8\n-5 -2 -5 0 2 -2 5 0",
+            "expectedOutput": "Unique Badges: 5\n-5 -2 0 2 5"
+        },
+        {
+            "input": "5\n100 200 100 200 300",
+            "expectedOutput": "Unique Badges: 3\n100 200 300"
+        },
+        {
+            "input": "4\n-100000 100000 -100000 100000",
+            "expectedOutput": "Unique Badges: 2\n-100000 100000"
+        }
+    ]
+},
+{
+    "id": "java-arr-92",
+    "number": "13",
+    "title": "Drone Cargo Leaderboard",
+    "slug": "drone-cargo-leaderboard",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Hard",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Sorting, Descending Order",
+    "description": "A drone transportation company records the net cargo-weight adjustments made during several delivery missions.\n\nThe company wants to rank these adjustments from highest to lowest.\nWrite a Java program that sorts the values in descending numerical order.\n\nRepeated values must remain in the output.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated integers.",
+    "outputFormat": "Print the values sorted in descending order on a single line.",
+    "constraints": "1 ≤ N ≤ 2000; -1000000000 ≤ Each value ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "6\n18 7 18 -2 0 4",
+            "expectedOutput": "18 18 7 4 0 -2",
+            "explanation": "Ranked descending: 18, 18, 7, 4, 0, -2."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\nimport java.util.Arrays;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long[] arr = new long[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextLong();\n        }\n\n        // Sort descending and print\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Sort ascending using Arrays.sort(arr) and print in reverse order, or implement a custom sort.\n• Repeated elements must all be printed.",
+    "hiddenTestCases": [
+        {
+            "input": "5\n50 40 30 20 10",
+            "expectedOutput": "50 40 30 20 10"
+        },
+        {
+            "input": "4\n-5 0 5 10",
+            "expectedOutput": "10 5 0 -5"
+        },
+        {
+            "input": "3\n7 7 7",
+            "expectedOutput": "7 7 7"
+        },
+        {
+            "input": "1\n9",
+            "expectedOutput": "9"
+        },
+        {
+            "input": "2\n3 8",
+            "expectedOutput": "8 3"
+        },
+        {
+            "input": "5\n-10 -20 -5 -30 -15",
+            "expectedOutput": "-5 -10 -15 -20 -30"
+        },
+        {
+            "input": "6\n1000000000 -1000000000 0 500000000 -500000000 100",
+            "expectedOutput": "1000000000 500000000 100 0 -500000000 -1000000000"
+        },
+        {
+            "input": "4\n0 0 0 0",
+            "expectedOutput": "0 0 0 0"
+        },
+        {
+            "input": "7\n12 5 8 19 1 2 15",
+            "expectedOutput": "19 15 12 8 5 2 1"
+        },
+        {
+            "input": "8\n4 2 8 6 1 3 7 5",
+            "expectedOutput": "8 7 6 5 4 3 2 1"
+        }
+    ]
+},
+{
+    "id": "java-arr-93",
+    "number": "14",
+    "title": "Merge Two Sensor Streams",
+    "slug": "merge-two-sensor-streams",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Hard",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Sorted Sequences, Two-Pointer Traversal",
+    "description": "Two research devices independently collect integer measurements.\nEach device stores its measurements in non-decreasing order.\n\nScientists want to combine the two measurement sequences into one non-decreasing sequence.\nRepeated measurements must be preserved.\n\nWrite a Java program that produces the merged sequence.",
+    "inputFormat": "The first line contains N M. The second line contains N sorted integers. The third line contains M sorted integers. (If a sequence has 0 elements, its line may be blank).",
+    "outputFormat": "Print the merged measurements in non-decreasing order on one line.",
+    "constraints": "0 ≤ N, M ≤ 100000; 1 ≤ N + M ≤ 200000; -1000000000 ≤ Each value ≤ 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "4 3\n1 4 4 10\n2 4 7",
+            "expectedOutput": "1 2 4 4 4 7 10",
+            "explanation": "Merged sorted sequence: 1 2 4 4 4 7 10."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int m = sc.nextInt();\n        long[] a = new long[n];\n        for (int i = 0; i < n; i++) a[i] = sc.nextLong();\n        long[] b = new long[m];\n        for (int j = 0; j < m; j++) b[j] = sc.nextLong();\n\n        // Merge two sorted arrays using two pointers in O(N + M) time\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Use two pointers i and j comparing a[i] and b[j].\n• Advance the pointer of the smaller (or equal) element to maintain non-decreasing order.",
+    "hiddenTestCases": [
+        {
+            "input": "0 3\n\n5 8 12",
+            "expectedOutput": "5 8 12"
+        },
+        {
+            "input": "3 0\n2 4 6\n",
+            "expectedOutput": "2 4 6"
+        },
+        {
+            "input": "1 1\n5\n3",
+            "expectedOutput": "3 5"
+        },
+        {
+            "input": "2 2\n3 3\n3 3",
+            "expectedOutput": "3 3 3 3"
+        },
+        {
+            "input": "2 2\n-10 -2\n-5 0",
+            "expectedOutput": "-10 -5 -2 0"
+        },
+        {
+            "input": "4 4\n1 3 5 7\n2 4 6 8",
+            "expectedOutput": "1 2 3 4 5 6 7 8"
+        },
+        {
+            "input": "3 3\n10 20 30\n1 2 3",
+            "expectedOutput": "1 2 3 10 20 30"
+        },
+        {
+            "input": "3 3\n1 2 3\n10 20 30",
+            "expectedOutput": "1 2 3 10 20 30"
+        },
+        {
+            "input": "5 5\n-100 -50 0 50 100\n-75 -25 25 75 125",
+            "expectedOutput": "-100 -75 -50 -25 0 25 50 75 100 125"
+        },
+        {
+            "input": "1 4\n10\n1 5 15 20",
+            "expectedOutput": "1 5 10 15 20"
+        }
+    ]
+},
+{
+    "id": "java-arr-94",
+    "number": "15",
+    "title": "Best Continuous Profit Window",
+    "slug": "best-continuous-profit-window",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Hard",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Running Sums, Maximum Subarray",
+    "description": "A small business records its net financial gain or loss at the end of each day.\nA positive number represents profit.\nA negative number represents loss.\n\nThe business wants to identify the consecutive period of one or more days that produces the greatest combined net result.\nThe selected period must consist of consecutive days.\n\nWrite a Java program that calculates the maximum sum of any non-empty contiguous subarray.",
+    "inputFormat": "The first line contains integer N. The second line contains N space-separated integers representing daily gains and losses.",
+    "outputFormat": "Print:\nBest Period: X",
+    "constraints": "1 ≤ N ≤ 100000; -1000000 ≤ Each value ≤ 1000000",
+    "sampleTestCases": [
+        {
+            "input": "8\n-3 4 -1 2 1 -5 4 2",
+            "expectedOutput": "Best Period: 7",
+            "explanation": "Contiguous segment 4 -1 2 1 -5 4 2 has sum 7."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        long[] arr = new long[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextLong();\n        }\n\n        // Kadane's algorithm for maximum subarray sum\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Use Kadane's algorithm in O(N) time.\n• Initialize maxSoFar and currentMax with the first element arr[0] (or Long.MIN_VALUE) so all-negative arrays return the single largest element.\n• Use long to avoid overflow.",
+    "hiddenTestCases": [
+        {
+            "input": "1\n-5",
+            "expectedOutput": "Best Period: -5"
+        },
+        {
+            "input": "1\n10",
+            "expectedOutput": "Best Period: 10"
+        },
+        {
+            "input": "4\n-8 -3 -6 -2",
+            "expectedOutput": "Best Period: -2"
+        },
+        {
+            "input": "3\n10 20 30",
+            "expectedOutput": "Best Period: 60"
+        },
+        {
+            "input": "3\n0 0 0",
+            "expectedOutput": "Best Period: 0"
+        },
+        {
+            "input": "4\n10 20 -50 5",
+            "expectedOutput": "Best Period: 30"
+        },
+        {
+            "input": "4\n-10 2 15 20",
+            "expectedOutput": "Best Period: 37"
+        },
+        {
+            "input": "5\n1000000 1000000 1000000 1000000 1000000",
+            "expectedOutput": "Best Period: 5000000"
+        },
+        {
+            "input": "6\n-2 1 -3 4 -1 2",
+            "expectedOutput": "Best Period: 5"
+        },
+        {
+            "input": "5\n-100 -200 500 -100 -50",
+            "expectedOutput": "Best Period: 500"
+        }
+    ]
+}
 ]
 };
 
