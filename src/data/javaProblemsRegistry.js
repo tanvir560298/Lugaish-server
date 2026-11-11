@@ -34,6 +34,17 @@ export const JAVA_PRACTICE_TOPICS = [
       'Master Java decision making: boolean expressions, relational operators, if, if-else, if-else-if ladders, nested conditions, and switch statements with practical coding challenges.',
     icon: 'GitBranch',
     active: true
+  },
+  {
+    id: 'topic-07',
+    slug: 'strings-manipulation',
+    title: 'Strings & String Manipulation',
+    language: 'Java',
+    level: 'Beginner',
+    description:
+      'Master String methods in Java: length(), charAt(), indexOf(), substring(), toUpperCase(), toLowerCase(), and equals() with practical coding challenges.',
+    icon: 'Type',
+    active: true
   }
 ];
 
@@ -1090,7 +1101,7 @@ public class Main {
   'operators-expressions': [
       {
           "id": "java-oe-14",
-          "number": "14",
+          "number": "01",
           "title": "Solar Farm Daily Output",
           "slug": "solar-farm-daily-output",
           "language": "Java",
@@ -1146,7 +1157,7 @@ public class Main {
       },
       {
           "id": "java-oe-15",
-          "number": "15",
+          "number": "02",
           "title": "Sticker Pack Machine",
           "slug": "sticker-pack-machine",
           "language": "Java",
@@ -1202,7 +1213,7 @@ public class Main {
       },
       {
           "id": "java-oe-16",
-          "number": "16",
+          "number": "03",
           "title": "Arcade Score Booster",
           "slug": "arcade-score-booster",
           "language": "Java",
@@ -1258,7 +1269,7 @@ public class Main {
       },
       {
           "id": "java-oe-17",
-          "number": "17",
+          "number": "04",
           "title": "Race Clock Formatter",
           "slug": "race-clock-formatter",
           "language": "Java",
@@ -1318,7 +1329,7 @@ public class Main {
       },
       {
           "id": "java-oe-18",
-          "number": "18",
+          "number": "05",
           "title": "Robot Charging Log",
           "slug": "robot-charging-log",
           "language": "Java",
@@ -1374,7 +1385,7 @@ public class Main {
       },
       {
           "id": "java-oe-19",
-          "number": "19",
+          "number": "06",
           "title": "Workshop Performance Score",
           "slug": "workshop-performance-score",
           "language": "Java",
@@ -1430,7 +1441,7 @@ public class Main {
       },
       {
           "id": "java-oe-20",
-          "number": "20",
+          "number": "07",
           "title": "Garden Plot Designer",
           "slug": "garden-plot-designer",
           "language": "Java",
@@ -1486,7 +1497,7 @@ public class Main {
       },
       {
           "id": "java-oe-21",
-          "number": "21",
+          "number": "08",
           "title": "Festival Attendance Estimator",
           "slug": "festival-attendance-estimator",
           "language": "Java",
@@ -1542,7 +1553,7 @@ public class Main {
       },
       {
           "id": "java-oe-22",
-          "number": "22",
+          "number": "09",
           "title": "Turnstile Counter Mystery",
           "slug": "turnstile-counter-mystery",
           "language": "Java",
@@ -1598,7 +1609,7 @@ public class Main {
       },
       {
           "id": "java-oe-23",
-          "number": "23",
+          "number": "10",
           "title": "Weather Lab Converter",
           "slug": "weather-lab-converter",
           "language": "Java",
@@ -1658,7 +1669,7 @@ public class Main {
       },
       {
           "id": "java-oe-24",
-          "number": "24",
+          "number": "11",
           "title": "Smart Bus Fare",
           "slug": "smart-bus-fare",
           "language": "Java",
@@ -1718,7 +1729,7 @@ public class Main {
       },
       {
           "id": "java-oe-25",
-          "number": "25",
+          "number": "12",
           "title": "Scooter Speed Calculator",
           "slug": "scooter-speed-calculator",
           "language": "Java",
@@ -1779,7 +1790,243 @@ public class Main {
           "timeLimit": 3,
           "memoryLimit": 128000,
           "notes": "• Convert duration to hours using T / 60.0.\n• Speed = D / hours (or (D * 60.0) / T).\n• Format: Speed: %.2f km/h"
-      }
+      },
+{
+        "id": "java-math-38",
+        "number": "13",
+        "title": "Rounded Rainfall Reading",
+        "slug": "rounded-rainfall-reading",
+        "language": "Java",
+        "categorySlug": "operators-expressions",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "description": "A weather monitoring station measures rainfall in millimeters.\n\nThe sensor records rainfall with decimal precision, but the station's daily summary must display the nearest whole millimeter.\n\nWrite a Java program that reads the measured rainfall and reports its rounded value.\n\nUse conventional Java rounding behavior for non-negative values.",
+        "inputFormat": "One decimal number R representing rainfall in millimeters.",
+        "outputFormat": "Print:\nRounded Rainfall: X\n\nWhere X is the nearest whole number.",
+        "constraints": "0 ≤ R ≤ 1000000",
+        "sampleTestCases": [
+            {
+                "input": "23.6",
+                "expectedOutput": "Rounded Rainfall: 24",
+                "explanation": "23.6 rounded to the nearest whole millimeter is 24."
+            }
+        ],
+        "hiddenTestCases": [
+            {
+                "input": "23.6",
+                "expectedOutput": "Rounded Rainfall: 24"
+            },
+            {
+                "input": "23.4",
+                "expectedOutput": "Rounded Rainfall: 23"
+            },
+            {
+                "input": "23.5",
+                "expectedOutput": "Rounded Rainfall: 24"
+            },
+            {
+                "input": "0.0",
+                "expectedOutput": "Rounded Rainfall: 0"
+            },
+            {
+                "input": "0.2",
+                "expectedOutput": "Rounded Rainfall: 0"
+            },
+            {
+                "input": "0.7",
+                "expectedOutput": "Rounded Rainfall: 1"
+            },
+            {
+                "input": "150.0",
+                "expectedOutput": "Rounded Rainfall: 150"
+            },
+            {
+                "input": "999999.8",
+                "expectedOutput": "Rounded Rainfall: 1000000"
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use Math.round(R) with double input.\n• Output format: Rounded Rainfall: X"
+    },
+    {
+        "id": "java-math-39",
+        "number": "14",
+        "title": "Two-Drone Altitude Report",
+        "slug": "two-drone-altitude-report",
+        "language": "Java",
+        "categorySlug": "operators-expressions",
+        "difficulty": "Easy",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "description": "Two research drones are flying above a testing field.\n\nEach drone reports its current altitude in meters.\n\nA monitoring station needs to identify the higher and lower altitude to prepare a flight summary.\n\nWrite a Java program to display both measurements.",
+        "inputFormat": "Two decimal numbers:\nA B\n\nWhere A and B are the altitudes of the two drones.",
+        "outputFormat": "Print:\nHighest: X\nLowest: Y\n\nDisplay both measurements with exactly two digits after the decimal point.",
+        "constraints": "0 ≤ A, B ≤ 100000",
+        "sampleTestCases": [
+            {
+                "input": "152.25 149.5",
+                "expectedOutput": "Highest: 152.25\nLowest: 149.50",
+                "explanation": "Highest is 152.25, lowest is 149.50."
+            }
+        ],
+        "hiddenTestCases": [
+            {
+                "input": "152.25 149.5",
+                "expectedOutput": "Highest: 152.25\nLowest: 149.50"
+            },
+            {
+                "input": "80.0 120.75",
+                "expectedOutput": "Highest: 120.75\nLowest: 80.00"
+            },
+            {
+                "input": "50.5 50.5",
+                "expectedOutput": "Highest: 50.50\nLowest: 50.50"
+            },
+            {
+                "input": "0.0 0.0",
+                "expectedOutput": "Highest: 0.00\nLowest: 0.00"
+            },
+            {
+                "input": "0.05 0.02",
+                "expectedOutput": "Highest: 0.05\nLowest: 0.02"
+            },
+            {
+                "input": "99999.9 100000.0",
+                "expectedOutput": "Highest: 100000.00\nLowest: 99999.90"
+            },
+            {
+                "input": "10.2 20.4",
+                "expectedOutput": "Highest: 20.40\nLowest: 10.20"
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\nimport java.util.Locale;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use Math.max(A, B) and Math.min(A, B).\n• Format with Locale.US to 2 decimal places."
+    },
+    {
+        "id": "java-math-40",
+        "number": "15",
+        "title": "Shift Duration Bounds",
+        "slug": "shift-duration-bounds",
+        "language": "Java",
+        "categorySlug": "operators-expressions",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "description": "A digital scheduling system records the duration of a work shift as a decimal number of hours.\n\nThe system needs to display two values:\n1. The number of fully completed hours.\n2. The number of hourly slots touched by the shift, counting any partial hour as one full slot.\n\nFor example, a shift lasting 4.75 hours contains four complete hours but occupies five hourly slots.\n\nWrite a program to calculate these values.",
+        "inputFormat": "One non-negative decimal number H representing the duration in hours.",
+        "outputFormat": "Print:\nComplete Hours: X\nHourly Slots: Y\n\nBoth X and Y must be displayed as whole numbers.",
+        "constraints": "0 ≤ H ≤ 10000",
+        "sampleTestCases": [
+            {
+                "input": "4.75",
+                "expectedOutput": "Complete Hours: 4\nHourly Slots: 5",
+                "explanation": "Floor of 4.75 is 4, ceil of 4.75 is 5."
+            }
+        ],
+        "hiddenTestCases": [
+            {
+                "input": "4.75",
+                "expectedOutput": "Complete Hours: 4\nHourly Slots: 5"
+            },
+            {
+                "input": "6.0",
+                "expectedOutput": "Complete Hours: 6\nHourly Slots: 6"
+            },
+            {
+                "input": "0.0",
+                "expectedOutput": "Complete Hours: 0\nHourly Slots: 0"
+            },
+            {
+                "input": "0.25",
+                "expectedOutput": "Complete Hours: 0\nHourly Slots: 1"
+            },
+            {
+                "input": "7.01",
+                "expectedOutput": "Complete Hours: 7\nHourly Slots: 8"
+            },
+            {
+                "input": "7.99",
+                "expectedOutput": "Complete Hours: 7\nHourly Slots: 8"
+            },
+            {
+                "input": "10000.0",
+                "expectedOutput": "Complete Hours: 10000\nHourly Slots: 10000"
+            },
+            {
+                "input": "12.5",
+                "expectedOutput": "Complete Hours: 12\nHourly Slots: 13"
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Complete hours: (long) Math.floor(H)\n• Hourly slots: (long) Math.ceil(H)"
+    },
+    {
+        "id": "java-math-41",
+        "number": "16",
+        "title": "Crate Shipment Count",
+        "slug": "crate-shipment-count",
+        "language": "Java",
+        "categorySlug": "operators-expressions",
+        "difficulty": "Medium",
+        "problemType": "lugaish",
+        "sourcePlatform": "Lugaish",
+        "description": "A delivery company is preparing to ship a collection of identical products.\n\nEvery shipping crate can hold at most K products.\n\nThe company wants to know the minimum number of crates required to transport all N products.\n\nEven if the final crate is not completely full, it is still needed.\n\nWrite a program to calculate the number of crates.",
+        "inputFormat": "Two integers:\nN K\n\nWhere:\n- N = Total products\n- K = Maximum products per crate",
+        "outputFormat": "Print:\nCrates Needed: X",
+        "constraints": "0 ≤ N ≤ 1000000\n1 ≤ K ≤ 100000",
+        "sampleTestCases": [
+            {
+                "input": "53 8",
+                "expectedOutput": "Crates Needed: 7",
+                "explanation": "53 / 8 = 6.625. Ceil is 7 crates."
+            }
+        ],
+        "hiddenTestCases": [
+            {
+                "input": "53 8",
+                "expectedOutput": "Crates Needed: 7"
+            },
+            {
+                "input": "0 10",
+                "expectedOutput": "Crates Needed: 0"
+            },
+            {
+                "input": "40 8",
+                "expectedOutput": "Crates Needed: 5"
+            },
+            {
+                "input": "1 5",
+                "expectedOutput": "Crates Needed: 1"
+            },
+            {
+                "input": "5 1",
+                "expectedOutput": "Crates Needed: 5"
+            },
+            {
+                "input": "100 1",
+                "expectedOutput": "Crates Needed: 100"
+            },
+            {
+                "input": "999999 10",
+                "expectedOutput": "Crates Needed: 100000"
+            },
+            {
+                "input": "1000000 100000",
+                "expectedOutput": "Crates Needed: 10"
+            }
+        ],
+        "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+        "timeLimit": 3,
+        "memoryLimit": 128000,
+        "notes": "• Use Math.ceil((double) N / K) or handle 0 separately."
+    }
   ],
   'conditional-statements': [
       {
@@ -2541,6 +2788,468 @@ public class Main {
           "timeLimit": 3,
           "memoryLimit": 128000,
           "notes": "• Priority 1: weight > 50 || length > 200 -> MANUAL_REVIEW\n• Priority 2: fragile && weight > 10 -> HEAVY_PROTECTED\n• Priority 3: fragile -> PROTECTED\n• Priority 4: weight <= 5 && length <= 50 -> FAST_LANE\n• Else: STANDARD"
+      }
+  ],
+  'strings-manipulation': [
+      {
+          "id": "java-str-42",
+          "number": "01",
+          "title": "Poster Width Counter",
+          "slug": "poster-width-counter",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A designer is preparing a short text banner for a digital display.\n\nThe display system needs to know the number of characters in the message before showing it.\n\nEvery letter, digit, symbol, and space counts as one character.\n\nWrite a Java program to determine the total number of characters in the banner.",
+          "inputFormat": "One line containing the banner text.",
+          "outputFormat": "Print:\nCharacters: X",
+          "constraints": "1 ≤ Length of text ≤ 200\nThe input contains printable ASCII characters.\nThere are no leading or trailing spaces.",
+          "sampleTestCases": [
+              {
+                  "input": "Blue sky ahead",
+                  "expectedOutput": "Characters: 14",
+                  "explanation": "\"Blue sky ahead\" contains 14 characters including spaces."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "Blue sky ahead",
+                  "expectedOutput": "Characters: 14"
+              },
+              {
+                  "input": "A",
+                  "expectedOutput": "Characters: 1"
+              },
+              {
+                  "input": "Hello World!",
+                  "expectedOutput": "Characters: 12"
+              },
+              {
+                  "input": "Java 2026: Code & Learn",
+                  "expectedOutput": "Characters: 23"
+              },
+              {
+                  "input": "One two three four five",
+                  "expectedOutput": "Characters: 23"
+              },
+              {
+                  "input": "1234567890",
+                  "expectedOutput": "Characters: 10"
+              },
+              {
+                  "input": "Spaced   out   words",
+                  "expectedOutput": "Characters: 20"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Read entire line with scanner.nextLine().\n• Output length using text.length()."
+      },
+      {
+          "id": "java-str-43",
+          "number": "02",
+          "title": "Treasure Symbol Locator",
+          "slug": "treasure-symbol-locator",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "An adventure game stores a secret codeword.\n\nTo unlock a treasure chest, the player must identify the character located at a particular position in the codeword.\n\nJava string indexing starts from zero.\n\nWrite a program that reads the codeword and a valid index, then displays the character at that position.",
+          "inputFormat": "The first line contains a codeword S.\nThe second line contains an integer K representing the zero-based index.",
+          "outputFormat": "Print:\nLetter: X\n\nWhere X is the character at index K.",
+          "constraints": "1 ≤ Length of S ≤ 100\n0 ≤ K < Length of S\nS contains only uppercase English letters.",
+          "sampleTestCases": [
+              {
+                  "input": "ORBIT\n2",
+                  "expectedOutput": "Letter: B",
+                  "explanation": "In \"ORBIT\", index 0 is O, 1 is R, 2 is B."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "ORBIT\n2",
+                  "expectedOutput": "Letter: B"
+              },
+              {
+                  "input": "JAVA\n0",
+                  "expectedOutput": "Letter: J"
+              },
+              {
+                  "input": "JAVA\n3",
+                  "expectedOutput": "Letter: A"
+              },
+              {
+                  "input": "X\n0",
+                  "expectedOutput": "Letter: X"
+              },
+              {
+                  "input": "TREASURE\n4",
+                  "expectedOutput": "Letter: S"
+              },
+              {
+                  "input": "DIAMOND\n6",
+                  "expectedOutput": "Letter: D"
+              },
+              {
+                  "input": "EXPEDITION\n5",
+                  "expectedOutput": "Letter: I"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Read S, then K.\n• Use S.charAt(K)."
+      },
+      {
+          "id": "java-str-44",
+          "number": "03",
+          "title": "Library Keyword Search",
+          "slug": "library-keyword-search",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A digital library stores a short description of a book.\n\nA student wants to find the first position where a particular search word appears in the description.\n\nWrite a program that finds the starting index of the first occurrence of the search word.\n\nIf the word is not present, report -1.\n\nThe search must be case-sensitive.",
+          "inputFormat": "The first line contains the description S.\nThe second line contains the search word W.",
+          "outputFormat": "Print:\nIndex: X\n\nWhere X is the zero-based starting index or -1 if the word is not found.",
+          "constraints": "1 ≤ Length of S ≤ 200\n1 ≤ Length of W ≤ 50\nBoth inputs contain printable ASCII characters.\nThe search word is non-empty.",
+          "sampleTestCases": [
+              {
+                  "input": "Meet at north gate\nnorth",
+                  "expectedOutput": "Index: 8",
+                  "explanation": "\"north\" starts at index 8 in \"Meet at north gate\"."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "Meet at north gate\nnorth",
+                  "expectedOutput": "Index: 8"
+              },
+              {
+                  "input": "north gate at noon\nnorth",
+                  "expectedOutput": "Index: 0"
+              },
+              {
+                  "input": "The gate is north\nnorth",
+                  "expectedOutput": "Index: 12"
+              },
+              {
+                  "input": "Meet at north gate\nNorth",
+                  "expectedOutput": "Index: -1"
+              },
+              {
+                  "input": "The secret history of Rome\ngreece",
+                  "expectedOutput": "Index: -1"
+              },
+              {
+                  "input": "cat and caterpillar\ncat",
+                  "expectedOutput": "Index: 0"
+              },
+              {
+                  "input": "Learn Java programming today\nJava",
+                  "expectedOutput": "Index: 6"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Read line S and line W using nextLine().\n• Use S.indexOf(W)."
+      },
+      {
+          "id": "java-str-45",
+          "number": "04",
+          "title": "Shipping Label Split",
+          "slug": "shipping-label-split",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A shipping company generates package identifiers containing two parts separated by a hyphen.\n\nThe first part represents the delivery area.\nThe second part represents the package serial number.\n\nFor example:\nZONE-4582\n\ncontains the delivery area ZONE and serial number 4582.\n\nWrite a program that extracts these two components.",
+          "inputFormat": "One line containing the package identifier.",
+          "outputFormat": "Print:\nArea: X\nSerial: Y",
+          "constraints": "3 ≤ Length of identifier ≤ 100\nThe identifier contains exactly one hyphen.\nAt least one character appears on each side of the hyphen.\nThe remaining characters are uppercase English letters or digits.",
+          "sampleTestCases": [
+              {
+                  "input": "ZONE-4582",
+                  "expectedOutput": "Area: ZONE\nSerial: 4582",
+                  "explanation": "Split at hyphen: Area is ZONE, Serial is 4582."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "ZONE-4582",
+                  "expectedOutput": "Area: ZONE\nSerial: 4582"
+              },
+              {
+                  "input": "A-1",
+                  "expectedOutput": "Area: A\nSerial: 1"
+              },
+              {
+                  "input": "NORTHWEST-99210",
+                  "expectedOutput": "Area: NORTHWEST\nSerial: 99210"
+              },
+              {
+                  "input": "HUB-X",
+                  "expectedOutput": "Area: HUB\nSerial: X"
+              },
+              {
+                  "input": "REGION7-PKG882",
+                  "expectedOutput": "Area: REGION7\nSerial: PKG882"
+              },
+              {
+                  "input": "PARCEL-001",
+                  "expectedOutput": "Area: PARCEL\nSerial: 001"
+              },
+              {
+                  "input": "CARGO-A99B88",
+                  "expectedOutput": "Area: CARGO\nSerial: A99B88"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Find index of \"-\": int idx = s.indexOf(\"-\");\n• Area: s.substring(0, idx)\n• Serial: s.substring(idx + 1)"
+      },
+      {
+          "id": "java-str-46",
+          "number": "05",
+          "title": "Festival Announcement Modes",
+          "slug": "festival-announcement-modes",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A digital festival board supports two display styles.\n\nThe first style, called SHOUT, displays the entire announcement using uppercase letters.\nThe second style, called WHISPER, displays the announcement using lowercase letters.\n\nWrite a Java program that generates both versions of a given announcement.",
+          "inputFormat": "One line containing the announcement.",
+          "outputFormat": "Print:\nSHOUT: X\nWHISPER: Y",
+          "constraints": "1 ≤ Length of announcement ≤ 200\nThe announcement contains English letters, digits, spaces, and common punctuation.",
+          "sampleTestCases": [
+              {
+                  "input": "Java Is Fun",
+                  "expectedOutput": "SHOUT: JAVA IS FUN\nWHISPER: java is fun",
+                  "explanation": "Uppercase is \"JAVA IS FUN\", lowercase is \"java is fun\"."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "Java Is Fun",
+                  "expectedOutput": "SHOUT: JAVA IS FUN\nWHISPER: java is fun"
+              },
+              {
+                  "input": "WELCOME!",
+                  "expectedOutput": "SHOUT: WELCOME!\nWHISPER: welcome!"
+              },
+              {
+                  "input": "good morning 2026",
+                  "expectedOutput": "SHOUT: GOOD MORNING 2026\nWHISPER: good morning 2026"
+              },
+              {
+                  "input": "Music & Lights Fest: 7 PM",
+                  "expectedOutput": "SHOUT: MUSIC & LIGHTS FEST: 7 PM\nWHISPER: music & lights fest: 7 pm"
+              },
+              {
+                  "input": "Code. Create. Repeat.",
+                  "expectedOutput": "SHOUT: CODE. CREATE. REPEAT.\nWHISPER: code. create. repeat."
+              },
+              {
+                  "input": "A",
+                  "expectedOutput": "SHOUT: A\nWHISPER: a"
+              },
+              {
+                  "input": "123 456!",
+                  "expectedOutput": "SHOUT: 123 456!\nWHISPER: 123 456!"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Use s.toUpperCase() and s.toLowerCase()."
+      },
+      {
+          "id": "java-str-47",
+          "number": "06",
+          "title": "Team Code Equality",
+          "slug": "team-code-equality",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "An online tournament uses unique team access codes.\n\nA team captain enters an access code, and the registration system compares it with the official code.\n\nThe comparison must be case-sensitive.\n\nTwo codes are considered equal only when all characters match exactly, including capitalization.\n\nWrite a program to determine whether the entered code matches the official one.",
+          "inputFormat": "Two lines:\n- First line: Official team code\n- Second line: Entered team code",
+          "outputFormat": "Print MATCH if the two codes are identical.\nOtherwise, print DIFFERENT.",
+          "constraints": "1 ≤ Length of each code ≤ 100\nCodes contain only English letters and digits.",
+          "sampleTestCases": [
+              {
+                  "input": "SkyFox\nskyfox",
+                  "expectedOutput": "DIFFERENT",
+                  "explanation": "Capitalization differs (\"SkyFox\" vs \"skyfox\")."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "SkyFox\nskyfox",
+                  "expectedOutput": "DIFFERENT"
+              },
+              {
+                  "input": "ALPHA1\nALPHA1",
+                  "expectedOutput": "MATCH"
+              },
+              {
+                  "input": "TIGER\nLION",
+                  "expectedOutput": "DIFFERENT"
+              },
+              {
+                  "input": "CODE\nCODES",
+                  "expectedOutput": "DIFFERENT"
+              },
+              {
+                  "input": "Z\nZ",
+                  "expectedOutput": "MATCH"
+              },
+              {
+                  "input": "Z\nz",
+                  "expectedOutput": "DIFFERENT"
+              },
+              {
+                  "input": "TEAM2026\nTEAM2026",
+                  "expectedOutput": "MATCH"
+              },
+              {
+                  "input": "Cyber99\nCyber99",
+                  "expectedOutput": "MATCH"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Use code1.equals(code2) for case-sensitive equality.\n• Print MATCH or DIFFERENT."
+      },
+      {
+          "id": "java-str-48",
+          "number": "07",
+          "title": "Creator Handle Generator",
+          "slug": "creator-handle-generator",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A content creation platform wants to generate simple usernames automatically.\n\nEach creator provides a first name and a last name.\n\nThe platform creates a handle using the following format:\n@firstname.lastname\n\nBoth names must appear in lowercase.\n\nWrite a Java program that generates the handle.",
+          "inputFormat": "Two space-separated words:\nfirstName lastName",
+          "outputFormat": "Print:\nTag: X\n\nWhere X is the generated username.",
+          "constraints": "1 ≤ Length of each name ≤ 30\nNames contain only English letters.",
+          "sampleTestCases": [
+              {
+                  "input": "Mira Stone",
+                  "expectedOutput": "Tag: @mira.stone",
+                  "explanation": "Mira -> mira, Stone -> stone. Handle: @mira.stone."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "Mira Stone",
+                  "expectedOutput": "Tag: @mira.stone"
+              },
+              {
+                  "input": "john doe",
+                  "expectedOutput": "Tag: @john.doe"
+              },
+              {
+                  "input": "ALICE SMITH",
+                  "expectedOutput": "Tag: @alice.smith"
+              },
+              {
+                  "input": "A B",
+                  "expectedOutput": "Tag: @a.b"
+              },
+              {
+                  "input": "Christopher Alexander",
+                  "expectedOutput": "Tag: @christopher.alexander"
+              },
+              {
+                  "input": "MC Hammer",
+                  "expectedOutput": "Tag: @mc.hammer"
+              },
+              {
+                  "input": "Dev Prodigy",
+                  "expectedOutput": "Tag: @dev.prodigy"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Read first and last name with scanner.next().\n• Convert to lowercase and concatenate: \"@\" + first.toLowerCase() + \".\" + last.toLowerCase()"
+      },
+      {
+          "id": "java-str-49",
+          "number": "08",
+          "title": "Emergency Bulletin Classifier",
+          "slug": "emergency-bulletin-classifier",
+          "language": "Java",
+          "categorySlug": "strings-manipulation",
+          "difficulty": "Hard",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A city information system examines incoming public safety messages.\n\nThe system searches for the word sequence DANGER, ignoring differences between uppercase and lowercase letters.\n\nIt then classifies the message according to the following rules:\n\nClassification Rules:\n1. If the message contains DANGER and its total character count is at least 15, print HIGH_PRIORITY.\n2. If the message contains DANGER but its character count is less than 15, print SHORT_ALERT.\n3. If the message does not contain DANGER, print NORMAL.\n\nThe search is based on the character sequence DANGER, not word boundaries.\nSpaces count toward the message length.",
+          "inputFormat": "One line containing a message S.",
+          "outputFormat": "Print exactly one of:\n- HIGH_PRIORITY\n- SHORT_ALERT\n- NORMAL",
+          "constraints": "1 ≤ Length of S ≤ 200\nThe message contains printable ASCII characters.\nThere are no leading or trailing spaces.",
+          "sampleTestCases": [
+              {
+                  "input": "Danger near the bridge",
+                  "expectedOutput": "HIGH_PRIORITY",
+                  "explanation": "Contains \"Danger\" (case-insensitive DANGER) and total length is 22 (≥ 15)."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "Danger near the bridge",
+                  "expectedOutput": "HIGH_PRIORITY"
+              },
+              {
+                  "input": "DANGER alert",
+                  "expectedOutput": "SHORT_ALERT"
+              },
+              {
+                  "input": "danger now",
+                  "expectedOutput": "SHORT_ALERT"
+              },
+              {
+                  "input": "All roads clear and open",
+                  "expectedOutput": "NORMAL"
+              },
+              {
+                  "input": "Storm approaching city center",
+                  "expectedOutput": "NORMAL"
+              },
+              {
+                  "input": "DANGER 12345678",
+                  "expectedOutput": "HIGH_PRIORITY"
+              },
+              {
+                  "input": "DANGER 1234567",
+                  "expectedOutput": "SHORT_ALERT"
+              },
+              {
+                  "input": "ENDANGERED SPECIES FOUND HERE",
+                  "expectedOutput": "HIGH_PRIORITY"
+              },
+              {
+                  "input": "Quiet day",
+                  "expectedOutput": "NORMAL"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• boolean hasDanger = s.toUpperCase().contains(\"DANGER\");\n• if (hasDanger && s.length() >= 15) -> HIGH_PRIORITY\n• else if (hasDanger) -> SHORT_ALERT\n• else -> NORMAL"
       }
   ]
 };

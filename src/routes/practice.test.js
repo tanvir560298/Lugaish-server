@@ -41,12 +41,17 @@ test('Topic metadata is accurately configured for Java practice topics', () => {
   const topic2 = getTopicBySlug('operators-expressions');
   assert.ok(topic2);
   assert.equal(topic2.title, 'Operators & Expressions');
-  assert.equal(topic2.problemCount, 12);
+  assert.equal(topic2.problemCount, 16);
 
   const topic3 = getTopicBySlug('conditional-statements');
   assert.ok(topic3);
   assert.equal(topic3.title, 'Conditional Statements (if, else, switch)');
   assert.equal(topic3.problemCount, 12);
+
+  const topic7 = getTopicBySlug('strings-manipulation');
+  assert.ok(topic7);
+  assert.equal(topic7.title, 'Strings & String Manipulation');
+  assert.equal(topic7.problemCount, 8);
 });
 
 test('toPublicProblem strictly hides private hidden test cases and credentials', () => {
@@ -149,10 +154,11 @@ test('practice router handlers respond with expected data and validation errors'
   const topicsRes = createMockRes();
   topicsLayer.route.stack[0].handle(topicsReq, topicsRes);
   assert.equal(topicsRes.statusCode, 200);
-  assert.ok(topicsRes.body.topics.length >= 3);
+  assert.ok(topicsRes.body.topics.length >= 4);
   assert.equal(topicsRes.body.topics[0].slug, 'basic-io-variables');
   assert.equal(topicsRes.body.topics[1].slug, 'operators-expressions');
   assert.equal(topicsRes.body.topics[2].slug, 'conditional-statements');
+  assert.equal(topicsRes.body.topics[3].slug, 'strings-manipulation');
 
   // Find layer for GET /java/topics/:topicSlug
   const topicSlugLayer = practiceRoutes.stack.find(s => s.route?.path === '/java/topics/:topicSlug');
