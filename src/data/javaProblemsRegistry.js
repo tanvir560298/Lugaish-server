@@ -23,6 +23,17 @@ export const JAVA_PRACTICE_TOPICS = [
       'Master Java arithmetic operators, integer division, modulo, operator precedence, prefix and postfix operators, and floating-point calculations with practical coding challenges.',
     icon: 'Code2',
     active: true
+  },
+  {
+    id: 'topic-03',
+    slug: 'conditional-statements',
+    title: 'Conditional Statements (if, else, switch)',
+    language: 'Java',
+    level: 'Beginner',
+    description:
+      'Master Java decision making: boolean expressions, relational operators, if, if-else, if-else-if ladders, nested conditions, and switch statements with practical coding challenges.',
+    icon: 'GitBranch',
+    active: true
   }
 ];
 
@@ -1768,6 +1779,768 @@ public class Main {
           "timeLimit": 3,
           "memoryLimit": 128000,
           "notes": "• Convert duration to hours using T / 60.0.\n• Speed = D / hours (or (D * 60.0) / T).\n• Format: Speed: %.2f km/h"
+      }
+  ],
+  'conditional-statements': [
+      {
+          "id": "java-cs-26",
+          "number": "01",
+          "title": "Elevator Capacity Check",
+          "slug": "elevator-capacity-check",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "An office building has a smart elevator that monitors its carrying capacity.\n\nThe elevator already contains a certain amount of weight. Another package is about to be loaded.\n\nYour task is to determine whether the elevator can safely carry the additional package without exceeding its maximum capacity.\n\nIf the combined weight is less than or equal to the elevator's capacity, loading is allowed.",
+          "inputFormat": "A single line containing three integers:\nC P L\n\nWhere:\n- C = Current weight inside the elevator\n- P = Weight of the new package\n- L = Maximum permitted weight",
+          "outputFormat": "Print CAN_LOAD if the total weight does not exceed the limit.\nOtherwise, print OVERLOAD.",
+          "constraints": "0 ≤ C ≤ L\n0 ≤ P ≤ 1000\n1 ≤ L ≤ 10000\nImportant boundary: Equal weight and maximum capacity must be accepted.",
+          "sampleTestCases": [
+              {
+                  "input": "120 35 160",
+                  "expectedOutput": "CAN_LOAD",
+                  "explanation": "120 + 35 = 155, which is less than 160."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "120 35 160",
+                  "expectedOutput": "CAN_LOAD"
+              },
+              {
+                  "input": "120 40 160",
+                  "expectedOutput": "CAN_LOAD"
+              },
+              {
+                  "input": "120 41 160",
+                  "expectedOutput": "OVERLOAD"
+              },
+              {
+                  "input": "0 0 100",
+                  "expectedOutput": "CAN_LOAD"
+              },
+              {
+                  "input": "500 0 500",
+                  "expectedOutput": "CAN_LOAD"
+              },
+              {
+                  "input": "500 1 500",
+                  "expectedOutput": "OVERLOAD"
+              },
+              {
+                  "input": "0 1000 1000",
+                  "expectedOutput": "CAN_LOAD"
+              },
+              {
+                  "input": "9500 600 10000",
+                  "expectedOutput": "OVERLOAD"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Check if C + P <= L.\n• Print CAN_LOAD or OVERLOAD."
+      },
+      {
+          "id": "java-cs-27",
+          "number": "02",
+          "title": "Two-Team Scoreboard",
+          "slug": "two-team-scoreboard",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "Two gaming teams compete in a final match.\n\nAfter the match, the scoreboard records the total points earned by Team A and Team B.\n\nWrite a Java program that determines which team scored more points, or whether the match ended in a draw.",
+          "inputFormat": "Two space-separated integers:\nA B\n\nWhere A and B represent the two teams' scores.",
+          "outputFormat": "Print exactly one of:\n- TEAM_A if Team A has more points.\n- TEAM_B if Team B has more points.\n- DRAW if both teams have equal points.",
+          "constraints": "0 ≤ A, B ≤ 100000",
+          "sampleTestCases": [
+              {
+                  "input": "76 76",
+                  "expectedOutput": "DRAW",
+                  "explanation": "Both teams scored 76 points, so it is a draw."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "76 76",
+                  "expectedOutput": "DRAW"
+              },
+              {
+                  "input": "100 85",
+                  "expectedOutput": "TEAM_A"
+              },
+              {
+                  "input": "45 90",
+                  "expectedOutput": "TEAM_B"
+              },
+              {
+                  "input": "0 0",
+                  "expectedOutput": "DRAW"
+              },
+              {
+                  "input": "0 1",
+                  "expectedOutput": "TEAM_B"
+              },
+              {
+                  "input": "1 0",
+                  "expectedOutput": "TEAM_A"
+              },
+              {
+                  "input": "100000 99999",
+                  "expectedOutput": "TEAM_A"
+              },
+              {
+                  "input": "54321 54322",
+                  "expectedOutput": "TEAM_B"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Compare A and B using if-else-if.\n• Output TEAM_A, TEAM_B, or DRAW."
+      },
+      {
+          "id": "java-cs-28",
+          "number": "03",
+          "title": "Smart Camera Activation",
+          "slug": "smart-camera-activation",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A smart security camera requires two conditions before it can begin recording:\n\n1. Its battery level must be at least 30%.\n2. It must be connected to Wi-Fi.\n\nThe system receives the battery percentage and Wi-Fi connection status.\n\nDetermine whether the camera is ready to start recording.",
+          "inputFormat": "Two values:\nbattery connected\n\nWhere:\n- battery = Integer battery percentage\n- connected = Boolean value (true or false)",
+          "outputFormat": "Print READY if both requirements are satisfied.\nOtherwise, print NOT_READY.",
+          "constraints": "0 ≤ battery ≤ 100\nconnected is either true or false.",
+          "sampleTestCases": [
+              {
+                  "input": "45 true",
+                  "expectedOutput": "READY",
+                  "explanation": "Battery is 45% (≥ 30%) and Wi-Fi is connected."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "45 true",
+                  "expectedOutput": "READY"
+              },
+              {
+                  "input": "30 true",
+                  "expectedOutput": "READY"
+              },
+              {
+                  "input": "29 true",
+                  "expectedOutput": "NOT_READY"
+              },
+              {
+                  "input": "100 true",
+                  "expectedOutput": "READY"
+              },
+              {
+                  "input": "50 false",
+                  "expectedOutput": "NOT_READY"
+              },
+              {
+                  "input": "30 false",
+                  "expectedOutput": "NOT_READY"
+              },
+              {
+                  "input": "0 true",
+                  "expectedOutput": "NOT_READY"
+              },
+              {
+                  "input": "0 false",
+                  "expectedOutput": "NOT_READY"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Check battery >= 30 && connected.\n• Output READY or NOT_READY."
+      },
+      {
+          "id": "java-cs-29",
+          "number": "04",
+          "title": "Community Workshop Entry",
+          "slug": "community-workshop-entry",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Easy",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A community technology workshop allows visitors to enter if they satisfy at least one of the following conditions:\n\n- They have received an official invitation.\n- They have earned at least 100 activity points.\n\nA visitor does not need to meet both conditions.\n\nWrite a Java program to determine whether the visitor can enter.",
+          "inputFormat": "Two values:\ninvitation points\n\nWhere:\n- invitation = Boolean (true or false)\n- points = Non-negative integer",
+          "outputFormat": "Print ADMITTED if the visitor satisfies at least one requirement.\nOtherwise, print NOT_ADMITTED.",
+          "constraints": "0 ≤ points ≤ 10000",
+          "sampleTestCases": [
+              {
+                  "input": "false 120",
+                  "expectedOutput": "ADMITTED",
+                  "explanation": "Visitor has no invitation, but has 120 points (≥ 100)."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "false 120",
+                  "expectedOutput": "ADMITTED"
+              },
+              {
+                  "input": "true 50",
+                  "expectedOutput": "ADMITTED"
+              },
+              {
+                  "input": "true 150",
+                  "expectedOutput": "ADMITTED"
+              },
+              {
+                  "input": "false 80",
+                  "expectedOutput": "NOT_ADMITTED"
+              },
+              {
+                  "input": "false 100",
+                  "expectedOutput": "ADMITTED"
+              },
+              {
+                  "input": "false 99",
+                  "expectedOutput": "NOT_ADMITTED"
+              },
+              {
+                  "input": "true 0",
+                  "expectedOutput": "ADMITTED"
+              },
+              {
+                  "input": "false 0",
+                  "expectedOutput": "NOT_ADMITTED"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Check invitation || points >= 100.\n• Output ADMITTED or NOT_ADMITTED."
+      },
+      {
+          "id": "java-cs-30",
+          "number": "05",
+          "title": "Signal Strength Analyzer",
+          "slug": "signal-strength-analyzer",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A communication device measures its network signal strength as an integer from 0 to 100.\n\nThe device classifies the signal into four levels:\n\n| Signal Strength | Classification |\n|---|---|\n| 0 | NO_SIGNAL |\n| 1–39 | WEAK |\n| 40–79 | STABLE |\n| 80–100 | STRONG |\n\nWrite a program that determines the signal classification.",
+          "inputFormat": "One integer S representing the signal strength.",
+          "outputFormat": "Print the corresponding classification exactly as shown in the table.",
+          "constraints": "0 ≤ S ≤ 100\nImportant: Carefully handle the boundaries 0, 1, 39, 40, 79, 80, and 100.",
+          "sampleTestCases": [
+              {
+                  "input": "79",
+                  "expectedOutput": "STABLE",
+                  "explanation": "79 falls in the 40–79 range, which is STABLE."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "79",
+                  "expectedOutput": "STABLE"
+              },
+              {
+                  "input": "0",
+                  "expectedOutput": "NO_SIGNAL"
+              },
+              {
+                  "input": "1",
+                  "expectedOutput": "WEAK"
+              },
+              {
+                  "input": "39",
+                  "expectedOutput": "WEAK"
+              },
+              {
+                  "input": "40",
+                  "expectedOutput": "STABLE"
+              },
+              {
+                  "input": "80",
+                  "expectedOutput": "STRONG"
+              },
+              {
+                  "input": "100",
+                  "expectedOutput": "STRONG"
+              },
+              {
+                  "input": "25",
+                  "expectedOutput": "WEAK"
+              },
+              {
+                  "input": "95",
+                  "expectedOutput": "STRONG"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• 0: NO_SIGNAL\n• 1–39: WEAK\n• 40–79: STABLE\n• 80–100: STRONG"
+      },
+      {
+          "id": "java-cs-31",
+          "number": "06",
+          "title": "Parcel Handling Priority",
+          "slug": "parcel-handling-priority",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A delivery warehouse categorizes parcels based on weight and fragility.\n\nThe warehouse follows these rules in priority order:\n\n1. If a parcel weighs more than 25 kg, it requires heavy lifting.\n2. Otherwise, if the parcel is fragile, it requires special care.\n3. All other parcels receive regular handling.\n\nA heavy parcel always receives the heavy-lifting classification, even if it is fragile.\n\nWrite a Java program to determine the correct handling category.",
+          "inputFormat": "Two values:\nweight fragile\n\nWhere:\n- weight = Integer weight in kilograms\n- fragile = Boolean (true or false)",
+          "outputFormat": "Print exactly one of:\n- HEAVY_LIFT\n- HANDLE_WITH_CARE\n- REGULAR",
+          "constraints": "0 ≤ weight ≤ 100\nfragile is a Boolean value.",
+          "sampleTestCases": [
+              {
+                  "input": "18 true",
+                  "expectedOutput": "HANDLE_WITH_CARE",
+                  "explanation": "Weight is ≤ 25 kg and fragile is true."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "18 true",
+                  "expectedOutput": "HANDLE_WITH_CARE"
+              },
+              {
+                  "input": "30 false",
+                  "expectedOutput": "HEAVY_LIFT"
+              },
+              {
+                  "input": "30 true",
+                  "expectedOutput": "HEAVY_LIFT"
+              },
+              {
+                  "input": "25 true",
+                  "expectedOutput": "HANDLE_WITH_CARE"
+              },
+              {
+                  "input": "25 false",
+                  "expectedOutput": "REGULAR"
+              },
+              {
+                  "input": "26 false",
+                  "expectedOutput": "HEAVY_LIFT"
+              },
+              {
+                  "input": "5 false",
+                  "expectedOutput": "REGULAR"
+              },
+              {
+                  "input": "100 true",
+                  "expectedOutput": "HEAVY_LIFT"
+              },
+              {
+                  "input": "0 true",
+                  "expectedOutput": "HANDLE_WITH_CARE"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Priority 1: weight > 25 -> HEAVY_LIFT\n• Priority 2: fragile -> HANDLE_WITH_CARE\n• Else: REGULAR"
+      },
+      {
+          "id": "java-cs-32",
+          "number": "07",
+          "title": "Data Center Alert System",
+          "slug": "data-center-alert-system",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A data center continuously monitors the temperature of its server room and the rotational speed of its cooling fan.\n\nThe monitoring system must issue one of three alerts.\n\nAlert Rules:\n\nEMERGENCY:\nIf at least one of the following conditions is true:\n- Temperature is 90°C or higher.\n- Fan speed is below 500 RPM.\n\nWARNING:\nIf there is no emergency, but at least one of the following conditions is true:\n- Temperature is 75°C or higher.\n- Fan speed is below 900 RPM.\n\nNORMAL:\nIf neither emergency nor warning conditions are met.\n\nEmergency alerts always take priority over warnings.",
+          "inputFormat": "Two integers:\ntemperature fanSpeed",
+          "outputFormat": "Print exactly one of:\n- EMERGENCY\n- WARNING\n- NORMAL",
+          "constraints": "0 ≤ temperature ≤ 120\n0 ≤ fanSpeed ≤ 3000",
+          "sampleTestCases": [
+              {
+                  "input": "82 1100",
+                  "expectedOutput": "WARNING",
+                  "explanation": "No emergency (82 < 90 and 1100 >= 500), but temperature is 82 (>= 75)."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "82 1100",
+                  "expectedOutput": "WARNING"
+              },
+              {
+                  "input": "90 1200",
+                  "expectedOutput": "EMERGENCY"
+              },
+              {
+                  "input": "70 450",
+                  "expectedOutput": "EMERGENCY"
+              },
+              {
+                  "input": "95 400",
+                  "expectedOutput": "EMERGENCY"
+              },
+              {
+                  "input": "75 1000",
+                  "expectedOutput": "WARNING"
+              },
+              {
+                  "input": "70 899",
+                  "expectedOutput": "WARNING"
+              },
+              {
+                  "input": "74 900",
+                  "expectedOutput": "NORMAL"
+              },
+              {
+                  "input": "70 1500",
+                  "expectedOutput": "NORMAL"
+              },
+              {
+                  "input": "0 3000",
+                  "expectedOutput": "NORMAL"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• EMERGENCY: temp >= 90 || fan < 500\n• WARNING: temp >= 75 || fan < 900\n• NORMAL: otherwise"
+      },
+      {
+          "id": "java-cs-33",
+          "number": "08",
+          "title": "Drone Compass Command",
+          "slug": "drone-compass-command",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A drone receives a single-letter direction command from its control station.\n\nThe command determines the direction in which the drone should move.\n\nThe controller recognizes four uppercase commands:\n\n| Command | Action |\n|---|---|\n| N | GO_NORTH |\n| S | GO_SOUTH |\n| E | GO_EAST |\n| W | GO_WEST |\n\nAny other character must be treated as an invalid command.\n\nWrite a Java program to translate the command into the appropriate action.",
+          "inputFormat": "A single non-whitespace character.",
+          "outputFormat": "Print the corresponding action or:\nINVALID_DIRECTION",
+          "constraints": "The input contains exactly one non-whitespace character.\nNote: Commands are case-sensitive. Lowercase letters are not valid commands.",
+          "sampleTestCases": [
+              {
+                  "input": "W",
+                  "expectedOutput": "GO_WEST",
+                  "explanation": "W maps to GO_WEST."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "W",
+                  "expectedOutput": "GO_WEST"
+              },
+              {
+                  "input": "N",
+                  "expectedOutput": "GO_NORTH"
+              },
+              {
+                  "input": "S",
+                  "expectedOutput": "GO_SOUTH"
+              },
+              {
+                  "input": "E",
+                  "expectedOutput": "GO_EAST"
+              },
+              {
+                  "input": "w",
+                  "expectedOutput": "INVALID_DIRECTION"
+              },
+              {
+                  "input": "n",
+                  "expectedOutput": "INVALID_DIRECTION"
+              },
+              {
+                  "input": "X",
+                  "expectedOutput": "INVALID_DIRECTION"
+              },
+              {
+                  "input": "?",
+                  "expectedOutput": "INVALID_DIRECTION"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Use switch on char or String.\n• N: GO_NORTH, S: GO_SOUTH, E: GO_EAST, W: GO_WEST\n• default: INVALID_DIRECTION"
+      },
+      {
+          "id": "java-cs-34",
+          "number": "09",
+          "title": "Parking Zone Fee",
+          "slug": "parking-zone-fee",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Medium",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A city provides three parking zones, each with a different hourly rate.\n\nThe parking rates are:\n\n| Zone | Hourly Fee |\n|---|---|\n| 1 | 5 SAR |\n| 2 | 8 SAR |\n| 3 | 12 SAR |\n\nA driver provides a parking zone number and the number of hours parked.\n\nCalculate the total parking fee.\n\nIf the zone number does not correspond to an available parking zone, print an error message instead.",
+          "inputFormat": "Two integers:\nzone hours",
+          "outputFormat": "For a valid zone, print:\nFee: X\n\nWhere X is the total fee in SAR.\n\nFor an invalid zone, print:\nINVALID_ZONE",
+          "constraints": "0 ≤ zone ≤ 10\n1 ≤ hours ≤ 24",
+          "sampleTestCases": [
+              {
+                  "input": "2 4",
+                  "expectedOutput": "Fee: 32",
+                  "explanation": "Zone 2 costs 8 SAR/hour. For 4 hours: 8 * 4 = 32 SAR."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "2 4",
+                  "expectedOutput": "Fee: 32"
+              },
+              {
+                  "input": "1 1",
+                  "expectedOutput": "Fee: 5"
+              },
+              {
+                  "input": "1 24",
+                  "expectedOutput": "Fee: 120"
+              },
+              {
+                  "input": "2 10",
+                  "expectedOutput": "Fee: 80"
+              },
+              {
+                  "input": "3 3",
+                  "expectedOutput": "Fee: 36"
+              },
+              {
+                  "input": "3 24",
+                  "expectedOutput": "Fee: 288"
+              },
+              {
+                  "input": "0 5",
+                  "expectedOutput": "INVALID_ZONE"
+              },
+              {
+                  "input": "4 2",
+                  "expectedOutput": "INVALID_ZONE"
+              },
+              {
+                  "input": "10 1",
+                  "expectedOutput": "INVALID_ZONE"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Zone 1: 5 * hours\n• Zone 2: 8 * hours\n• Zone 3: 12 * hours\n• Other: INVALID_ZONE"
+      },
+      {
+          "id": "java-cs-35",
+          "number": "10",
+          "title": "Space Launch Checklist",
+          "slug": "space-launch-checklist",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Hard",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A space research center is preparing to launch a small experimental rocket.\n\nBefore launch, the control system must verify three requirements:\n\n- Official launch permission has been granted.\n- Fuel level is at least 70%.\n- Wind speed is not greater than 40 km/h.\n\nThe system checks these requirements in a strict order.\n\nDecision Rules:\n1. If launch permission is missing, display PERMIT_MISSING.\n2. Otherwise, if the fuel level is below 70, display REFUEL_REQUIRED.\n3. Otherwise, if the wind speed is greater than 40, display WEATHER_HOLD.\n4. If every requirement is satisfied, display CLEARED_TO_LAUNCH.\n\nOnly one message should be printed.",
+          "inputFormat": "Three values:\nfuel windSpeed permission\n\nWhere:\n- fuel = Integer fuel percentage\n- windSpeed = Integer wind speed\n- permission = Boolean (true or false)",
+          "outputFormat": "Print exactly one of:\n- PERMIT_MISSING\n- REFUEL_REQUIRED\n- WEATHER_HOLD\n- CLEARED_TO_LAUNCH",
+          "constraints": "0 ≤ fuel ≤ 100\n0 ≤ windSpeed ≤ 200\npermission is a Boolean value.\nImportant: The order of checks matters. A missing permit takes priority over all other failures.",
+          "sampleTestCases": [
+              {
+                  "input": "85 30 true",
+                  "expectedOutput": "CLEARED_TO_LAUNCH",
+                  "explanation": "Permission is granted, fuel 85 ≥ 70, wind 30 ≤ 40."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "85 30 true",
+                  "expectedOutput": "CLEARED_TO_LAUNCH"
+              },
+              {
+                  "input": "85 30 false",
+                  "expectedOutput": "PERMIT_MISSING"
+              },
+              {
+                  "input": "50 20 false",
+                  "expectedOutput": "PERMIT_MISSING"
+              },
+              {
+                  "input": "60 50 false",
+                  "expectedOutput": "PERMIT_MISSING"
+              },
+              {
+                  "input": "69 25 true",
+                  "expectedOutput": "REFUEL_REQUIRED"
+              },
+              {
+                  "input": "50 60 true",
+                  "expectedOutput": "REFUEL_REQUIRED"
+              },
+              {
+                  "input": "70 41 true",
+                  "expectedOutput": "WEATHER_HOLD"
+              },
+              {
+                  "input": "70 40 true",
+                  "expectedOutput": "CLEARED_TO_LAUNCH"
+              },
+              {
+                  "input": "100 0 true",
+                  "expectedOutput": "CLEARED_TO_LAUNCH"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Priority 1: !permission -> PERMIT_MISSING\n• Priority 2: fuel < 70 -> REFUEL_REQUIRED\n• Priority 3: windSpeed > 40 -> WEATHER_HOLD\n• Else: CLEARED_TO_LAUNCH"
+      },
+      {
+          "id": "java-cs-36",
+          "number": "11",
+          "title": "Museum Pass Calculator",
+          "slug": "museum-pass-calculator",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Hard",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "A science museum offers three types of visitor passes.\n\nEach pass has a different base price:\n\n| Pass Type | Base Price |\n|---|---|\n| 1 — Basic | 80 SAR |\n| 2 — Explorer | 140 SAR |\n| 3 — Premium | 220 SAR |\n\nThe museum also follows these rules:\n- Weekend visits have an additional charge of 20 SAR.\n- Visitors with a valid coupon receive a 25% discount.\n- The coupon discount is applied after adding the weekend charge.\n\nWrite a Java program that calculates the final amount a visitor must pay.\n\nIf an invalid pass type is entered, display INVALID_PASS.",
+          "inputFormat": "Three values:\npassType weekend coupon\n\nWhere:\n- passType = Integer\n- weekend = Boolean (true or false)\n- coupon = Boolean (true or false)",
+          "outputFormat": "For valid passes, print the final payment with exactly two digits after the decimal point:\nPay: X.XX\n\nFor invalid passes, print:\nINVALID_PASS",
+          "constraints": "0 ≤ passType ≤ 10\nweekend and coupon are Boolean values.\nImportant: Use decimal arithmetic and ensure the output always contains exactly two decimal places.",
+          "sampleTestCases": [
+              {
+                  "input": "2 true true",
+                  "expectedOutput": "Pay: 120.00",
+                  "explanation": "Explorer pass = 140 SAR. Weekend = +20 SAR (160 SAR). 25% discount on 160 = 120.00 SAR."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "2 true true",
+                  "expectedOutput": "Pay: 120.00"
+              },
+              {
+                  "input": "1 false false",
+                  "expectedOutput": "Pay: 80.00"
+              },
+              {
+                  "input": "1 true false",
+                  "expectedOutput": "Pay: 100.00"
+              },
+              {
+                  "input": "1 false true",
+                  "expectedOutput": "Pay: 60.00"
+              },
+              {
+                  "input": "1 true true",
+                  "expectedOutput": "Pay: 75.00"
+              },
+              {
+                  "input": "3 false false",
+                  "expectedOutput": "Pay: 220.00"
+              },
+              {
+                  "input": "3 true false",
+                  "expectedOutput": "Pay: 240.00"
+              },
+              {
+                  "input": "3 true true",
+                  "expectedOutput": "Pay: 180.00"
+              },
+              {
+                  "input": "0 false false",
+                  "expectedOutput": "INVALID_PASS"
+              },
+              {
+                  "input": "4 true true",
+                  "expectedOutput": "INVALID_PASS"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\nimport java.util.Locale;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• 1: 80, 2: 140, 3: 220. Other: INVALID_PASS\n• Add 20 if weekend.\n• Discount 25% if coupon.\n• Format: Pay: %.2f using Locale.US"
+      },
+      {
+          "id": "java-cs-37",
+          "number": "12",
+          "title": "Warehouse Sorting Terminal",
+          "slug": "warehouse-sorting-terminal",
+          "language": "Java",
+          "categorySlug": "conditional-statements",
+          "difficulty": "Hard",
+          "problemType": "lugaish",
+          "sourcePlatform": "Lugaish",
+          "description": "An automated warehouse uses a sorting terminal to assign delivery items to appropriate processing lanes.\n\nThe terminal receives three properties of an item:\n- Weight in kilograms\n- Length in centimeters\n- Whether the item is fragile\n\nThe warehouse follows these classification rules in priority order:\n\nRule 1 — Manual Review:\nIf the item's weight exceeds 50 kg OR its length exceeds 200 cm, classify it as:\nMANUAL_REVIEW\n\nRule 2 — Heavy Protected Handling:\nOtherwise, if the item is fragile AND its weight exceeds 10 kg, classify it as:\nHEAVY_PROTECTED\n\nRule 3 — Protected Handling:\nOtherwise, if the item is fragile, classify it as:\nPROTECTED\n\nRule 4 — Fast Lane:\nOtherwise, if the item weighs at most 5 kg AND its length is at most 50 cm, classify it as:\nFAST_LANE\n\nRule 5 — Standard Handling:\nAll remaining items belong to:\nSTANDARD\n\nWrite a Java program that prints the item's final classification.\nOnly the first matching rule should determine the result.",
+          "inputFormat": "Three values:\nweight length fragile\n\nWhere:\n- weight = Integer weight in kilograms\n- length = Integer length in centimeters\n- fragile = Boolean (true or false)",
+          "outputFormat": "Print exactly one of:\n- MANUAL_REVIEW\n- HEAVY_PROTECTED\n- PROTECTED\n- FAST_LANE\n- STANDARD",
+          "constraints": "0 ≤ weight ≤ 100\n0 ≤ length ≤ 500\nfragile is a Boolean value.\nImportant: Classification priority must be respected. An item requiring manual review must not be placed into another category.",
+          "sampleTestCases": [
+              {
+                  "input": "12 120 true",
+                  "expectedOutput": "HEAVY_PROTECTED",
+                  "explanation": "Weight 12 ≤ 50, Length 120 ≤ 200. Fragile is true and weight 12 > 10, so HEAVY_PROTECTED."
+              }
+          ],
+          "hiddenTestCases": [
+              {
+                  "input": "12 120 true",
+                  "expectedOutput": "HEAVY_PROTECTED"
+              },
+              {
+                  "input": "55 100 false",
+                  "expectedOutput": "MANUAL_REVIEW"
+              },
+              {
+                  "input": "30 250 true",
+                  "expectedOutput": "MANUAL_REVIEW"
+              },
+              {
+                  "input": "8 100 true",
+                  "expectedOutput": "PROTECTED"
+              },
+              {
+                  "input": "10 100 true",
+                  "expectedOutput": "PROTECTED"
+              },
+              {
+                  "input": "11 100 true",
+                  "expectedOutput": "HEAVY_PROTECTED"
+              },
+              {
+                  "input": "4 40 false",
+                  "expectedOutput": "FAST_LANE"
+              },
+              {
+                  "input": "5 50 false",
+                  "expectedOutput": "FAST_LANE"
+              },
+              {
+                  "input": "6 40 false",
+                  "expectedOutput": "STANDARD"
+              },
+              {
+                  "input": "4 60 false",
+                  "expectedOutput": "STANDARD"
+              },
+              {
+                  "input": "50 200 false",
+                  "expectedOutput": "STANDARD"
+              }
+          ],
+          "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your code here\n        \n    }\n}\n",
+          "timeLimit": 3,
+          "memoryLimit": 128000,
+          "notes": "• Priority 1: weight > 50 || length > 200 -> MANUAL_REVIEW\n• Priority 2: fragile && weight > 10 -> HEAVY_PROTECTED\n• Priority 3: fragile -> PROTECTED\n• Priority 4: weight <= 5 && length <= 50 -> FAST_LANE\n• Else: STANDARD"
       }
   ]
 };

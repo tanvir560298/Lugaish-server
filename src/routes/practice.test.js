@@ -29,7 +29,7 @@ test('normalizeOutput handles CRLF, trailing spaces, and empty lines', () => {
 test('Topic metadata is accurately configured for Java practice topics', () => {
   const topics = getAllTopics();
   assert.ok(Array.isArray(topics));
-  assert.ok(topics.length >= 2);
+  assert.ok(topics.length >= 3);
 
   const topic1 = getTopicBySlug('basic-io-variables');
   assert.ok(topic1);
@@ -42,6 +42,11 @@ test('Topic metadata is accurately configured for Java practice topics', () => {
   assert.ok(topic2);
   assert.equal(topic2.title, 'Operators & Expressions');
   assert.equal(topic2.problemCount, 12);
+
+  const topic3 = getTopicBySlug('conditional-statements');
+  assert.ok(topic3);
+  assert.equal(topic3.title, 'Conditional Statements (if, else, switch)');
+  assert.equal(topic3.problemCount, 12);
 });
 
 test('toPublicProblem strictly hides private hidden test cases and credentials', () => {
@@ -144,9 +149,10 @@ test('practice router handlers respond with expected data and validation errors'
   const topicsRes = createMockRes();
   topicsLayer.route.stack[0].handle(topicsReq, topicsRes);
   assert.equal(topicsRes.statusCode, 200);
-  assert.ok(topicsRes.body.topics.length >= 2);
+  assert.ok(topicsRes.body.topics.length >= 3);
   assert.equal(topicsRes.body.topics[0].slug, 'basic-io-variables');
   assert.equal(topicsRes.body.topics[1].slug, 'operators-expressions');
+  assert.equal(topicsRes.body.topics[2].slug, 'conditional-statements');
 
   // Find layer for GET /java/topics/:topicSlug
   const topicSlugLayer = practiceRoutes.stack.find(s => s.route?.path === '/java/topics/:topicSlug');
