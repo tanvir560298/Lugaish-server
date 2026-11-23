@@ -5760,7 +5760,502 @@ public class Main {
             "expectedOutput": "Best Period: 500"
         }
     ]
+},
+{
+    "id": "java-arr-95",
+    "number": "16",
+    "title": "Empty Locker States",
+    "slug": "empty-locker-states",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Declaration, Default Values, Boolean Array",
+    "description": "A new student fitness center installs a row of N digital storage lockers numbered 0 through N - 1.\nWhen the electronic locker system boots up for the first time, it allocates a new boolean array of size N in memory to track whether each locker is locked.\n\nIn Java, when an array of primitive boolean values is instantiated (new boolean[N]), each element automatically receives the default boolean value: false (meaning unlocked).\n\nWrite a Java program that creates a boolean array of size N and prints the default state of each locker separated by spaces before any values are modified.",
+    "inputFormat": "A single integer N representing the number of lockers.",
+    "outputFormat": "Print the N boolean values separated by a single space on one line.",
+    "constraints": "1 \u2264 N \u2264 1000",
+    "sampleTestCases": [
+        {
+            "input": "4",
+            "expectedOutput": "false false false false",
+            "explanation": "A boolean array of size 4 is instantiated with new boolean[4]. Each element has the Java default value false."
+        },
+        {
+            "input": "1",
+            "expectedOutput": "false",
+            "explanation": "A single locker has the default boolean value false."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n\n        // Create a boolean array of size n and print its default values\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 In Java, all elements in a newly allocated boolean[] array are automatically initialized to false.\n\u2022 Use boolean[] lockers = new boolean[n];\n\u2022 Print each element separated by a single space.",
+    "hiddenTestCases": [
+        {
+            "input": "1",
+            "expectedOutput": "false"
+        },
+        {
+            "input": "2",
+            "expectedOutput": "false false"
+        },
+        {
+            "input": "5",
+            "expectedOutput": "false false false false false"
+        },
+        {
+            "input": "8",
+            "expectedOutput": "false false false false false false false false"
+        },
+        {
+            "input": "10",
+            "expectedOutput": "false false false false false false false false false false"
+        },
+        {
+            "input": "3",
+            "expectedOutput": "false false false"
+        }
+    ]
+},
+{
+    "id": "java-arr-96",
+    "number": "17",
+    "title": "First and Last Reading",
+    "slug": "first-and-last-reading",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Array Access, Zero-Based Indexing, Array Length, Boundary Elements",
+    "description": "A weather satellite records a sequence of N solar radiation readings over the course of an observation orbit.\nEnvironmental scientists want to quickly inspect the boundary readings of the orbit: the very first reading taken at index 0 and the very last reading taken at index N - 1.\n\nIn Java, the array instance variable .length holds the total count of elements, so the last element is always at index readings.length - 1.\n\nWrite a Java program that reads N integers into an array and prints the first and last elements.\nIf the array contains only one element (N = 1), that single element is both the first and the last reading.",
+    "inputFormat": "The first line contains an integer N representing the number of readings.\nThe second line contains N space-separated integers representing the radiation readings.",
+    "outputFormat": "Print two space-separated integers on a single line: the first reading followed by the last reading.",
+    "constraints": "1 \u2264 N \u2264 100000; -1000000000 \u2264 Each reading \u2264 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "5\n120 145 98 160 210",
+            "expectedOutput": "120 210",
+            "explanation": "The first reading at index 0 is 120. The last reading at index 4 (length - 1) is 210."
+        },
+        {
+            "input": "1\n75",
+            "expectedOutput": "75 75",
+            "explanation": "With N = 1, index 0 is both the first and the last element."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] readings = new int[n];\n        for (int i = 0; i < n; i++) {\n            readings[i] = sc.nextInt();\n        }\n\n        // Access the first and last elements using zero-based indexing and .length\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Access the first element with readings[0].\n\u2022 Access the last element with readings[readings.length - 1].\n\u2022 Notice that length is an instance variable without parentheses for arrays, unlike String length().",
+    "hiddenTestCases": [
+        {
+            "input": "1\n-42",
+            "expectedOutput": "-42 -42"
+        },
+        {
+            "input": "2\n10 20",
+            "expectedOutput": "10 20"
+        },
+        {
+            "input": "3\n-5 0 5",
+            "expectedOutput": "-5 5"
+        },
+        {
+            "input": "6\n1000 20 30 40 50 9999",
+            "expectedOutput": "1000 9999"
+        },
+        {
+            "input": "4\n0 0 0 0",
+            "expectedOutput": "0 0"
+        },
+        {
+            "input": "5\n-1000000000 1 2 3 1000000000",
+            "expectedOutput": "-1000000000 1000000000"
+        },
+        {
+            "input": "7\n7 6 5 4 3 2 1",
+            "expectedOutput": "7 1"
+        }
+    ]
+},
+{
+    "id": "java-arr-97",
+    "number": "18",
+    "title": "Safe Index Lookup",
+    "slug": "safe-index-lookup",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Index Validation, Bounds Checking, Exception Prevention",
+    "description": "In Java, an array of length N has valid zero-based indices ranging from 0 to N - 1.\nAttempting to access an index less than 0 or greater than or equal to array.length causes a runtime error: ArrayIndexOutOfBoundsException.\n\nA scientific database server receives queries requesting sensor data at a specific index K.\nTo avoid server crashes, the system must validate the requested index before attempting an array lookup:\n- If 0 \u2264 K < N, access the array and print: Element at index K: V (where V is the integer at that index).\n- If K < 0 or K \u2265 N, do not access the array and instead print: Out of Bounds\n\nWrite a Java program that safely performs this lookup.",
+    "inputFormat": "The first line contains an integer N representing the size of the array.\nThe second line contains N space-separated integers representing the array elements.\nThe third line contains an integer K representing the requested lookup index.",
+    "outputFormat": "If the index is valid (0 \u2264 K < N), print:\nElement at index K: V\nOtherwise, print:\nOut of Bounds",
+    "constraints": "1 \u2264 N \u2264 100000; -1000000000 \u2264 Each element \u2264 1000000000; -200000 \u2264 K \u2264 200000",
+    "sampleTestCases": [
+        {
+            "input": "5\n10 25 38 42 55\n2",
+            "expectedOutput": "Element at index 2: 38",
+            "explanation": "Index 2 is within the valid range [0, 4]. The element is 38."
+        },
+        {
+            "input": "4\n7 14 21 28\n-1",
+            "expectedOutput": "Out of Bounds",
+            "explanation": "Negative indices are invalid in Java arrays and would throw an exception."
+        },
+        {
+            "input": "3\n100 200 300\n3",
+            "expectedOutput": "Out of Bounds",
+            "explanation": "For length 3, valid indices are 0, 1, 2. Index 3 is out of bounds (equals array length)."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = sc.nextInt();\n        }\n        int k = sc.nextInt();\n\n        // Check whether k is a valid index (0 <= k < arr.length)\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Check: if (k >= 0 && k < arr.length) before indexing.\n\u2022 Accessing arr[k] when k is outside [0, arr.length - 1] throws ArrayIndexOutOfBoundsException in Java.\n\u2022 Output format: Element at index K: V or Out of Bounds.",
+    "hiddenTestCases": [
+        {
+            "input": "5\n10 20 30 40 50\n0",
+            "expectedOutput": "Element at index 0: 10"
+        },
+        {
+            "input": "5\n10 20 30 40 50\n4",
+            "expectedOutput": "Element at index 4: 50"
+        },
+        {
+            "input": "5\n10 20 30 40 50\n5",
+            "expectedOutput": "Out of Bounds"
+        },
+        {
+            "input": "1\n999\n0",
+            "expectedOutput": "Element at index 0: 999"
+        },
+        {
+            "input": "1\n999\n1",
+            "expectedOutput": "Out of Bounds"
+        },
+        {
+            "input": "1\n999\n-5",
+            "expectedOutput": "Out of Bounds"
+        },
+        {
+            "input": "6\n-10 -20 -30 -40 -50 -60\n3",
+            "expectedOutput": "Element at index 3: -40"
+        },
+        {
+            "input": "4\n1 2 3 4\n100",
+            "expectedOutput": "Out of Bounds"
+        }
+    ]
+},
+{
+    "id": "java-arr-98",
+    "number": "19",
+    "title": "Replace a Score",
+    "slug": "replace-a-score",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Element Assignment, Value Update, Array Traversal",
+    "description": "A programming contest platform stores the current contest scores of N participants in an integer array indexed from 0 to N - 1.\nFollowing a successful re-evaluation of one submission, the score of the participant at a specified zero-based index K must be updated to a new value V.\n\nIn Java, modifying an element in an array is accomplished directly using the assignment operator:\nscores[k] = newScore;\n\nWrite a Java program that reads the initial array of scores, updates the element at index K to the new value V, and prints the updated array on a single line.",
+    "inputFormat": "The first line contains an integer N representing the number of participants.\nThe second line contains N space-separated integers representing the initial scores.\nThe third line contains two space-separated integers K and V, where K is the zero-based index to update and V is the new score.",
+    "outputFormat": "Print the N scores of the updated array separated by a single space on one line.",
+    "constraints": "1 \u2264 N \u2264 100000; 0 \u2264 K < N; 0 \u2264 Each score, V \u2264 1000000000",
+    "sampleTestCases": [
+        {
+            "input": "5\n85 90 78 92 88\n2 95",
+            "expectedOutput": "85 90 95 92 88",
+            "explanation": "The score at index 2 (originally 78) is replaced with 95."
+        },
+        {
+            "input": "4\n10 20 30 40\n0 99",
+            "expectedOutput": "99 20 30 40",
+            "explanation": "The first element at index 0 is replaced with 99."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] scores = new int[n];\n        for (int i = 0; i < n; i++) {\n            scores[i] = sc.nextInt();\n        }\n        int k = sc.nextInt();\n        int v = sc.nextInt();\n\n        // Assign the new score at index k and print the updated array\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Update with scores[k] = v;\n\u2022 Traverse the array with a for loop and print each element separated by a space.",
+    "hiddenTestCases": [
+        {
+            "input": "1\n50\n0 100",
+            "expectedOutput": "100"
+        },
+        {
+            "input": "3\n10 20 30\n2 70",
+            "expectedOutput": "10 20 70"
+        },
+        {
+            "input": "6\n1 2 3 4 5 6\n3 0",
+            "expectedOutput": "1 2 3 0 5 6"
+        },
+        {
+            "input": "5\n100 100 100 100 100\n1 100",
+            "expectedOutput": "100 100 100 100 100"
+        },
+        {
+            "input": "4\n5 10 15 20\n3 500",
+            "expectedOutput": "5 10 15 500"
+        },
+        {
+            "input": "7\n12 14 16 18 20 22 24\n4 999999",
+            "expectedOutput": "12 14 16 18 999999 22 24"
+        }
+    ]
+},
+{
+    "id": "java-arr-99",
+    "number": "20",
+    "title": "Print the Daily Readings",
+    "slug": "print-the-daily-readings",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Loop Traversal, Zero-Based Index, Output Formatting",
+    "description": "An environmental monitoring station records daily temperature readings in an integer array over an N-day observation period.\nTo generate an audit log, the system must visit every element in sequential order\u2014from day index 0 to day index N - 1\u2014and format the output with the day number and its recorded reading.\n\nIn Java, visiting each element of an array uses a standard for loop:\nfor (int i = 0; i < readings.length; i++) {\n    // Process readings[i]\n}\n\nWrite a Java program that reads N temperature values into an array and prints each entry on its own line using 0-based index notation:\nDay i: V",
+    "inputFormat": "The first line contains an integer N representing the number of days.\nThe second line contains N space-separated integers representing the daily readings.",
+    "outputFormat": "Print N lines, one for each day index from 0 to N - 1:\nDay i: V",
+    "constraints": "1 \u2264 N \u2264 1000; -100 \u2264 Each reading \u2264 100",
+    "sampleTestCases": [
+        {
+            "input": "4\n22 25 19 24",
+            "expectedOutput": "Day 0: 22\nDay 1: 25\nDay 2: 19\nDay 3: 24",
+            "explanation": "The array has length 4. Elements are traversed from index 0 to index 3."
+        },
+        {
+            "input": "1\n30",
+            "expectedOutput": "Day 0: 30",
+            "explanation": "A single reading is at index 0."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] readings = new int[n];\n        for (int i = 0; i < n; i++) {\n            readings[i] = sc.nextInt();\n        }\n\n        // Traverse the array and print each reading in order\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Use a loop: for (int i = 0; i < readings.length; i++).\n\u2022 Print each reading in the format Day i: V on a separate line.",
+    "hiddenTestCases": [
+        {
+            "input": "2\n-5 12",
+            "expectedOutput": "Day 0: -5\nDay 1: 12"
+        },
+        {
+            "input": "3\n0 0 0",
+            "expectedOutput": "Day 0: 0\nDay 1: 0\nDay 2: 0"
+        },
+        {
+            "input": "5\n-10 -20 -30 -40 -50",
+            "expectedOutput": "Day 0: -10\nDay 1: -20\nDay 2: -30\nDay 3: -40\nDay 4: -50"
+        },
+        {
+            "input": "6\n15 18 21 24 27 30",
+            "expectedOutput": "Day 0: 15\nDay 1: 18\nDay 2: 21\nDay 3: 24\nDay 4: 27\nDay 5: 30"
+        },
+        {
+            "input": "1\n-99",
+            "expectedOutput": "Day 0: -99"
+        }
+    ]
+},
+{
+    "id": "java-arr-100",
+    "number": "21",
+    "title": "Check a Hotel Room",
+    "slug": "check-a-hotel-room",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, 1-Based Indexing, Boolean Mapping, Element Lookup",
+    "description": "A hotel manager oversees a building with N guest rooms.\nGuests and front-desk staff refer to the rooms using natural human numbers 1, 2, ..., N.\nHowever, the hotel's Java software tracks room occupancy using an array of size N, where array indices are zero-based (0, 1, ..., N - 1).\nTherefore, room number R corresponds to array index R - 1.\n\nIn the occupancy array:\n- 1 represents an occupied room.\n- 0 represents a vacant room.\n\nWhen a front-desk receptionist inquires about a specific room number R, the system must check the occupancy array at index R - 1 and report its status:\n- If occupied, print: Room R is occupied.\n- If vacant, print: Room R is vacant.\n\nWrite a Java program that reads the occupancy of N rooms and reports the status of room R.",
+    "inputFormat": "The first line contains an integer N representing the total number of hotel rooms.\nThe second line contains N space-separated integers (0 or 1) representing the occupancy of rooms 1 through N.\nThe third line contains an integer R (1 \u2264 R \u2264 N) representing the room number to check.",
+    "outputFormat": "Print exactly one line:\nRoom R is occupied. or Room R is vacant.",
+    "constraints": "1 \u2264 N \u2264 10000; Each occupancy status is either 0 or 1; 1 \u2264 R \u2264 N",
+    "sampleTestCases": [
+        {
+            "input": "10\n1 0 1 1 0 0 1 0 0 1\n3",
+            "expectedOutput": "Room 3 is occupied.",
+            "explanation": "Room 3 is at array index 3 - 1 = 2. The element at index 2 is 1 (occupied)."
+        },
+        {
+            "input": "5\n0 1 0 0 1\n1",
+            "expectedOutput": "Room 1 is vacant.",
+            "explanation": "Room 1 is at array index 0. The element at index 0 is 0 (vacant)."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] rooms = new int[n];\n        for (int i = 0; i < n; i++) {\n            rooms[i] = sc.nextInt();\n        }\n        int r = sc.nextInt();\n\n        // Room r corresponds to index r - 1 in the zero-based array\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Remember that room number R maps to array index (R - 1).\n\u2022 Check if rooms[r - 1] == 1 for occupied, else vacant.\n\u2022 Match exact output: Room R is occupied. or Room R is vacant.",
+    "hiddenTestCases": [
+        {
+            "input": "10\n0 0 0 0 0 0 0 0 0 0\n7",
+            "expectedOutput": "Room 7 is vacant."
+        },
+        {
+            "input": "10\n1 1 1 1 1 1 1 1 1 1\n10",
+            "expectedOutput": "Room 10 is occupied."
+        },
+        {
+            "input": "1\n1\n1",
+            "expectedOutput": "Room 1 is occupied."
+        },
+        {
+            "input": "1\n0\n1",
+            "expectedOutput": "Room 1 is vacant."
+        },
+        {
+            "input": "6\n0 1 1 0 1 0\n6",
+            "expectedOutput": "Room 6 is vacant."
+        },
+        {
+            "input": "4\n1 0 0 1\n4",
+            "expectedOutput": "Room 4 is occupied."
+        },
+        {
+            "input": "8\n0 0 1 0 0 1 0 0\n3",
+            "expectedOutput": "Room 3 is occupied."
+        }
+    ]
+},
+{
+    "id": "java-arr-101",
+    "number": "22",
+    "title": "Count Occupied Rooms",
+    "slug": "count-occupied-rooms",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Loop Accumulator, Counting Elements, Binary Values",
+    "description": "The hotel management needs to determine total occupancy across all N rooms at the end of each evening shift.\nThe occupancy of each room is stored in an integer array where:\n- 1 represents an occupied room.\n- 0 represents a vacant room.\n\nInstead of writing individual if checks for each room variable, a single for loop traverses the array and increments a counter variable whenever an element equals 1:\nint occupiedRoomsCount = 0;\nfor (int i = 0; i < rooms.length; i++) {\n    if (rooms[i] == 1) {\n        occupiedRoomsCount++;\n    }\n}\n\nWrite a Java program that counts and reports the total number of occupied rooms.",
+    "inputFormat": "The first line contains an integer N representing the number of rooms.\nThe second line contains N space-separated integers (0 or 1) representing room occupancy.",
+    "outputFormat": "Print:\nNumber of occupied rooms: X",
+    "constraints": "1 \u2264 N \u2264 100000; Each element is either 0 or 1",
+    "sampleTestCases": [
+        {
+            "input": "10\n1 0 1 1 0 0 1 0 0 1",
+            "expectedOutput": "Number of occupied rooms: 5",
+            "explanation": "Rooms with value 1 are at indices 0, 2, 3, 6, and 9. Total occupied count is 5."
+        },
+        {
+            "input": "5\n0 0 0 0 0",
+            "expectedOutput": "Number of occupied rooms: 0",
+            "explanation": "All rooms are vacant (all-vacant case). Count is 0."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] rooms = new int[n];\n        for (int i = 0; i < n; i++) {\n            rooms[i] = sc.nextInt();\n        }\n\n        // Traverse the array with a loop and count how many rooms are occupied (1)\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Initialize int count = 0 before the loop.\n\u2022 Loop through all rooms and increment count if rooms[i] == 1.\n\u2022 Output format: Number of occupied rooms: X",
+    "hiddenTestCases": [
+        {
+            "input": "6\n1 1 1 1 1 1",
+            "expectedOutput": "Number of occupied rooms: 6"
+        },
+        {
+            "input": "1\n1",
+            "expectedOutput": "Number of occupied rooms: 1"
+        },
+        {
+            "input": "1\n0",
+            "expectedOutput": "Number of occupied rooms: 0"
+        },
+        {
+            "input": "4\n0 1 0 1",
+            "expectedOutput": "Number of occupied rooms: 2"
+        },
+        {
+            "input": "8\n1 0 0 0 0 0 0 1",
+            "expectedOutput": "Number of occupied rooms: 2"
+        },
+        {
+            "input": "7\n1 1 1 0 1 1 1",
+            "expectedOutput": "Number of occupied rooms: 6"
+        },
+        {
+            "input": "12\n0 1 0 1 0 1 0 1 0 1 0 1",
+            "expectedOutput": "Number of occupied rooms: 6"
+        }
+    ]
+},
+{
+    "id": "java-arr-102",
+    "number": "23",
+    "title": "Update the Room Register",
+    "slug": "update-the-room-register",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, 1-Based Indexing, Element Modification, Loop Counting",
+    "description": "The hotel management system maintains the occupancy status of N rooms (1 = occupied, 0 = vacant).\nDuring the day, a guest either checks into or checks out of room number R (using human 1-based numbering 1 \u2264 R \u2264 N), setting the room's status to a new value S (0 or 1).\nNote that sometimes a confirmation request is submitted that leaves the room's status unchanged (for example, setting an already occupied room to 1).\n\nYour task is to:\n1. Read the initial occupancy array of N rooms.\n2. Apply the status change to room R (at index R - 1): rooms[R - 1] = S.\n3. Recalculate and print the total number of occupied rooms after the update.",
+    "inputFormat": "The first line contains an integer N representing the number of rooms.\nThe second line contains N space-separated integers (0 or 1) representing initial room occupancy.\nThe third line contains two space-separated integers R and S, where R (1 \u2264 R \u2264 N) is the 1-based room number and S (0 or 1) is the new status.",
+    "outputFormat": "Print:\nOccupied rooms after update: X",
+    "constraints": "1 \u2264 N \u2264 100000; Each status is either 0 or 1; 1 \u2264 R \u2264 N; S \u2208 {0, 1}",
+    "sampleTestCases": [
+        {
+            "input": "5\n1 0 0 1 0\n2 1",
+            "expectedOutput": "Occupied rooms after update: 3",
+            "explanation": "Room 2 changes from 0 (vacant) to 1 (occupied). Total occupied rooms increases from 2 to 3."
+        },
+        {
+            "input": "4\n1 1 0 1\n2 1",
+            "expectedOutput": "Occupied rooms after update: 3",
+            "explanation": "Room 2 was already 1 (occupied) and is updated to 1. The status is unchanged, so the count remains 3."
+        },
+        {
+            "input": "4\n1 1 0 1\n4 0",
+            "expectedOutput": "Occupied rooms after update: 2",
+            "explanation": "Room 4 checks out (changes from 1 to 0). Total occupied rooms decreases from 3 to 2."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n        int[] rooms = new int[n];\n        for (int i = 0; i < n; i++) {\n            rooms[i] = sc.nextInt();\n        }\n        int r = sc.nextInt();\n        int s = sc.nextInt();\n\n        // Update room r (index r - 1) to status s, then count total occupied rooms\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "\u2022 Map room number R to index (R - 1): rooms[r - 1] = s;\n\u2022 Count elements equal to 1 in the updated array.\n\u2022 Note that updating an already occupied room to 1 leaves total count unchanged.",
+    "hiddenTestCases": [
+        {
+            "input": "1\n0\n1 1",
+            "expectedOutput": "Occupied rooms after update: 1"
+        },
+        {
+            "input": "1\n1\n1 0",
+            "expectedOutput": "Occupied rooms after update: 0"
+        },
+        {
+            "input": "1\n1\n1 1",
+            "expectedOutput": "Occupied rooms after update: 1"
+        },
+        {
+            "input": "5\n0 0 0 0 0\n3 0",
+            "expectedOutput": "Occupied rooms after update: 0"
+        },
+        {
+            "input": "6\n1 1 1 1 1 1\n1 0",
+            "expectedOutput": "Occupied rooms after update: 5"
+        },
+        {
+            "input": "10\n1 0 1 1 0 0 1 0 0 1\n5 1",
+            "expectedOutput": "Occupied rooms after update: 6"
+        },
+        {
+            "input": "8\n0 1 0 1 0 1 0 1\n8 0",
+            "expectedOutput": "Occupied rooms after update: 3"
+        }
+    ]
 }
+
 ]
 };
 
