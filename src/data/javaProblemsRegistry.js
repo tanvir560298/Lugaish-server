@@ -6254,6 +6254,216 @@ public class Main {
             "expectedOutput": "Occupied rooms after update: 3"
         }
     ]
+},
+{
+    "id": "java-arr-103",
+    "number": "24",
+    "title": "Find the Top Scorer",
+    "slug": "find-the-top-scorer",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Parallel Arrays, Maximum Value, Index Tracking, Tie-Breaking",
+    "description": "An academic department tracks student performance in an introductory computer science lab.\nThe instructor maintains two parallel arrays: one String[] array for student names and one int[] array for their final exam scores, where the student at index i has name names[i] and score scores[i].\n\nThe department wants to recognize the top-performing student in the section.\nIf multiple students achieve the same highest score, the award goes to the student who appears first in the input list (first in input order).\n\nWrite a Java program that reads N student names and scores into parallel arrays, finds the highest score, and prints the name and score of the top-performing student.",
+    "inputFormat": "The first line contains an integer N representing the number of students.\nThe following N lines each contain a student's name (single word) and their final score (integer) separated by a space.",
+    "outputFormat": "Print:\nTop Scorer: <name> (<score>)",
+    "constraints": "1 ≤ N ≤ 1000; Each name is 1 to 50 English letters; 0 ≤ Score ≤ 100",
+    "sampleTestCases": [
+        {
+            "input": "4\nAlice 85\nBob 92\nCharlie 78\nDiana 90",
+            "expectedOutput": "Top Scorer: Bob (92)",
+            "explanation": "Bob has the highest score of 92 among all 4 students."
+        },
+        {
+            "input": "4\nSami 95\nTariq 88\nLayla 95\nOmar 91",
+            "expectedOutput": "Top Scorer: Sami (95)",
+            "explanation": "Both Sami and Layla have the maximum score of 95. The tie is broken by choosing the first student in input order (Sami)."
+        },
+        {
+            "input": "1\nZayd 100",
+            "expectedOutput": "Top Scorer: Zayd (100)",
+            "explanation": "With only one student in the class, Zayd is the top scorer with 100."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n\n        String[] names = new String[n];\n        int[] scores = new int[n];\n\n        for (int i = 0; i < n; i++) {\n            names[i] = sc.next();\n            scores[i] = sc.nextInt();\n        }\n\n        // Find the top scorer using parallel arrays and break ties using first-in order\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Initialize maxScore with scores[0] and bestIndex with 0.\n• Loop from index 1 to n - 1. Use strictly greater than (scores[i] > maxScore) so ties preserve the first student.\n• Print in the exact format: Top Scorer: <name> (<score>)",
+    "hiddenTestCases": [
+        {
+            "input": "1\nNoor 75",
+            "expectedOutput": "Top Scorer: Noor (75)"
+        },
+        {
+            "input": "3\nAmir 80\nBilal 80\nCyrus 80",
+            "expectedOutput": "Top Scorer: Amir (80)"
+        },
+        {
+            "input": "5\nA 50\nB 60\nC 70\nD 80\nE 99",
+            "expectedOutput": "Top Scorer: E (99)"
+        },
+        {
+            "input": "5\nAlpha 100\nBeta 90\nGamma 80\nDelta 70\nEpsilon 60",
+            "expectedOutput": "Top Scorer: Alpha (100)"
+        },
+        {
+            "input": "3\nLost1 0\nLost2 0\nLost3 0",
+            "expectedOutput": "Top Scorer: Lost1 (0)"
+        },
+        {
+            "input": "6\nFarah 65\nHasan 72\nKhalid 89\nMona 84\nRashid 89\nZain 88",
+            "expectedOutput": "Top Scorer: Khalid (89)"
+        },
+        {
+            "input": "8\nS1 40\nS2 55\nS3 94\nS4 82\nS5 91\nS6 94\nS7 73\nS8 88",
+            "expectedOutput": "Top Scorer: S3 (94)"
+        }
+    ]
+},
+{
+    "id": "java-arr-104",
+    "number": "25",
+    "title": "Correct a Student's Score",
+    "slug": "correct-a-students-score",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Parallel Arrays, Linear Search, String Matching, Grade Calculation",
+    "description": "During grade verification for the Java programming lab, an instructor occasionally needs to correct an entered exam score.\nThe lab section stores student records across two parallel arrays: String[] names for student names and int[] scores for their final scores.\n\nThe grading scale adopted by the course is:\n• Score >= 90: A\n• 80 <= Score < 90: B\n• 70 <= Score < 80: C\n• 60 <= Score < 70: D\n• Score < 60: F\n\nGiven the student roster, a target student name to look up, and their replacement score:\n1. Search for the student by name in the names array.\n2. If found, update the score at that index, determine the corresponding letter grade, and print the updated record in the format:\nStudent: <name> | Score: <newScore> | Grade: <grade>\n3. If the target student name is not present in the roster, print:\nStudent not found",
+    "inputFormat": "The first line contains an integer N representing the number of students.\nThe following N lines each contain a student's name (single word) and their original integer score, separated by a space.\nThe next line contains a single-word string representing the target student name to look up.\nThe final line contains an integer representing the replacement score.",
+    "outputFormat": "If the student is found, print:\nStudent: <name> | Score: <newScore> | Grade: <grade>\nIf the student is not found, print:\nStudent not found",
+    "constraints": "1 ≤ N ≤ 1000; All student names are unique single words of 1 to 50 letters; 0 ≤ Original score, Replacement score ≤ 100",
+    "sampleTestCases": [
+        {
+            "input": "4\nAlice 82\nBob 74\nCharlie 65\nDiana 58\nBob\n88",
+            "expectedOutput": "Student: Bob | Score: 88 | Grade: B",
+            "explanation": "Bob's score is updated from 74 to 88. Since 80 <= 88 < 90, the new letter grade is B."
+        },
+        {
+            "input": "3\nHamza 89\nLayla 91\nZayd 75\nHamza\n90",
+            "expectedOutput": "Student: Hamza | Score: 90 | Grade: A",
+            "explanation": "Hamza's score is updated to 90. At score 90, the grade is A."
+        },
+        {
+            "input": "3\nAlice 95\nCharlie 80\nDiana 70\nEdward\n85",
+            "expectedOutput": "Student not found",
+            "explanation": "Edward does not exist in the roster, so the program prints \"Student not found\"."
+        },
+        {
+            "input": "2\nTariq 62\nMona 85\nTariq\n59",
+            "expectedOutput": "Student: Tariq | Score: 59 | Grade: F",
+            "explanation": "Tariq's score is updated to 59, which falls below 60, resulting in grade F."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n\n        String[] names = new String[n];\n        int[] scores = new int[n];\n\n        for (int i = 0; i < n; i++) {\n            names[i] = sc.next();\n            scores[i] = sc.nextInt();\n        }\n\n        String targetName = sc.next();\n        int newScore = sc.nextInt();\n\n        // Search for targetName, update score, calculate letter grade, or print \"Student not found\"\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Use names[i].equals(targetName) to compare Strings in Java.\n• Grade scale: >= 90 is A, >= 80 is B, >= 70 is C, >= 60 is D, else F.\n• Track whether a match was found using an index variable or boolean flag.",
+    "hiddenTestCases": [
+        {
+            "input": "1\nSingle 60\nSingle\n100",
+            "expectedOutput": "Student: Single | Score: 100 | Grade: A"
+        },
+        {
+            "input": "2\nA 80\nB 90\nA\n0",
+            "expectedOutput": "Student: A | Score: 0 | Grade: F"
+        },
+        {
+            "input": "3\nKareem 79\nLeen 85\nMajid 65\nKareem\n80",
+            "expectedOutput": "Student: Kareem | Score: 80 | Grade: B"
+        },
+        {
+            "input": "3\nKareem 79\nLeen 85\nMajid 65\nMajid\n70",
+            "expectedOutput": "Student: Majid | Score: 70 | Grade: C"
+        },
+        {
+            "input": "4\nP1 55\nP2 60\nP3 75\nP4 90\nP1\n60",
+            "expectedOutput": "Student: P1 | Score: 60 | Grade: D"
+        },
+        {
+            "input": "3\nN1 70\nN2 85\nN3 95\nN2\n89",
+            "expectedOutput": "Student: N2 | Score: 89 | Grade: B"
+        },
+        {
+            "input": "4\nAlpha 80\nBeta 85\nGamma 90\nDelta 95\nOmega\n99",
+            "expectedOutput": "Student not found"
+        },
+        {
+            "input": "5\nS1 70\nS2 75\nS3 80\nS4 85\nS5 65\nS5\n92",
+            "expectedOutput": "Student: S5 | Score: 92 | Grade: A"
+        }
+    ]
+},
+{
+    "id": "java-arr-105",
+    "number": "26",
+    "title": "Reverse Character Array",
+    "slug": "reverse-character-array",
+    "language": "Java",
+    "categorySlug": "arrays",
+    "difficulty": "Easy",
+    "problemType": "lugaish",
+    "sourcePlatform": "Lugaish",
+    "concepts": "Arrays, Character Array, Array Reversal, Two-Pointer Swap, In-Place Manipulation",
+    "description": "In a data transmission lab, hardware sensors capture a sequence of N characters.\nBefore storing the transmission log into a cryptographic buffer, the system must reverse the sequence of characters.\n\nIn Java, an array of characters can be declared as char[] chars = new char[n];.\nReversing an array can be accomplished by swapping elements from both ends moving inward toward the center (two-pointer approach) or by reading elements into a reversed array.\n\nWrite a Java program that reads N space-separated characters into a char[] array, reverses the elements of the array, and prints the reversed characters separated by spaces on a single line.",
+    "inputFormat": "The first line contains an integer N representing the number of characters.\nThe second line contains N space-separated characters.",
+    "outputFormat": "Print the N reversed characters separated by a single space on one line.",
+    "constraints": "1 ≤ N ≤ 1000; Each character is a printable non-whitespace ASCII character.",
+    "sampleTestCases": [
+        {
+            "input": "5\nJ A V A !",
+            "expectedOutput": "! A V A J",
+            "explanation": "The array ['J', 'A', 'V', 'A', '!'] reversed becomes ['!', 'A', 'V', 'A', 'J']."
+        },
+        {
+            "input": "4\na b c d",
+            "expectedOutput": "d c b a",
+            "explanation": "The 4 characters are reversed in order."
+        },
+        {
+            "input": "1\nZ",
+            "expectedOutput": "Z",
+            "explanation": "A single-element array remains identical when reversed."
+        }
+    ],
+    "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if (!sc.hasNextInt()) return;\n        int n = sc.nextInt();\n\n        char[] chars = new char[n];\n        for (int i = 0; i < n; i++) {\n            chars[i] = sc.next().charAt(0);\n        }\n\n        // Reverse the char array and print the elements separated by space\n        \n    }\n}\n",
+    "timeLimit": 3,
+    "memoryLimit": 128000,
+    "notes": "• Read each character with sc.next().charAt(0);\n• To reverse in-place, swap chars[left] and chars[right] while incrementing left and decrementing right.\n• Traverse the reversed array and print each character separated by a space.",
+    "hiddenTestCases": [
+        {
+            "input": "1\nX",
+            "expectedOutput": "X"
+        },
+        {
+            "input": "2\nO K",
+            "expectedOutput": "K O"
+        },
+        {
+            "input": "3\n1 2 3",
+            "expectedOutput": "3 2 1"
+        },
+        {
+            "input": "5\nr a d a r",
+            "expectedOutput": "r a d a r"
+        },
+        {
+            "input": "6\n# $ % ^ & *",
+            "expectedOutput": "* & ^ % $ #"
+        },
+        {
+            "input": "8\nA B C D E F G H",
+            "expectedOutput": "H G F E D C B A"
+        },
+        {
+            "input": "4\nx x x x",
+            "expectedOutput": "x x x x"
+        }
+    ]
 }
 
 ]
